@@ -1,0 +1,243 @@
+[
+  {
+    "title": "Factory creation",
+    "topic": {
+      "title": "Factory creation",
+      "topics": [
+        {
+          "title": "Generování",
+          "topics": [
+            {
+              "title": "Vstup",
+              "topics": [
+                {
+                  "title": "Typ produktu"
+                },
+                {
+                  "title": "Kvantita",
+                  "topics": [
+                    {
+                      "title": "např. jednotek za hodinu"
+                    }
+                  ]
+                },
+                {
+                  "title": "Velikost oblasti"
+                }
+              ]
+            },
+            {
+              "title": "Omezení velikosti oblasti"
+            },
+            {
+              "title": "Splnitelnost",
+              "topics": [
+                {
+                  "title": "Stačí nám plocha"
+                },
+                {
+                  "title": "Existují dostatečně \"silné\" nástroje na vybudování"
+                },
+                {
+                  "title": "SAT"
+                },
+                {
+                  "title": "Target cena"
+                }
+              ]
+            },
+            {
+              "title": "Prohledávání stavového prostoru",
+              "topics": [
+                {
+                  "title": "Heuristiky",
+                  "topics": [
+                    {
+                      "title": "Relevant actions",
+                      "note": "AI: A Modern Approach - 11.2.2.\n\nA relevant action is one with an effect that unifies with one of the goal literals, but with no effect that negates any part of the goal. For example, with the goal ¬Poor ∧ Famous, an action with the sole effect Famous would be relevant, but one with the effect Poor ∧ Famous is not considered relevant: even though that action might be used at some point in the plan (to establish Famous), it cannot appear at this point in the plan because then Poor would appear\nin the final state.\n\nnapř. pouze výrobny, které nás dokáží nějak posunout k cíli"
+                    },
+                    {
+                      "title": "Abstrakce",
+                      "note": "AI: A Modern Approach - 11.3\n\nnapř. nekoukat na část vývoje, kde se vytvářejí ozubená kolečka jako na jednotlivé výrobny, ale jako místo, ze kterého vychází ozubená kolečka, tedy nějaká shlukování \n\nRecall that an admissible heuristic can be derived by defining a relaxed problem that is easier to solve. The exact cost of a solution to this easier problem then becomes the heuristic for the original problem. A search problem is a graph where the nodes are states and the edges are actions. The problem is to find a path connecting the initial state to a goal state. There are two main ways we can relax this problem to make it easier: by adding more edges to the graph, making it strictly easier to find a path, or by grouping multiple nodes together, forming an abstraction of the state space that has fewer states, and thus is easier to search."
+                    },
+                    {
+                      "title": "Předpoklady",
+                      "note": "Předpoklady nám pomohou omezit množství stavů, do kterých můžeme přejít. Tedy v našem případě, kdy se dělá backward seach, tak tedy spíš něco jako výsledky, tedy omezení inverzních akcí do předcházejích stavů."
+                    },
+                    {
+                      "title": "Přeskakování při zjišťování splnitelnosti",
+                      "note": "Při zjišťování zda je vůbec možné výrobní linku se strojit, tak můžeme mít předpočítané nějaké tranzitivní vtahy (do určité hloubky), tedy nemusíme přesně postupovat krok po kroku.\n\nWe look first at heuristics that add edges to the graph. Perhaps the simplest is the ignore-preconditions heuristic, which drops all preconditions from actions. Every action becomes applicable in every state, and any single goal fluent can be achieved in one step (if there are any applicable actions—if not, the problem is impossible). This almost implies that the number of steps required to solve the relaxed problem is the number of unsatisfied goals—almost but not quite, because (1) some action may achieve multiple goals and (2) some actions\nmay undo the effects of others."
+                    },
+                    {
+                      "title": "Rozšiřování existujícího",
+                      "note": "Pokud při backwards search zjistíme, že vyžadujeme nějaký stav V, tedy nějaký zdroj, dejme tomu měděné dráty. Tak pokud už jsme někdy stav V na stejném podstromy vytvořili, tak může dávat smysl ho rozšířit, tedy využiít už něco postaveného a natáhnout pásy. Než tvořit vše od začátku. Tedy nějaká obdoba Symetry reduction viz AI: A Modern Approach = 11.3."
+                    },
+                    {
+                      "title": "Serializace",
+                      "note": "Předpočítání na zjednodušeném problému, kde máme kvantitu vždy 1 (tedy pouze rozdělení na ingredience) jestli neexistují odebráním výsledku různé komponenty souvislosti. Pokud ano, tak pokud najdeme řešení (pokud řešíme optimalitu tak optmální) tak si ho můžeme vůči ostatním kompenentám zafixovat."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Výstup",
+              "topics": [
+                {
+                  "title": "Orientovaný graf",
+                  "topics": [
+                    {
+                      "title": "Vrcholy",
+                      "topics": [
+                        {
+                          "title": "Stroje"
+                        }
+                      ]
+                    },
+                    {
+                      "title": "Hrany",
+                      "topics": [
+                        {
+                          "title": "Pásy"
+                        }
+                      ]
+                    },
+                    {
+                      "title": "Více abstraktní nebere v potaz rovnné nakreslení"
+                    }
+                  ]
+                },
+                {
+                  "title": "Nákres továrny"
+                }
+              ]
+            },
+            {
+              "title": "Hledání optimálního či presudooptimálního řešení",
+              "topics": [
+                {
+                  "title": "Cena",
+                  "topics": [
+                    {
+                      "title": "Stavby"
+                    },
+                    {
+                      "title": "Provozu"
+                    }
+                  ]
+                },
+                {
+                  "title": "Zastavěná plocha"
+                },
+                {
+                  "title": "Vytíženost"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Výrobny",
+          "topics": [
+            {
+              "title": "Konvexní",
+              "topics": [
+                {
+                  "title": "Čtvercová (Factorio-like) síť"
+                }
+              ]
+            },
+            {
+              "title": "Nekonvexní"
+            },
+            {
+              "title": "Rychlost výroby"
+            },
+            {
+              "title": "Kvantiva výroby"
+            }
+          ]
+        },
+        {
+          "title": "Zdroje",
+          "topics": [
+            {
+              "title": "AI: Modern Approach",
+              "topics": [
+                {
+                  "title": "Chapter 11"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Layout",
+          "topics": [
+            {
+              "title": "Evoluční algoritmy",
+              "topics": [
+                {
+                  "title": "Fitness funkce",
+                  "topics": [
+                    {
+                      "title": "\"Estetika\""
+                    },
+                    {
+                      "title": "Kompaktnost"
+                    },
+                    {
+                      "title": "Pravidelnost"
+                    },
+                    {
+                      "title": "Komplikovanost nákresu pásu"
+                    }
+                  ]
+                },
+                {
+                  "title": "Křížení"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Omezení",
+          "topics": [
+            {
+              "title": "Pásy mohou převážet pouze zdroje jednoho druhu"
+            }
+          ]
+        },
+        {
+          "title": "Kód",
+          "topics": [
+            {
+              "title": "Modularita!"
+            },
+            {
+              "title": "User",
+              "topics": [
+                {
+                  "title": "Rychle vyhodnotit, zda je to splnitelné",
+                  "topics": [
+                    {
+                      "title": "Ne"
+                    },
+                    {
+                      "title": "Možná bude to trvat dlouho"
+                    },
+                    {
+                      "title": "Ano"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "structure": "org.xmind.ui.map.unbalanced"
+  }
+]
