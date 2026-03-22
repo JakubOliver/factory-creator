@@ -213,6 +213,33 @@
           "title": "Kód",
           "topics": [
             {
+              "title": "GUI",
+              "topics": [
+                {
+                  "title": "PySide6 (Qt)"
+                }
+              ]
+            },
+            {
+              "title": "Packages",
+              "topics": [
+                {
+                  "title": "Python -> C++",
+                  "topics": [
+                    {
+                      "title": "python3-devel"
+                    },
+                    {
+                      "title": "pybind11"
+                    },
+                    {
+                      "title": "pybind11-devel"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
               "title": "Modularita!"
             },
             {
@@ -229,6 +256,42 @@
                     },
                     {
                       "title": "Ano"
+                    },
+                    {
+                      "title": "Vytvořit dependency strom",
+                      "topics": [
+                        {
+                          "title": "Spočítání dolního odkadu pro plochu"
+                        },
+                        {
+                          "title": "Spočítání dolního odkadu na cenu"
+                        }
+                      ]
+                    },
+                    {
+                      "title": "Spočítání zda pásy nezaberou více plochy než nové postavení"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "In-game blueprinty",
+              "topics": [
+                {
+                  "title": "Reprezentace pomocí JSON",
+                  "topics": [
+                    {
+                      "title": "Factorio blueprint editor",
+                      "link": "https://fbe.teoxoy.com/"
+                    },
+                    {
+                      "title": "Factorio prints",
+                      "link": "https://factorioprints.com/"
+                    },
+                    {
+                      "title": "Ukázky",
+                      "note": "{\n \"blueprint\": {\n \t\"item\": \"blueprint\",\n \t\"label\": \"Jmeno blueprintu\",\n \t\"version\": 562949955649536,\n \t\"icons\": [\n \t\t{\n \t\t\t\"signal\": {\n \t\t\t\t\"type\": \"item\",\n\t\t\t\t \"name\": \"transport-belt\"\n \t\t\t},\t\n\t\t\t \"index\": 1\n\t\t }\n\t ],\n\t \"entities\": [\n\t\t {\n\t\t\t \"entity_number\": 1,\n\t\t\t \"name\": \"wooden-chest\",\n\t\t\t \"position\": { \"x\": 0.5, \"y\": 0.5 }\n\t\t }\n\t ]\n }\n}"
                     }
                   ]
                 }
