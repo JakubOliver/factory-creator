@@ -1,4 +1,4 @@
-[[{
+[{
       "type":"recipe",
       "ingredients":[{
           "amount":5,
@@ -4659,4 +4659,4 @@
       "name":"steam-turbine",
       "enabled":false,
       "energy_required":3
-    }]]
+    }]
