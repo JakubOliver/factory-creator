@@ -191,11 +191,47 @@
                     },
                     {
                       "title": "Komplikovanost nákresu pásu"
+                    },
+                    {
+                      "title": "Vynucování main bus",
+                      "topics": [
+                        {
+                          "title": "Záporné addition za velmi časté změny směrů, tedy vynucování přímých pásů"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
-                  "title": "Křížení"
+                  "title": "Křížení",
+                  "topics": [
+                    {
+                      "title": "Pokud oba nákresy obsahují stejný podgraf (se stejným výstupem) potom je můžeme vyměnit",
+                      "topics": [
+                        {
+                          "title": "Vyměňování podstromů"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Mutace",
+                  "topics": [
+                    {
+                      "title": "Provádění abstrakce",
+                      "topics": [
+                        {
+                          "title": "Pokud na více místech vytváříme stejný výrobrek, tak zvětšení té časti a nahrazení menších částí",
+                          "topics": [
+                            {
+                              "title": "Nebo naopak"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -212,6 +248,14 @@
         {
           "title": "Kód",
           "topics": [
+            {
+              "title": "Tipy na zrychlení",
+              "topics": [
+                {
+                  "title": "Překladače se dají simulovat tak, že pásy musí udělat jedno políčko přímo a až potom mohou zahnout, tedy nemohou být přímo paralelně s výrobnou"
+                }
+              ]
+            },
             {
               "title": "GUI",
               "topics": [
@@ -294,6 +338,17 @@
                       "note": "{\n \"blueprint\": {\n \t\"item\": \"blueprint\",\n \t\"label\": \"Jmeno blueprintu\",\n \t\"version\": 562949955649536,\n \t\"icons\": [\n \t\t{\n \t\t\t\"signal\": {\n \t\t\t\t\"type\": \"item\",\n\t\t\t\t \"name\": \"transport-belt\"\n \t\t\t},\t\n\t\t\t \"index\": 1\n\t\t }\n\t ],\n\t \"entities\": [\n\t\t {\n\t\t\t \"entity_number\": 1,\n\t\t\t \"name\": \"wooden-chest\",\n\t\t\t \"position\": { \"x\": 0.5, \"y\": 0.5 }\n\t\t }\n\t ]\n }\n}"
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "title": "Maticová reprezentace plánku",
+              "topics": [
+                {
+                  "title": "Factorio interně používá JSON se souřadnicemi"
+                },
+                {
+                  "title": "Plánky by měli dosti husté, tedy hashonová etc. není o moc lepší"
                 }
               ]
             }
