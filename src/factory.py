@@ -38,6 +38,29 @@ class DependencyTreeNode:
         for child in self.children:
             child.dfs()
 
+    def add_to_graph(self, dot, counter):
+        node_id = f"n{counter}"
+        dot.node(node_id, label=str(self))
+        counter += 1
+
+        for child in self.children:
+            child_id, counter = child.add_to_graph(dot, counter)
+            dot.edge(child_id, node_id)
+
+        return node_id, counter
+
+    def __str__(self) -> str:
+        return self.factory.name
+
+    """
+    def __iter__(self):
+        yield self
+
+        for child in self.children:
+            for descendant in child:
+                yield descendant
+    """
+
 class FactoryLoader:
     @staticmethod
     def load(factory_definition_file_path: str) -> list[Factory]:

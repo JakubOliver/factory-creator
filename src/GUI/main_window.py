@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
+from graphviz import Digraph
+
 from ..factory import FactoryLoader    
 
 
@@ -58,7 +60,15 @@ class MainWindow(QMainWindow):
         #TODO: whether file exists
 
         factories = FactoryLoader.load(text)
-        root = FactoryLoader.get_dependency_tree(factories, "steam-turbine")
+        #root = FactoryLoader.get_dependency_tree(factories, "steam-turbine")
+        root = FactoryLoader.get_dependency_tree(factories, "nuclear-reactor")
         
         if root is not None:
-            root.dfs()
+            #root.dfs()
+
+            dot = Digraph(comment="Tree")
+            
+            root.add_to_graph(dot, 0)
+            print(dot.source)
+            dot.render("tree", format="png", cleanup=True)
+
