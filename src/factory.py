@@ -9,7 +9,16 @@ class Factory:
         self.y_size = y_size
 
     def __str__(self):
-        return f"name: {self.name}, energy_required: {self.energy_required}, ingredients: {self.ingredients}"
+        return f"name: {self.name}, energy_required: {self.energy_required}, ingredients: {", ".join(str(ingredient) for ingredient in self.ingredients)}"
+
+class Ingredient:
+    def __init__(self, name, type, amount):
+        self.name = name
+        self.type = type
+        self.amount = amount
+
+    def __str__(self):
+        return f"{self.name}, {self.type}, {self.amount}"
 
 class FactoryLoader:
     @staticmethod
@@ -26,7 +35,11 @@ class FactoryLoader:
                     else:
                         energy_required = entry["energy_required"]
 
-                    factory = Factory(entry["name"], energy_required, entry["ingredients"], 4, 4) #TODO: loading real sizes
+                    ingredients = []
+                    for ingredient in entry["ingredients"]:
+                        ingredients.append(Ingredient(ingredient["name"], ingredient["type"], ingredient["amount"]))
+
+                    factory = Factory(entry["name"], energy_required, ingredients, 4, 4) #TODO: loading real sizes
                     factories.append(factory)
 
         return factories

@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QPushButton,
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QLabel,
 )
@@ -31,14 +32,19 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(self.main_layout)
 
         self.title_label = QLabel("Application")
+
         self.input_field = QLineEdit()
         self.input_field.setPlaceholderText("Recipes path...")
 
         self.submit_button = QPushButton("Import recipes")
 
         self.main_layout.addWidget(self.title_label)
-        self.main_layout.addWidget(self.input_field)
-        self.main_layout.addWidget(self.submit_button)
+
+        file_layout = QHBoxLayout()
+        file_layout.addWidget(self.input_field)
+        file_layout.addWidget(self.submit_button)
+
+        self.main_layout.addLayout(file_layout)
 
         self.main_layout.addStretch()
 
@@ -48,6 +54,8 @@ class MainWindow(QMainWindow):
     def _handle_submit(self) -> None:
         text = self.input_field.text()
         print(f"Used path: {text}")
+
+        #TODO: whether file
 
         factories = FactoryLoader.load(text)
 
