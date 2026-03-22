@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 
-from src import factory
+import sys
+from PySide6.QtWidgets import QApplication
+
+from src.GUI.main_window import MainWindow
 from src.factory import FactoryLoader
 
 recipe_file_path = "data/recipe.json"
 
-if __name__ == '__main__':
+def main():
     factories = FactoryLoader.load(recipe_file_path)
 
-    for factory in factories:
-        print(factory)
+    app = QApplication(sys.argv)
+
+    window = MainWindow()
+    window.show()
+
+    return app.exec()
+
+if __name__ == "__main__":
+    sys.exit(main())
