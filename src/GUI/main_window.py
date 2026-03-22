@@ -55,9 +55,10 @@ class MainWindow(QMainWindow):
         text = self.input_field.text()
         print(f"Used path: {text}")
 
-        #TODO: whether file
+        #TODO: whether file exists
 
         factories = FactoryLoader.load(text)
-
-        for factory in factories:
-            print(factory)
+        root = FactoryLoader.get_dependency_tree(factories, "steam-turbine")
+        
+        if root is not None:
+            root.dfs()
