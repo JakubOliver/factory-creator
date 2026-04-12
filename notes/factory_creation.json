@@ -232,6 +232,25 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "title": "Reprezentace",
+                  "topics": [
+                    {
+                      "title": "Orientovany acyklický graf (DAG)",
+                      "topics": [
+                        {
+                          "title": "Známe maximální hloubku, kterou bude graf mít, poněvadž nemůže být hlubší než dependency graf (zároveň nemůže být ani kratší)"
+                        },
+                        {
+                          "title": "Nejde úplně určovat jak to bude vypadat pouze z grafu"
+                        }
+                      ]
+                    },
+                    {
+                      "title": "Čtvercová síť"
+                    }
+                  ]
                 }
               ]
             }
@@ -261,6 +280,9 @@
               "topics": [
                 {
                   "title": "PySide6 (Qt)"
+                },
+                {
+                  "title": "JavaFX"
                 }
               ]
             },
@@ -349,6 +371,107 @@
                 },
                 {
                   "title": "Plánky by měli dosti husté, tedy hashonová etc. není o moc lepší"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Schůzky",
+          "topics": [
+            {
+              "title": "2026.03.30",
+              "topics": [
+                {
+                  "title": "Je potřeba nějak více sepsat specifikaci?",
+                  "topics": [
+                    {
+                      "title": "Je lepší pouze obecné vytyčení nebo se specifikovat na nějaké jedno témat, například hlavně na layout nebo na splnitelnost za omezujích podmínek "
+                    }
+                  ]
+                },
+                {
+                  "title": "Jak moc je možné využívat knihovny na CSP, SAT (Or-Tools) nebo DEAP/Jenetics",
+                  "topics": [
+                    {
+                      "title": "Pokud pouze v omezeném množství, tak je asi nejlepší to ozkoušet na knihovně a potom implementovat"
+                    },
+                    {
+                      "title": "V návaznosti na mail ohledně jazyků jsem si prošel jakou nabídku knihoven pro CSP atd. má Java oproti Python/C++ a nejsou tam žádné velké nedostatky",
+                      "topics": [
+                        {
+                          "title": "Google Or-Tools jsou dostupné pro všechny 3 jazyky, Java má alternativu Jenetics za DEAP, pouze neexistuje nějaká ucelená alternativa za NumPy (což asi nebude problém)",
+                          "topics": [
+                            {
+                              "title": "Nejslabší je Java v answer set programming (ASP), ale je použitelná pomocí integrace s Clingo"
+                            }
+                          ]
+                        },
+                        {
+                          "title": "Java nemá žádnou dominantní knihovny na SAT mimo SAT4j, ale pro toto se dá využít Or-Tools, ale stejně budu spíše asi využívat CSP než čistý SAT"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Zakódování pro evoluční algoritmy",
+                  "topics": [
+                    {
+                      "title": "DAG nebo matice nebo kombinace"
+                    }
+                  ]
+                },
+                {
+                  "title": "Konfikt témat",
+                  "topics": [
+                    {
+                      "title": "Jaké to má možné implikace na bakalářku"
+                    }
+                  ]
+                },
+                {
+                  "title": "Problém se zakódování cesty v CSP",
+                  "topics": [
+                    {
+                      "title": "Funguje metoda poznamenávání si vrcholů v \"čase\", ale nejde to lépe? "
+                    }
+                  ]
+                },
+                {
+                  "title": "Jak moc řešit odděleně generování a layout",
+                  "topics": [
+                    {
+                      "title": "Jak to navázet?",
+                      "topics": [
+                        {
+                          "title": "Implementace splnitelnosti jako jedna z částí genetických operátorů? ",
+                          "topics": [
+                            {
+                              "title": "U fitness dokážeme určit zda splňuje v lineárním čase průchodem grafu"
+                            },
+                            {
+                              "title": "Mutace pokud pozměním nějakou část, tak např. pomocí CSP vytvořit korektní pozměnění"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "title": "Má být mím cílem vytvořit nejoptimálnější schéma (na nejmenší plochu) nebo nemusí být optimální a jde spíš, aby to nebyly \"špagety\"",
+                      "topics": [
+                        {
+                          "title": "Nebo nějaká střední cesta"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Je lepší používat pro kategorie (například budovi v pozici i,j) v CSP číslo mapované na kategorii nebo více boolovských proměnných a externě chtít aby platila právě jedna"
+                },
+                {
+                  "title": "Doporučení na nějaké zdroje"
                 }
               ]
             }
