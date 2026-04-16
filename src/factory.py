@@ -1,6 +1,10 @@
+from typing import override
+
 from .assembler import Assembler
 
 class Item:
+    DEFAULT_VALUE_OF_COST_OF_TERMINAL_ITEMS = 0.0
+
     def __init__(
             self,
             name: str,
@@ -24,8 +28,8 @@ class Item:
         # TODO: throw ingredient now found
         return 1
 
-    def crafting_time(self, assembler: Assembler):
-        return 0
+    def crafting_time(self, assembler: Assembler) -> float:
+        return Item.DEFAULT_VALUE_OF_COST_OF_TERMINAL_ITEMS
 
     def __str__(self):
         return f"name: {self.name}"
@@ -47,6 +51,7 @@ class Factory(Item):
         self.x_size = x_size
         self.y_size = y_size
 
+    @override
     def crafting_time(self, assembler: Assembler) -> float:
         return self.energy_required / assembler.multiplicator / self.amount
 

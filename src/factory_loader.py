@@ -5,6 +5,8 @@ from .dependency_graph import DependencyTreeNode
 
 class FactoryLoader:
     ENABLE_PLATE_TERMINATION = True
+    DEFAULT_ENERGY_REQUIREMENT = 0.5
+    DEFAULT_AMOUNT_FOR_ITEM = 1
 
     @staticmethod
     def load(factory_definition_file_path: str) -> list[Factory]:
@@ -18,7 +20,7 @@ class FactoryLoader:
                     name = entry["name"]
 
                     if not "energy_required" in entry:
-                        energy_required = 0.5
+                        energy_required = FactoryLoader.DEFAULT_ENERGY_REQUIREMENT
                     else:
                         energy_required = float(entry["energy_required"])
 
@@ -33,7 +35,7 @@ class FactoryLoader:
 
                     # TODO: maybe change the input data so the results are not an array but only one JSON object
                     if not "results" in entry or not "amount" in entry["results"][0]:
-                        amount = 1
+                        amount = FactoryLoader.DEFAULT_AMOUNT_FOR_ITEM
                     else:
                         amount = int(entry["results"][0]["amount"])
 

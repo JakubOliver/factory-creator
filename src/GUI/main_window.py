@@ -97,3 +97,4 @@ class MainWindow(QMainWindow):
 
             print(dot.source)
             dot.render("tree", format="png", cleanup=True)
+            dot.render("tree", format="svg", cleanup=True)
