@@ -20,6 +20,7 @@ class DependencyTreeNode:
             self,
             dot,
             counter,
+            output_needed,
             show_amounts = False,
             show_simplified = True
     ):
@@ -27,41 +28,43 @@ class DependencyTreeNode:
         dot.node(node_id, label=str(self))
         counter += 1
 
-        for child, amount_needed in zip(self.children, self.number_of_ingredient_factories()):
-            print(child, amount_needed)
-            #amount_needed = self.factory.required_amount(child.factory.name)
-            for _ in range(amount_needed):
-                child_id, counter = child.dependency_graph(dot, counter, show_amounts, show_simplified)
+        if self.factory.is_terminal:
+            return node_id, counter
+
+        for child, amount_needed in zip(self.children, self.number_of_ingredient_factories(output_needed)):
+            for _ in range(max(1, math.ceil(amount_needed))):
+                child_id, counter = child.dependency_graph(
+                    dot,
+                    counter,
+                    amount_needed,
+                    show_amounts,
+                    show_simplified
+                )
 
                 if show_amounts:
                     dot.edge(
                         child_id,
                         node_id,
-                        label=str(amount_needed if show_simplified else child.factory.amount)
+                        #label=str(amount_needed if show_simplified else child.factory.amount)
+                        label=f"{amount_needed:0.4f}"
                     )
                 else:
                     dot.edge(child_id, node_id)
 
-                if show_simplified:
+                if show_simplified or child.factory.is_terminal:
                     break
 
         return node_id, counter
 
     def crafting_time(self) -> float:
-        print(self.factory.crafting_time(self.assembler))
-
         return self.factory.crafting_time(self.assembler)
 
-    def number_of_ingredient_factories(self) -> list[int]:
+    def number_of_ingredient_factories(self, output_needed) -> list[float]:
         # TODO: In this stage all stages has to create at least one item per second (or other time period), but I should be improved without this, because sometimes is this overkill and makes the whole factor bigger for no reason
 
-        item_crafting_time = self.factory.crafting_time(self.assembler)
+        item_crafting_time =  self.factory.crafting_time(self.assembler) / (output_needed if output_needed != 0 else 1)
 
-        x =  [max(1, math.ceil(self.factory.required_amount(child.factory.name) * child.crafting_time() / item_crafting_time if item_crafting_time != 0 else 1)) for child in self.children]
-
-        print(x)
-
-        return x
+        return [self.factory.required_amount(child.factory.name) * child.crafting_time() / item_crafting_time if item_crafting_time != 0 else 0 for child in self.children]
 
     def __str__(self) -> str:
         return self.factory.name

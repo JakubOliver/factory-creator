@@ -90,6 +90,7 @@ class MainWindow(QMainWindow):
             root.dependency_graph(
                 dot,
                 0,
+                1,
                 show_amounts = self.show_amounts_on_edges_check_box.isChecked(),
                 show_simplified= self.show_simplified_structure.isChecked()
             )

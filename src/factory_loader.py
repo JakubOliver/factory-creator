@@ -4,6 +4,8 @@ from .factory import Factory, Ingredient, Item
 from .dependency_graph import DependencyTreeNode
 
 class FactoryLoader:
+    ENABLE_PLATE_TERMINATION = True
+
     @staticmethod
     def load(factory_definition_file_path: str) -> list[Factory]:
         factories = []
@@ -20,8 +22,10 @@ class FactoryLoader:
                     else:
                         energy_required = float(entry["energy_required"])
 
-                    if "plate" in name:
-                        energy_required = 0
+                    # TODO: better implementation. We want that the plates are terminal node (or we can add this as parameter)
+                    is_terminal = False
+                    if FactoryLoader.ENABLE_PLATE_TERMINATION and "plate" in name:
+                        is_terminal = True
 
                     ingredients = []
                     for ingredient in entry["ingredients"]:
@@ -33,7 +37,7 @@ class FactoryLoader:
                     else:
                         amount = int(entry["results"][0]["amount"])
 
-                    factory = Factory(name, energy_required, amount, ingredients, 4, 4) #TODO: loading real sizes
+                    factory = Factory(name, energy_required, amount, ingredients, 4, 4, is_terminal) #TODO: loading real sizes
                     factories.append(factory)
 
         return factories
