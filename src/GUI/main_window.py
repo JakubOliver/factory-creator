@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QWidget,
-    QLabel,
+    QLabel, QCheckBox,
 )
 
 from graphviz import Digraph
@@ -35,18 +35,32 @@ class MainWindow(QMainWindow):
 
         self.title_label = QLabel("Application")
 
-        self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Recipes path...")
+        self.input_path = QLineEdit()
+        self.input_path.setPlaceholderText("Recipes path...")
+
+        self.type_input = QLineEdit()
+        self.type_input.setPlaceholderText("Recipes")
 
         self.submit_button = QPushButton("Import recipes")
 
         self.main_layout.addWidget(self.title_label)
 
         file_layout = QHBoxLayout()
-        file_layout.addWidget(self.input_field)
+        file_layout.addWidget(self.input_path)
+        file_layout.addWidget(self.type_input)
         file_layout.addWidget(self.submit_button)
 
         self.main_layout.addLayout(file_layout)
+
+        graph_characteristic_vector_layout = QHBoxLayout()
+
+        self.show_amounts_on_edges_check_box = QCheckBox("Show amounts")
+        self.show_unsimplified_structure = QCheckBox("Unsimplified structure")
+
+        graph_characteristic_vector_layout.addWidget(self.show_amounts_on_edges_check_box)
+        graph_characteristic_vector_layout.addWidget(self.show_unsimplified_structure)
+
+        self.main_layout.addLayout(graph_characteristic_vector_layout)
 
         self.main_layout.addStretch()
 
@@ -54,21 +68,27 @@ class MainWindow(QMainWindow):
         self.submit_button.clicked.connect(self._handle_submit)
 
     def _handle_submit(self) -> None:
-        text = self.input_field.text()
-        print(f"Used path: {text}")
+        path = self.input_path.text()
+        type = self.type_input.text()
+        print(f"Used path: {path} {type}")
 
         #TODO: whether file exists
 
-        factories = FactoryLoader.load(text)
-        #root = FactoryLoader.get_dependency_tree(factories, "steam-turbine")
-        root = FactoryLoader.get_dependency_tree(factories, "nuclear-reactor")
-        
+        factories = FactoryLoader.load(path)
+
+        root = FactoryLoader.get_dependency_tree(factories, type)
+
         if root is not None:
             #root.dfs()
 
             dot = Digraph(comment="Tree")
             
-            root.add_to_graph(dot, 0)
+            root.dependency_graph(
+                dot,
+                0,
+                show_amounts = self.show_amounts_on_edges_check_box.isChecked(),
+                show_unsimplified= self.show_unsimplified_structure.isChecked()
+            )
+
             print(dot.source)
             dot.render("tree", format="png", cleanup=True)
-

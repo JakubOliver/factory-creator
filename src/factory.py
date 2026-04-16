@@ -38,16 +38,38 @@ class DependencyTreeNode:
         for child in self.children:
             child.dfs()
 
-    def add_to_graph(self, dot, counter):
+    def dependency_graph(self, dot, counter, show_amounts = False, show_unsimplified = False):
         node_id = f"n{counter}"
         dot.node(node_id, label=str(self))
         counter += 1
 
         for child in self.children:
-            child_id, counter = child.add_to_graph(dot, counter)
-            dot.edge(child_id, node_id)
+            child_id, counter = child.dependency_graph(dot, counter, show_amounts, show_unsimplified)
+
+            x = 0
+            for ingredient in self.factory.ingredients:
+                if ingredient.name == child.factory.name:
+                    x = ingredient.amount
+                    break
+
+            if show_amounts:
+                dot.edge(child_id, node_id, label=str(x))
+            else:
+                dot.edge(child_id, node_id)
 
         return node_id, counter
+
+    def node_parent(self, parent_idx = None, counter = None):
+        node_idx = parent_idx + 1 if parent_idx is not None else 0
+        counter = counter + 1 if counter is not None else node_idx
+
+        yield node_idx, str(self), parent_idx, counter
+
+        for child in self.children:
+            for child_idx, child_id, ancestor_idx, new_counter in child.node_parent(node_idx, counter):
+                counter = new_counter
+
+                yield child_idx, child_id, ancestor_idx, counter
 
     def __str__(self) -> str:
         return self.factory.name
