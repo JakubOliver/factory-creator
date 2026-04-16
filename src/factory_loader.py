@@ -13,10 +13,15 @@ class FactoryLoader:
 
             for entry in data:
                 if entry["type"] == "recipe":
+                    name = entry["name"]
+
                     if not "energy_required" in entry:
-                        energy_required = 0
+                        energy_required = 0.5
                     else:
-                        energy_required = entry["energy_required"]
+                        energy_required = float(entry["energy_required"])
+
+                    if "plate" in name:
+                        energy_required = 0
 
                     ingredients = []
                     for ingredient in entry["ingredients"]:
@@ -28,7 +33,7 @@ class FactoryLoader:
                     else:
                         amount = int(entry["results"][0]["amount"])
 
-                    factory = Factory(entry["name"], int(energy_required), amount, ingredients, 4, 4) #TODO: loading real sizes
+                    factory = Factory(name, energy_required, amount, ingredients, 4, 4) #TODO: loading real sizes
                     factories.append(factory)
 
         return factories
