@@ -1,5 +1,3 @@
-import sys
-
 from PySide6.QtWidgets import (
     QApplication,
     QLineEdit,
@@ -12,9 +10,7 @@ from PySide6.QtWidgets import (
 )
 
 from graphviz import Digraph
-
-from ..factory import FactoryLoader    
-
+from ..factory_loader import FactoryLoader
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -33,8 +29,14 @@ class MainWindow(QMainWindow):
         self.main_layout = QVBoxLayout()
         central_widget.setLayout(self.main_layout)
 
-        self.title_label = QLabel("Application")
+        self.title_label = QLabel("Factory layout creation")
 
+        self._setup_file_layout()
+        self._setup_characteristic_vector_layout()
+
+        self.main_layout.addStretch()
+
+    def _setup_file_layout(self) -> None:
         self.input_path = QLineEdit()
         self.input_path.setPlaceholderText("Recipes path...")
 
@@ -52,6 +54,7 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addLayout(file_layout)
 
+    def _setup_characteristic_vector_layout(self) -> None:
         graph_characteristic_vector_layout = QHBoxLayout()
 
         self.show_amounts_on_edges_check_box = QCheckBox("Show amounts")
@@ -62,8 +65,6 @@ class MainWindow(QMainWindow):
         graph_characteristic_vector_layout.addWidget(self.show_simplified_structure)
 
         self.main_layout.addLayout(graph_characteristic_vector_layout)
-
-        self.main_layout.addStretch()
 
     def _connect_signals(self) -> None:
         self.submit_button.clicked.connect(self._handle_submit)
