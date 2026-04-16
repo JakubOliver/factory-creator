@@ -55,10 +55,11 @@ class MainWindow(QMainWindow):
         graph_characteristic_vector_layout = QHBoxLayout()
 
         self.show_amounts_on_edges_check_box = QCheckBox("Show amounts")
-        self.show_unsimplified_structure = QCheckBox("Unsimplified structure")
+        self.show_simplified_structure = QCheckBox("Simplified structure")
+        self.show_simplified_structure.setChecked(True)
 
         graph_characteristic_vector_layout.addWidget(self.show_amounts_on_edges_check_box)
-        graph_characteristic_vector_layout.addWidget(self.show_unsimplified_structure)
+        graph_characteristic_vector_layout.addWidget(self.show_simplified_structure)
 
         self.main_layout.addLayout(graph_characteristic_vector_layout)
 
@@ -68,6 +69,8 @@ class MainWindow(QMainWindow):
         self.submit_button.clicked.connect(self._handle_submit)
 
     def _handle_submit(self) -> None:
+        #TODO: create now thread for this action so the GUI is still responsive
+
         path = self.input_path.text()
         type = self.type_input.text()
         print(f"Used path: {path} {type}")
@@ -87,7 +90,7 @@ class MainWindow(QMainWindow):
                 dot,
                 0,
                 show_amounts = self.show_amounts_on_edges_check_box.isChecked(),
-                show_unsimplified= self.show_unsimplified_structure.isChecked()
+                show_simplified= self.show_simplified_structure.isChecked()
             )
 
             print(dot.source)

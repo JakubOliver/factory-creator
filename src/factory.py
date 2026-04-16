@@ -1,16 +1,26 @@
 import json
 
 class Item:
-    def __init__(self, name: str, ingredients: list[Ingredient] = []):
+    def __init__(self, name: str, amount: int = 1, ingredients: list[Ingredient] = []):
         self.name = name
+        self.amount = amount
         self.ingredients = ingredients
+
+    def required_amount(self, ingredient_name: str) -> int:
+        for ingredient in self.ingredients:
+            if ingredient.name == ingredient_name:
+                return ingredient.amount
+
+        # TODO: throw ingredient now found
+        return 1
 
     def __str__(self):
         return f"name: {self.name}"
 
 class Factory(Item):
-    def __init__(self, name: str, energy_required: int, ingredients: list[Ingredient], x_size: int, y_size: int) -> None:
-        super().__init__(name, ingredients)
+    def __init__(self, name: str, energy_required: int, amount: int, ingredients: list[Ingredient], x_size: int, y_size: int) -> None:
+        super().__init__(name, amount, ingredients)
+
         self.energy_required = energy_required
         self.x_size = x_size
         self.y_size = y_size
@@ -38,24 +48,32 @@ class DependencyTreeNode:
         for child in self.children:
             child.dfs()
 
-    def dependency_graph(self, dot, counter, show_amounts = False, show_unsimplified = False):
+    def dependency_graph(self, dot, counter, show_amounts = False, show_simplified = True):
         node_id = f"n{counter}"
         dot.node(node_id, label=str(self))
         counter += 1
 
         for child in self.children:
-            child_id, counter = child.dependency_graph(dot, counter, show_amounts, show_unsimplified)
+            # TODO: change logic from unsimplified to simplified
+            amount_needed = self.factory.required_amount(child.factory.name)
+            amount_processes = 0
 
-            x = 0
-            for ingredient in self.factory.ingredients:
-                if ingredient.name == child.factory.name:
-                    x = ingredient.amount
+            while amount_processes < amount_needed:
+                child_id, counter = child.dependency_graph(dot, counter, show_amounts, show_simplified)
+
+                if show_amounts:
+                    dot.edge(
+                        child_id,
+                        node_id,
+                        label=str(amount_needed if show_simplified else child.factory.amount)
+                    )
+                else:
+                    dot.edge(child_id, node_id)
+
+                if show_simplified:
                     break
-
-            if show_amounts:
-                dot.edge(child_id, node_id, label=str(x))
-            else:
-                dot.edge(child_id, node_id)
+                else:
+                    amount_processes += child.factory.amount
 
         return node_id, counter
 
@@ -102,7 +120,13 @@ class FactoryLoader:
                     for ingredient in entry["ingredients"]:
                         ingredients.append(Ingredient(ingredient["name"], ingredient["type"], int(ingredient["amount"])))
 
-                    factory = Factory(entry["name"], int(energy_required), ingredients, 4, 4) #TODO: loading real sizes
+                    # TODO: maybe change the input data so the results are not an array but only one JSON object
+                    if not "results" in entry or not "amount" in entry["results"][0]:
+                        amount = 1
+                    else:
+                        amount = int(entry["results"][0]["amount"])
+
+                    factory = Factory(entry["name"], int(energy_required), amount, ingredients, 4, 4) #TODO: loading real sizes
                     factories.append(factory)
 
         return factories
