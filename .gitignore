@@ -1,6 +1,7 @@
 .idea
 *.xmind
 .venv/
+docs/build
 
 #Python cache
 __pycache__
