@@ -6,11 +6,15 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QWidget,
-    QLabel, QCheckBox, QComboBox,
+    QLabel,
+    QCheckBox,
+    QComboBox,
+    QMessageBox
 )
 
 from graphviz import Digraph
 from ..factory_loader import FactoryLoader
+from ..Util.file_util import FileUtil
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -90,8 +94,14 @@ class MainWindow(QMainWindow):
         self.recipe_import_button.clicked.connect(self._import_recipes)
         self.type_input_compute_button.clicked.connect(self._compute_recipe)
 
-    def _import_recipes(self):
+    def _import_recipes(self) -> None:
         path = self.input_path.text()
+
+        try:
+            FileUtil.validate_json_file(path)
+        except Exception as e:
+            self._show_error(str(e))
+            return
 
         recipe_names = FactoryLoader.load_recipe_names(path)
 
@@ -126,3 +136,10 @@ class MainWindow(QMainWindow):
             print(dot.source)
             dot.render("tree", format="png", cleanup=True)
             dot.render("tree", format="svg", cleanup=True)
+
+    def _show_error(self, error_message: str) -> None:
+        pop_up = QMessageBox.critical(
+            self,
+            "Error",
+            error_message
+        )
