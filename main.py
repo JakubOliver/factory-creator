@@ -3,7 +3,7 @@
 import sys
 from PySide6.QtWidgets import QApplication
 
-from src.GUI.main_window import MainWindow
+from src.factory_creator.GUI.main_window import MainWindow
 
 recipe_file_path = "data/recipe.json"
 
