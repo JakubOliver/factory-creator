@@ -3,5 +3,9 @@
 .venv/
 docs/build
 
+tests
+/*.png
+/*.svg
+
 #Python cache
 __pycache__

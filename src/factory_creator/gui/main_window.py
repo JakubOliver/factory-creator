@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 
 from graphviz import Digraph
 from ..factory_loader import FactoryLoader
-from ..Util.file_util import FileUtil
+from ..util.file_util import FileUtil
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         self._update_recipe_combobox(recipe_names)
 
     def _compute_recipe(self) -> None:
-        #TODO: create now thread for this action so the GUI is still responsive
+        #TODO: create now thread for this action so the gui is still responsive
 
         path = self.input_path.text()
         type = self.type_input.currentText()
