@@ -62,6 +62,7 @@ class DependencyTreeNode:
     def number_of_ingredient_factories(self, output_needed) -> list[float]:
         # TODO: In this stage all stages has to create at least one item per second (or other time period), but I should be improved without this, because sometimes is this overkill and makes the whole factor bigger for no reason
 
+        # TODO: make the computation more readable
         item_crafting_time =  self.factory.crafting_time(self.assembler) / (output_needed if output_needed != 0 else 1)
 
         return [self.factory.required_amount(child.factory.name) * child.crafting_time() / item_crafting_time if item_crafting_time != 0 else 0 for child in self.children]

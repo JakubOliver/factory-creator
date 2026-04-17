@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QWidget,
-    QLabel, QCheckBox,
+    QLabel, QCheckBox, QComboBox,
 )
 
 from graphviz import Digraph
@@ -40,24 +40,36 @@ class MainWindow(QMainWindow):
         self.input_path = QLineEdit()
         self.input_path.setPlaceholderText("Recipes path...")
 
-        self.type_input = QLineEdit()
-        self.type_input.setPlaceholderText("Recipes")
-
-        self.submit_button = QPushButton("Import recipes")
+        self.recipe_import_button = QPushButton("Import recipes")
 
         self.main_layout.addWidget(self.title_label)
 
         file_layout = QHBoxLayout()
         file_layout.addWidget(self.input_path)
-        file_layout.addWidget(self.type_input)
-        file_layout.addWidget(self.submit_button)
+        file_layout.addWidget(self.recipe_import_button)
+
+        #self.type_input = QLineEdit()
+        #self.type_input.setPlaceholderText("Recipes")
+
+        self.type_container = QWidget()
+
+        self.type_input = QComboBox()
+        self.type_input_compute_button = QPushButton("Compute recipe")
+
+        recipe_layout = QHBoxLayout(self.type_container)
+        recipe_layout.addWidget(self.type_input)
+        recipe_layout.addWidget(self.type_input_compute_button)
+
+        self.type_container.hide()
 
         self.main_layout.addLayout(file_layout)
+        self.main_layout.addWidget(self.type_container)
 
     def _setup_characteristic_vector_layout(self) -> None:
         graph_characteristic_vector_layout = QHBoxLayout()
 
         self.show_amounts_on_edges_check_box = QCheckBox("Show amounts")
+
         self.show_simplified_structure = QCheckBox("Simplified structure")
         self.show_simplified_structure.setChecked(True)
 
@@ -66,15 +78,31 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addLayout(graph_characteristic_vector_layout)
 
-    def _connect_signals(self) -> None:
-        self.submit_button.clicked.connect(self._handle_submit)
+    def _update_recipe_combobox(self, values: list[str]) -> None:
+        self.type_input.clear()
 
-    def _handle_submit(self) -> None:
+        for value in values:
+            self.type_input.addItem(value)
+
+        self.type_container.show()
+
+    def _connect_signals(self) -> None:
+        self.recipe_import_button.clicked.connect(self._import_recipes)
+        self.type_input_compute_button.clicked.connect(self._compute_recipe)
+
+    def _import_recipes(self):
+        path = self.input_path.text()
+
+        recipe_names = FactoryLoader.load_recipe_names(path)
+
+        self._update_recipe_combobox(recipe_names)
+
+    def _compute_recipe(self) -> None:
         #TODO: create now thread for this action so the GUI is still responsive
 
         path = self.input_path.text()
-        type = self.type_input.text()
-        print(f"Used path: {path} {type}")
+        type = self.type_input.currentText()
+        #print(f"Used path: {path} {type}")
 
         #TODO: whether file exists
 

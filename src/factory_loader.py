@@ -45,6 +45,20 @@ class FactoryLoader:
         return factories
 
     @staticmethod
+    def load_recipe_names(factory_definition_file_path: str) -> list[str]:
+        recipe_names = []
+
+        with open(factory_definition_file_path, "r") as file:
+            data = json.load(file)
+
+            for entry in data:
+                recipe_names.append(entry["name"])
+
+        recipe_names.sort()
+
+        return recipe_names
+
+    @staticmethod
     def get_factory(factories: list[Factory], factory_name: str) -> Item:
         for factory in factories:
             if factory.name == factory_name:
