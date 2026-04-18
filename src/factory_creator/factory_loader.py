@@ -39,7 +39,7 @@ class FactoryLoader:
                     else:
                         amount = int(entry["results"][0]["amount"])
 
-                    factory = Factory(name, energy_required, amount, ingredients, 4, 4, is_terminal) #TODO: loading real sizes
+                    factory = Factory(name, energy_required, amount, ingredients, 3, 3, is_terminal) #TODO: loading real sizes
                     factories.append(factory)
 
         return factories
@@ -67,7 +67,7 @@ class FactoryLoader:
         return Item(factory_name)
 
     @staticmethod
-    def get_dependency_tree(factories: list[Factory], recipe_name: str) -> DependencyTreeNode | None:
+    def get_dependency_tree(factories: list[Factory], recipe_name: str, layer: int = 0) -> DependencyTreeNode | None:
         factory = FactoryLoader.get_factory(factories, recipe_name)
 
         if factory is None:
@@ -77,6 +77,6 @@ class FactoryLoader:
         children = []
 
         for ingredient in factory.ingredients:
-            children.append(FactoryLoader.get_dependency_tree(factories, ingredient.name))
+            children.append(FactoryLoader.get_dependency_tree(factories, ingredient.name, layer + 1))
 
-        return DependencyTreeNode(factory, children)
+        return DependencyTreeNode(factory, children, layer)

@@ -17,6 +17,7 @@ import networkx
 import matplotlib.pyplot as plt
 from ..factory_loader import FactoryLoader
 from ..graph_to_matrix import GraphToMatrix
+from ..json_matrix_representation import MatrixJsonConvertor
 from ..util.file_util import FileUtil
 
 #TODO: add hiding the recipe combobox selecting when the name of the input file changes (it could be done via signals)
@@ -164,7 +165,8 @@ class MainWindow(QMainWindow):
             #dot.render("tree", format="png", cleanup=True)
             #dot.render("tree", format="svg", cleanup=True)
 
-            GraphToMatrix.convert_via_heuristics(graph, root)
+            matrix = GraphToMatrix.convert_via_heuristics(graph, root)
+            MatrixJsonConvertor.encode(matrix)
 
     def _show_error(self, error_message: str) -> None:
         pop_up = QMessageBox.critical(

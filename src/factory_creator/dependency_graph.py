@@ -2,6 +2,7 @@
 from collections import defaultdict
 
 from networkx import DiGraph
+from sphinx.ext.inheritance_diagram import get_graph_hash
 
 from .assembler import Assembler, AssemblingMachine3
 from .factory import Item
@@ -15,16 +16,18 @@ import math
 #  is not possible, then the fitness would be zero.
 
 class Stats:
-    def __init__(self):
+    def __init__(self, layer):
         self.approx_width = None
+        self.approx_depth = None
+        self.layer = layer
 
 class DependencyTreeNode:
-    def __init__(self, factory: Item, children: list[DependencyTreeNode], assembler: Assembler = AssemblingMachine3()):
+    def __init__(self, factory: Item, children: list[DependencyTreeNode], layer: int, assembler: Assembler = AssemblingMachine3()):
         self.factory = factory
         self.children = children
 
         self.assembler = assembler
-        self.stats = Stats()
+        self.stats = Stats(layer)
 
     def dfs(self):
         print(self.factory)
@@ -62,6 +65,7 @@ class DependencyTreeNode:
         for type in terminal_nodes.keys():
             source_node_id = f"{type}_source"
 
+            # TODO: add ref
             graph.add_node(source_node_id, label=source_node_id, shape="ellipse")
 
             for terminal_node in terminal_nodes[type]:
@@ -80,8 +84,8 @@ class DependencyTreeNode:
         show_amounts = False,
         show_simplified = True
     ):
-        node_id = f"n{counter}"
-        dot.add_node(node_id, label=str(self), shape="ellipse")
+        node_id = DependencyTreeNode.get_graph_identifier(counter)
+        dot.add_node(node_id, label=str(self), shape="ellipse", ref=self)
         counter += 1
 
         if self.factory.is_terminal:
@@ -112,6 +116,14 @@ class DependencyTreeNode:
                     break
 
         return node_id, counter
+
+    @staticmethod
+    def get_graph_identifier(counter):
+        return f"n{counter}"
+
+    @staticmethod
+    def get_root_identifier():
+        return DependencyTreeNode.get_graph_identifier(0)
 
     def crafting_time(self) -> float:
         return self.factory.crafting_time(self.assembler)
@@ -147,7 +159,7 @@ class DependencyTreeNode:
             sum(1 if child.factory.is_terminal else math.ceil(amount_needed) * child.get_approx_width_of_tree(DependencyTreeNode.normalize_amount(amount_needed)) for child, amount_needed in zip(self.children, number_of_ingredient_factories))
         )
 
-    def get_approx_width_of_tree(self, output_needed) -> int:
+    def get_approx_width_of_tree(self, output_needed: float = 1.0) -> int:
         if self.factory.is_terminal:
             self.stats.approx_width = 1
 
@@ -155,6 +167,21 @@ class DependencyTreeNode:
             self.stats.approx_width = self._compute_approx_width(output_needed)
 
         return self.stats.approx_width
+
+    def _compute_approx_depth(self) -> int:
+        return max(child.get_approx_depth_of_tree() for child in self.children) + 1
+
+    def get_approx_depth_of_tree(self) -> int:
+        if self.factory.is_terminal:
+            self.stats.approx_depth = 1
+
+        if self.stats.approx_depth is None:
+            self.stats.approx_depth = self._compute_approx_depth()
+
+        return self.stats.approx_depth
+
+    def get_layer(self) -> int:
+        return self.stats.layer
 
     # TODO: maybe move method bellow somewhere else
     @staticmethod
