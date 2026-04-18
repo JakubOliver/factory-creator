@@ -1,4 +1,6 @@
 #from graphviz import Digraph
+from collections import defaultdict
+
 from networkx import DiGraph
 from numpy.ma.core import shape
 
@@ -35,6 +37,23 @@ class DependencyTreeNode:
             show_simplified=show_simplified
         )
 
+        terminal_nodes = defaultdict(list)
+
+        for node in graph.nodes:
+            if graph.in_degree(node) == 0:
+                terminal_nodes[graph.nodes[node]["label"]].append(node)
+
+        for type in terminal_nodes.keys():
+            source_node_id = f"{type}_source"
+
+            graph.add_node(source_node_id, label=source_node_id, shape="ellipse")
+
+            for terminal_node in terminal_nodes[type]:
+                graph.add_edge(
+                    source_node_id,
+                    terminal_node,
+                )
+
         return graph
 
     def _dependency_graph(
@@ -53,6 +72,8 @@ class DependencyTreeNode:
             return node_id, counter
 
         for child, amount_needed in zip(self.children, self.number_of_ingredient_factories(output_needed)):
+            amount_needed_per_factory = amount_needed / math.ceil(amount_needed)
+
             for _ in range(max(1, math.ceil(amount_needed))):
                 child_id, counter = child._dependency_graph(
                     dot,
@@ -66,7 +87,7 @@ class DependencyTreeNode:
                     dot.add_edge(
                         child_id,
                         node_id,
-                        label=f"{amount_needed:0.4f}"
+                        label=f"{amount_needed if show_simplified else amount_needed_per_factory:0.4f}"
                     )
                 else:
                     dot.add_edge(child_id, node_id)
