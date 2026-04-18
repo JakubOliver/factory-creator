@@ -1,3 +1,5 @@
+from graphviz import Digraph
+
 from .assembler import Assembler, AssemblingMachine3
 from .factory import Item
 
@@ -16,13 +18,30 @@ class DependencyTreeNode:
         for child in self.children:
             child.dfs()
 
-    def dependency_graph(
-            self,
-            dot,
-            counter,
-            output_needed,
-            show_amounts = False,
-            show_simplified = True
+    def get_dependency_graph(
+        self,
+        show_amounts: bool,
+        show_simplified: bool,
+    ) -> Digraph:
+        graph = Digraph()
+
+        self._dependency_graph(
+            graph,
+            0,
+            1,
+            show_amounts=show_amounts,
+            show_simplified=show_simplified
+        )
+
+        return graph
+
+    def _dependency_graph(
+        self,
+        dot,
+        counter,
+        output_needed,
+        show_amounts = False,
+        show_simplified = True
     ):
         node_id = f"n{counter}"
         dot.node(node_id, label=str(self))
@@ -33,7 +52,7 @@ class DependencyTreeNode:
 
         for child, amount_needed in zip(self.children, self.number_of_ingredient_factories(output_needed)):
             for _ in range(max(1, math.ceil(amount_needed))):
-                child_id, counter = child.dependency_graph(
+                child_id, counter = child._dependency_graph(
                     dot,
                     counter,
                     amount_needed,

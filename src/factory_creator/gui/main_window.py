@@ -16,6 +16,8 @@ from graphviz import Digraph
 from ..factory_loader import FactoryLoader
 from ..util.file_util import FileUtil
 
+#TODO: add hiding the recipe combobox selecting when the name of the input file changes (it could be done via signals)
+
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -123,6 +125,7 @@ class MainWindow(QMainWindow):
         if root is not None:
             #root.dfs()
 
+            """
             dot = Digraph(comment="Tree")
             
             root.dependency_graph(
@@ -131,6 +134,12 @@ class MainWindow(QMainWindow):
                 1,
                 show_amounts = self.show_amounts_on_edges_check_box.isChecked(),
                 show_simplified= self.show_simplified_structure.isChecked()
+            )
+            """
+
+            dot = root.get_dependency_graph(
+                show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
+                show_simplified=self.show_simplified_structure.isChecked()
             )
 
             print(dot.source)
