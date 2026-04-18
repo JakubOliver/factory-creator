@@ -13,6 +13,8 @@ from PySide6.QtWidgets import (
 )
 
 from graphviz import Digraph
+import networkx
+import matplotlib.pyplot as plt
 from ..factory_loader import FactoryLoader
 from ..util.file_util import FileUtil
 
@@ -137,14 +139,29 @@ class MainWindow(QMainWindow):
             )
             """
 
-            dot = root.get_dependency_graph(
+            graph = root.get_dependency_graph(
                 show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
                 show_simplified=self.show_simplified_structure.isChecked()
             )
 
-            print(dot.source)
-            dot.render("tree", format="png", cleanup=True)
-            dot.render("tree", format="svg", cleanup=True)
+            #graph_layout = networkx.spring_layout(graph)
+            graph_layout = networkx.nx_pydot.graphviz_layout(graph, prog="dot")
+            networkx.draw(graph, graph_layout, with_labels=False)
+
+            node_labels = networkx.get_node_attributes(graph, "label")
+            networkx.draw_networkx_labels(graph, graph_layout, node_labels)
+
+            edge_labels = networkx.get_edge_attributes(graph, "label")
+            networkx.draw_networkx_edge_labels(graph, graph_layout, edge_labels=edge_labels)
+
+            plt.show()
+
+            p = networkx.drawing.nx_pydot.to_pydot(graph)
+            p.write_png("tree.png")
+            p.write_svg("tree.svg")
+            #print(dot.source)
+            #dot.render("tree", format="png", cleanup=True)
+            #dot.render("tree", format="svg", cleanup=True)
 
     def _show_error(self, error_message: str) -> None:
         pop_up = QMessageBox.critical(

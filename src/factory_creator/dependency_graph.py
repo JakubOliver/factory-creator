@@ -1,4 +1,6 @@
-from graphviz import Digraph
+#from graphviz import Digraph
+from networkx import DiGraph
+from numpy.ma.core import shape
 
 from .assembler import Assembler, AssemblingMachine3
 from .factory import Item
@@ -22,8 +24,8 @@ class DependencyTreeNode:
         self,
         show_amounts: bool,
         show_simplified: bool,
-    ) -> Digraph:
-        graph = Digraph()
+    ) -> DiGraph:
+        graph = DiGraph()
 
         self._dependency_graph(
             graph,
@@ -44,7 +46,7 @@ class DependencyTreeNode:
         show_simplified = True
     ):
         node_id = f"n{counter}"
-        dot.node(node_id, label=str(self))
+        dot.add_node(node_id, label=str(self), shape="ellipse")
         counter += 1
 
         if self.factory.is_terminal:
@@ -61,14 +63,13 @@ class DependencyTreeNode:
                 )
 
                 if show_amounts:
-                    dot.edge(
+                    dot.add_edge(
                         child_id,
                         node_id,
-                        #label=str(amount_needed if show_simplified else child.factory.amount)
                         label=f"{amount_needed:0.4f}"
                     )
                 else:
-                    dot.edge(child_id, node_id)
+                    dot.add_edge(child_id, node_id)
 
                 if show_simplified or child.factory.is_terminal:
                     break
