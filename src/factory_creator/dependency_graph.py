@@ -2,12 +2,17 @@
 from collections import defaultdict
 
 from networkx import DiGraph
-from numpy.ma.core import shape
 
 from .assembler import Assembler, AssemblingMachine3
 from .factory import Item
 
 import math
+
+# TODO: electricity problem: in this state I only computes the layout of the factory but
+#  do not compute with the fact, that all the factories have to be power by electricity.
+#  Idea: this can be optional at this stage and required only before the evolution
+#  algorithm stage. And at that point we would electrify the factory, if the electrification
+#  is not possible, then the fitness would be zero.
 
 class DependencyTreeNode:
     def __init__(self, factory: Item, children: list[DependencyTreeNode], assembler: Assembler = AssemblingMachine3()):
@@ -42,6 +47,12 @@ class DependencyTreeNode:
         for node in graph.nodes:
             if graph.in_degree(node) == 0:
                 terminal_nodes[graph.nodes[node]["label"]].append(node)
+
+        # TODO: the splitter can only make from one belts two belts therefore makes
+        #  sense that the nodes has at most degree 2 in the graph. On the other hand
+        #  there is not need that the belt always terminates next to first inserter
+        #  because one belts can service multiple ones. This difference can be good way
+        #  how to differ individuals in the population generating
 
         for type in terminal_nodes.keys():
             source_node_id = f"{type}_source"
@@ -101,7 +112,9 @@ class DependencyTreeNode:
         return self.factory.crafting_time(self.assembler)
 
     def number_of_ingredient_factories(self, output_needed) -> list[float]:
-        # TODO: In this stage all stages has to create at least one item per second (or other time period), but I should be improved without this, because sometimes is this overkill and makes the whole factor bigger for no reason
+        # TODO: In this stage all stages has to create at least one item per second (or other time period),
+        #  but I should be improved without this, because sometimes is this overkill and makes the whole
+        #  factory bigger for no reason
 
         # TODO: make the computation more readable
         item_crafting_time =  self.factory.crafting_time(self.assembler) / (output_needed if output_needed != 0 else 1)
