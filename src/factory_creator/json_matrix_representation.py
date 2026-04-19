@@ -39,40 +39,51 @@ class MatrixJsonConvertor:
 
         entity_number = 1
         for i, j in matrix:
-            if matrix[i, j] != "" and matrix[i,j] != "-":
-                if "belt" in matrix[i, j]:
-                    entities["entities"].append(MatrixJsonConvertor._get_entity(
-                        "transport-belt", (i + 1/2, j + 1/2), entity_number
-                    ))
-                elif "source" in matrix[i, j]:
-                    entities["entities"].append(MatrixJsonConvertor._get_entity(
-                        "wooden-chest", (i + 1/2, j + 1/2), entity_number
-                    ))
-                else:
-                    entities["entities"].append(MatrixJsonConvertor._get_assembling_machine(
-                        "assembling-machine-2", (i + 3/2, j + 3/2), entity_number, matrix[i,j]
-                    ))
+            entry = matrix[i, j]
 
-                entity_number += 1
+            if entry.name == "transport-belt" or entry.name == "fast-underground-belt":
+                entities["entities"].append(MatrixJsonConvertor._get_entity(
+                    entry.name,
+                    (i + 1/2, j + 1/2),
+                    entry.orientation,
+                    entity_number
+                ))
+            elif "source" in entry.name:
+                entities["entities"].append(MatrixJsonConvertor._get_entity(
+                    "wooden-chest",
+                    (i + 1/2, j + 1/2),
+                    entry.orientation,
+                    entity_number
+                ))
+            else:
+                entities["entities"].append(MatrixJsonConvertor._get_assembling_machine(
+                    "assembling-machine-2",
+                    (i + 3/2, j + 3/2),
+                    entry.orientation,
+                    entity_number,
+                    entry.name
+                ))
+
+            entity_number += 1
 
         return entities
 
 
     @staticmethod
-    def _get_entity(name: str, position: tuple, entity_number: int):
+    def _get_entity(name: str, position: tuple, orientation: int, entity_number: int):
         return {
             "name" : name,
             "position" : {
                 "x" : position[0],
                 "y" : position[1],
             },
-            "direction" : 0,
+            "direction" : orientation,
             "entity_number": entity_number
         }
 
     @staticmethod
-    def _get_assembling_machine(name, position, entity_number, recipe):
-        entry = MatrixJsonConvertor._get_entity(name, position, entity_number)
+    def _get_assembling_machine(name, position, orientation, entity_number, recipe):
+        entry = MatrixJsonConvertor._get_entity(name, position, orientation, entity_number)
         entry["recipe"] = recipe
 
         return entry

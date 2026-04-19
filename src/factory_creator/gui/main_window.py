@@ -9,18 +9,22 @@ from PySide6.QtWidgets import (
     QLabel,
     QCheckBox,
     QComboBox,
-    QMessageBox
+    QMessageBox,
 )
 
-from graphviz import Digraph
+from PySide6.QtGui import QDesktopServices
+
+from PySide6.QtCore import QUrl
+
 import networkx
 import matplotlib.pyplot as plt
+
 from ..factory_loader import FactoryLoader
 from ..graph_to_matrix import GraphToMatrix
 from ..json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
 from ..util.file_util import FileUtil
 
-#TODO: add hiding the recipe combobox selecting when the name of the input file changes (it could be done via signals)
+#TODO: add hiding the recipe combobox (same for the link) selecting when the name of the input file changes (it could be done via signals)
 #TODO: limit the vertical size of the combobox
 
 class MainWindow(QMainWindow):
@@ -44,6 +48,7 @@ class MainWindow(QMainWindow):
 
         self._setup_file_layout()
         self._setup_characteristic_vector_layout()
+        self._factory_link_layout()
 
         self.main_layout.addStretch()
 
@@ -89,6 +94,27 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addLayout(graph_characteristic_vector_layout)
 
+    def _factory_link_layout(self) -> None:
+        self.factory_link_container = QWidget()
+        factory_link_layout = QHBoxLayout(self.factory_link_container)
+
+        self.factory_link_button = QPushButton("Show factory")
+        factory_link_layout.addWidget(self.factory_link_button)
+
+        self.factory_link = None
+
+        self.factory_link_container.hide()
+
+        self.main_layout.addWidget(self.factory_link_container)
+
+    def _open_factory_link(self) -> None:
+        if self.factory_link is None:
+            #TODO: better
+            print("Factory link is empty")
+            return
+
+        QDesktopServices.openUrl(QUrl(self.factory_link))
+
     def _update_recipe_combobox(self, values: list[str]) -> None:
         self.type_input.clear()
 
@@ -100,6 +126,7 @@ class MainWindow(QMainWindow):
     def _connect_signals(self) -> None:
         self.recipe_import_button.clicked.connect(self._import_recipes)
         self.type_input_compute_button.clicked.connect(self._compute_recipe)
+        self.factory_link_button.clicked.connect(self._open_factory_link)
 
     def _import_recipes(self) -> None:
         path = self.input_path.text()
@@ -151,7 +178,17 @@ class MainWindow(QMainWindow):
 
             matrix = GraphToMatrix.convert_via_heuristics(graph, root)
             json_obj = MatrixJsonConvertor.encode(matrix)
-            print(BluePrintRepresentation.encode(json_obj))
+            factory_seed = BluePrintRepresentation.encode(json_obj)
+
+            print(factory_seed)
+
+            self.factory_link = MainWindow._create_factory_url_link(factory_seed)
+
+            self.factory_link_container.show()
+
+    @staticmethod
+    def _create_factory_url_link(seed: str) -> str:
+        return f"https://fbe.teoxoy.com/?source={seed}"
 
     def _show_error(self, error_message: str) -> None:
         pop_up = QMessageBox.critical(

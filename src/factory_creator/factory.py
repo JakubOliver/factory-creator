@@ -29,6 +29,23 @@ class Item:
         # TODO: throw ingredient now found
         return 1
 
+    def get_cords(self, cord):
+        # TODO: this is only dummy function (it is needed to check if this makes sense)
+        yield  cord
+
+    @staticmethod
+    def get_dummy_cords(cord):
+        yield cord
+
+    def get_cords_lambda(self, cord):
+        return lambda new_cord : any(new_cord == building_cord for building_cord in self.get_cords(cord))
+
+    def get_cord_of_center(self, cord):
+        # TODO: this is only dummy function (it is needed to check if this makes sense)
+        x, y = cord
+
+        return x + 0.5, y + 0.5
+
     def crafting_time(self, assembler: Assembler) -> float:
         return Item.DEFAULT_VALUE_OF_COST_OF_TERMINAL_ITEMS
 
@@ -56,15 +73,14 @@ class Factory(Item):
     def crafting_time(self, assembler: Assembler) -> float:
         return self.energy_required / assembler.multiplicator / self.amount
 
+    @override
     def get_cords(self, cord):
         x, y = cord
 
         for dx, dy in itertools.product(range(0, self.x_size), range(0, self.y_size)):
-            yield (x + dx, y + dy)
+            yield x + dx, y + dy
 
-    def get_cords_lambda(self, cord):
-        return lambda new_cord : any(new_cord == building_cord for building_cord in self.get_cords(cord))
-
+    @override
     def get_cord_of_center(self, cord):
         x, y = cord
 

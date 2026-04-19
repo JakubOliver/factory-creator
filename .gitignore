@@ -3,7 +3,7 @@
 .venv/
 docs/build
 
-tests
+testing
 output
 /*.png
 /*.svg
