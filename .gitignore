@@ -4,6 +4,7 @@
 docs/build
 
 tests
+output
 /*.png
 /*.svg
 

@@ -17,10 +17,11 @@ import networkx
 import matplotlib.pyplot as plt
 from ..factory_loader import FactoryLoader
 from ..graph_to_matrix import GraphToMatrix
-from ..json_matrix_representation import MatrixJsonConvertor
+from ..json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
 from ..util.file_util import FileUtil
 
 #TODO: add hiding the recipe combobox selecting when the name of the input file changes (it could be done via signals)
+#TODO: limit the vertical size of the combobox
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -117,36 +118,22 @@ class MainWindow(QMainWindow):
         #TODO: create now thread for this action so the gui is still responsive
 
         path = self.input_path.text()
-        type = self.type_input.currentText()
-        #print(f"Used path: {path} {type}")
+        recipe_type = self.type_input.currentText()
+
+        FileUtil.create_output_dir()
 
         #TODO: whether file exists
 
         factories = FactoryLoader.load(path)
 
-        root = FactoryLoader.get_dependency_tree(factories, type)
+        root = FactoryLoader.get_dependency_tree(factories, recipe_type)
 
         if root is not None:
-            #root.dfs()
-
-            """
-            dot = Digraph(comment="Tree")
-            
-            root.dependency_graph(
-                dot,
-                0,
-                1,
-                show_amounts = self.show_amounts_on_edges_check_box.isChecked(),
-                show_simplified= self.show_simplified_structure.isChecked()
-            )
-            """
-
             graph = root.get_dependency_graph(
                 show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
                 show_simplified=self.show_simplified_structure.isChecked()
             )
 
-            #graph_layout = networkx.spring_layout(graph)
             graph_layout = networkx.nx_pydot.graphviz_layout(graph, prog="dot")
             networkx.draw(graph, graph_layout, with_labels=False)
 
@@ -159,14 +146,12 @@ class MainWindow(QMainWindow):
             plt.show()
 
             p = networkx.drawing.nx_pydot.to_pydot(graph)
-            p.write_png("tree.png")
-            p.write_svg("tree.svg")
-            #print(dot.source)
-            #dot.render("tree", format="png", cleanup=True)
-            #dot.render("tree", format="svg", cleanup=True)
+            p.write_png("output/tree.png")
+            p.write_svg("output/tree.svg")
 
             matrix = GraphToMatrix.convert_via_heuristics(graph, root)
-            MatrixJsonConvertor.encode(matrix)
+            json_obj = MatrixJsonConvertor.encode(matrix)
+            print(BluePrintRepresentation.encode(json_obj))
 
     def _show_error(self, error_message: str) -> None:
         pop_up = QMessageBox.critical(

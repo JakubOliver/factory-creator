@@ -92,7 +92,7 @@ class DependencyTreeNode:
             return node_id, counter
 
         for child, amount_needed in zip(self.children, self.number_of_ingredient_factories(output_needed)):
-            amount_needed_per_factory = amount_needed / math.ceil(amount_needed)
+            amount_needed_per_factory = DependencyTreeNode.normalize_amount(amount_needed)
 
             for _ in range(max(1, math.ceil(amount_needed))):
                 child_id, counter = child._dependency_graph(

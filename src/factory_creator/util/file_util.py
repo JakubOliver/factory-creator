@@ -1,4 +1,4 @@
-from os import path
+from os import path, mkdir
 import json
 
 class FileUtil:
@@ -12,3 +12,8 @@ class FileUtil:
                 json.load(json_file)
         except json.decoder.JSONDecodeError as e:
             raise f"{file_path} is not a valid json file! ({e})"
+
+    @staticmethod
+    def create_output_dir() -> None:
+        if not path.isdir("output"):
+            mkdir("output")

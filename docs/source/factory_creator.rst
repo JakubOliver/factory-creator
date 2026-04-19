@@ -7,8 +7,8 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   factory_creator.GUI
-   factory_creator.Util
+   factory_creator.gui
+   factory_creator.util
 
 Submodules
 ----------
@@ -41,6 +41,22 @@ factory\_creator.factory\_loader module
 ---------------------------------------
 
 .. automodule:: factory_creator.factory_loader
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.graph\_to\_matrix module
+-----------------------------------------
+
+.. automodule:: factory_creator.graph_to_matrix
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.json\_matrix\_representation module
+----------------------------------------------------
+
+.. automodule:: factory_creator.json_matrix_representation
    :members:
    :show-inheritance:
    :undoc-members:

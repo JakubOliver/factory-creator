@@ -1,13 +1,13 @@
-factory\_creator.GUI package
+factory\_creator.gui package
 ============================
 
 Submodules
 ----------
 
-factory\_creator.GUI.main\_window module
+factory\_creator.gui.main\_window module
 ----------------------------------------
 
-.. automodule:: factory_creator.GUI.main_window
+.. automodule:: factory_creator.gui.main_window
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ factory\_creator.GUI.main\_window module
 Module contents
 ---------------
 
-.. automodule:: factory_creator.GUI
+.. automodule:: factory_creator.gui
    :members:
    :show-inheritance:
    :undoc-members:

@@ -1,3 +1,4 @@
+import itertools
 from typing import override
 
 from .assembler import Assembler
@@ -54,6 +55,20 @@ class Factory(Item):
     @override
     def crafting_time(self, assembler: Assembler) -> float:
         return self.energy_required / assembler.multiplicator / self.amount
+
+    def get_cords(self, cord):
+        x, y = cord
+
+        for dx, dy in itertools.product(range(0, self.x_size), range(0, self.y_size)):
+            yield (x + dx, y + dy)
+
+    def get_cords_lambda(self, cord):
+        return lambda new_cord : any(new_cord == building_cord for building_cord in self.get_cords(cord))
+
+    def get_cord_of_center(self, cord):
+        x, y = cord
+
+        return x + self.x_size / 2, y + self.y_size / 2
 
     def __str__(self) -> str:
         return (f"name: {self.name}, "

@@ -1,13 +1,13 @@
-factory\_creator.Util package
+factory\_creator.util package
 =============================
 
 Submodules
 ----------
 
-factory\_creator.Util.file\_util module
+factory\_creator.util.file\_util module
 ---------------------------------------
 
-.. automodule:: factory_creator.Util.file_util
+.. automodule:: factory_creator.util.file_util
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ factory\_creator.Util.file\_util module
 Module contents
 ---------------
 
-.. automodule:: factory_creator.Util
+.. automodule:: factory_creator.util
    :members:
    :show-inheritance:
    :undoc-members:
