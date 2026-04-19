@@ -27,7 +27,13 @@ from ..util.file_util import FileUtil
 #TODO: add hiding the recipe combobox (same for the link) selecting when the name of the input file changes (it could be done via signals)
 #TODO: limit the vertical size of the combobox
 
+
 class MainWindow(QMainWindow):
+    """
+    Main GUI windows of the GUI.
+
+    Provides user with basic controls: imports factories, select which recipe wants to compute etc.
+    """
     def __init__(self) -> None:
         super().__init__()
 
@@ -38,6 +44,9 @@ class MainWindow(QMainWindow):
         self._connect_signals()
 
     def _setup_ui(self) -> None:
+        """
+        Setups the widgets of the main window.
+        """
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -53,6 +62,10 @@ class MainWindow(QMainWindow):
         self.main_layout.addStretch()
 
     def _setup_file_layout(self) -> None:
+        """
+        Setups widgets for part of the main window where user provides
+        files which will be imported.
+        """
         self.input_path = QLineEdit()
         self.input_path.setPlaceholderText("Recipes path...")
 

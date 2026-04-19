@@ -59,7 +59,7 @@ def test_under_obstacle():
         from_cords=from_cords,
         is_in_successor=is_in_successor,
         to_cords=to_cords,
-        matrix=grid
+        grid=grid
     )
 
     print(active_cord)
@@ -92,7 +92,7 @@ def test_under_obstacle2():
         from_cords=from_cords,
         is_in_successor=is_in_successor,
         to_cords=to_cords,
-        matrix=grid
+        grid=grid
     )
 
     print(active_cord)

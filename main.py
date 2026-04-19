@@ -7,9 +7,11 @@ from PySide6.QtWidgets import QApplication
 
 from src.factory_creator.gui.main_window import MainWindow
 
-recipe_file_path = "data/recipe.json"
 
 def main():
+    """
+    Main function which call the GUI.
+    """
     app = QApplication(sys.argv)
 
     window = MainWindow()

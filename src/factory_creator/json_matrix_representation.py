@@ -3,11 +3,15 @@ import sys
 
 import json
 
-import numpy as np
-
 from .graph_to_matrix import Grid
 
+
 class MatrixJsonConvertor:
+    """
+    Wrapper for the methods which converts grid factory representation into
+    the json one which is used inside Factorio.
+    """
+
     #TODO: make real
 
     @staticmethod
@@ -89,12 +93,19 @@ class MatrixJsonConvertor:
         return entry
 
     @staticmethod
-    def encode(matrix: Grid):
+    def encode(grid: Grid):
+        """
+        Encodes the grid representation into json and returns the json representation.
+
+        :param grid: Grid representation of the factory.
+        :return: Json representation of the factory.
+        """
+
         blueprint_json = {
             "blueprint": (
-                MatrixJsonConvertor._get_blueprint_header() |
-                MatrixJsonConvertor._load_entities(matrix) |
-                MatrixJsonConvertor._get_blueprint_footer()
+                    MatrixJsonConvertor._get_blueprint_header() |
+                    MatrixJsonConvertor._load_entities(grid) |
+                    MatrixJsonConvertor._get_blueprint_footer()
             )
         }
 
@@ -104,8 +115,21 @@ class MatrixJsonConvertor:
         return blueprint_json
 
 class BluePrintRepresentation:
+    """
+    Wraps methods connected to the transforming json factory representation
+    into the compressed one.
+    """
+
     @staticmethod
     def decode(coded: str):
+        """
+        Decodes the compressed factory representation into json format and
+        returns the json representation.
+
+        :param coded: Encoded representation of the factory.
+        :return: Json representation of the factory.
+        """
+
         # Factorio adds 0 at the stars which should be skipped
         coded_trunc = coded.strip()[1:]
 
@@ -118,6 +142,13 @@ class BluePrintRepresentation:
 
     @staticmethod
     def encode(json_data) -> str:
+        """
+        Encodes the json representation of the factory into the compressed one.
+
+        :param json_data: Json representation of the factory.
+        :return: Compresses representation of the factory.
+        """
+
         json_bytes = json.dumps(json_data, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         compressed = zlib.compress(json_bytes, level=9)
         blueprint_string = "0" + base64.b64encode(compressed).decode("ascii")

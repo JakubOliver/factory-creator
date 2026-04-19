@@ -15,21 +15,41 @@ import math
 #  algorithm stage. And at that point we would electrify the factory, if the electrification
 #  is not possible, then the fitness would be zero.
 
+
 class Stats:
+    """
+    Data wrapper for the statistics connected to the nodes in the recipe dependency graph.
+    """
+
     def __init__(self, layer):
         self.approx_width = None
         self.approx_depth = None
         self.layer = layer
 
+
 class DependencyTreeNode:
-    def __init__(self, factory: Item, children: list[DependencyTreeNode], layer: int, assembler: Assembler = AssemblingMachine3()):
+    """
+    Node of the recipe dependency graph.
+    """
+
+    def __init__(
+        self,
+        factory: Item,
+        children: list[DependencyTreeNode],
+        layer: int,
+        assembler: Assembler = AssemblingMachine3()
+    ):
         self.factory = factory
         self.children = children
 
         self.assembler = assembler
         self.stats = Stats(layer)
 
-    def dfs(self):
+    def dfs(self) -> None:
+        """
+        Prints Depth First Search (DFS) walkthrough the dependency tree.
+        """
+
         print(self.factory)
 
         for child in self.children:
@@ -40,6 +60,17 @@ class DependencyTreeNode:
         show_amounts: bool,
         show_simplified: bool,
     ) -> DiGraph:
+        """
+        Returns dependency graph for the corresponding recipe dependency tree which has
+        root in the current node.
+
+        :param show_amounts: Denotes whether the edges should carry the information about
+            the usage of the factories in the recipe dependency graph.
+        :param show_simplified: Denotes whether the graph should compute real numbers of needed factories
+            or only show simplified version.
+        :return: Directed acyclic graph which represents the recipe dependency relations.
+        """
+
         graph = DiGraph()
 
         self._dependency_graph(
@@ -118,20 +149,56 @@ class DependencyTreeNode:
         return node_id, counter
 
     @staticmethod
-    def get_graph_identifier(counter):
+    def get_graph_identifier(counter: int) -> str:
+        """
+        Returns identifier of the node.
+
+        :param counter: Number of the node in the graph.
+        :return: Identifier of the node.
+        """
+
         return f"n{counter}"
 
     @staticmethod
-    def get_root_identifier():
+    def get_root_identifier() -> str:
+        """
+        Returns identifier of the root of the dependency tree.
+
+        :return: Identifier of the root of the dependency tree.
+        """
+
         return DependencyTreeNode.get_graph_identifier(0)
 
     def crafting_time(self) -> float:
+        """
+        Returns how long it would take to the assigned assembler to craft
+        the item from ingredients.
+
+        :return: Crafting time of the item assigned to the node.
+        """
+
         return self.factory.crafting_time(self.assembler)
 
     def relative_crafting_time(self, output_needed) -> float:
+        """
+        Returns how long it would take to the assigned assembler to craft
+        the item from ingredients if we only need provided output rate.
+
+        :param output_needed: Output rate (between 0 and 1) we need from the factory.
+        :return: Relative crafting time based on the required demand.
+        """
+
         return self.factory.crafting_time(self.assembler) / (output_needed if output_needed != 0 else 1)
 
     def number_of_ingredient_factories(self, output_needed) -> list[float]:
+        """
+        Returns vector denoting the number of the factories for each ingredient based on
+        the required output rate.
+
+        :param output_needed: Output rate which is needed from the parent factory.
+        :return: Vector denoting the number of needed factories the match the required output.
+        """
+
         # TODO: In this stage all stages has to create at least one item per second (or other time period),
         #  but I should be improved without this, because sometimes is this overkill and makes the whole
         #  factory bigger for no reason
@@ -160,6 +227,15 @@ class DependencyTreeNode:
         )
 
     def get_approx_width_of_tree(self, output_needed: float = 1.0) -> int:
+        """
+        Returns approximately how wide would be the factory in the grid representation.
+
+        The width is computed such as this method provides upper bound of the width.
+
+        :param output_needed: Output rate which is needed from the parent factory.
+        :return: Approximately how wide would be the factory in the grid representation.
+        """
+
         if self.factory.is_terminal:
             self.stats.approx_width = 1
 
@@ -172,6 +248,12 @@ class DependencyTreeNode:
         return max(child.get_approx_depth_of_tree() for child in self.children) + 1
 
     def get_approx_depth_of_tree(self) -> int:
+        """
+        Returns approximately how deep would be the factory in the grid representation.
+
+        :return: Approximate depth of the factory in the grid representation.
+        """
+
         if self.factory.is_terminal:
             self.stats.approx_depth = 1
 
@@ -186,6 +268,13 @@ class DependencyTreeNode:
     # TODO: maybe move method bellow somewhere else
     @staticmethod
     def normalize_amount(amount: float) -> float:
+        """
+        Normalize amount so it is in the interval [0, 1]
+
+        :param amount: Provided amount which will be normalized.
+        :return: Normalized amount.
+        """
+
         if math.ceil(amount) == 0:
             return 0
 
@@ -193,12 +282,3 @@ class DependencyTreeNode:
 
     def __str__(self) -> str:
         return self.factory.name
-
-    """
-    def __iter__(self):
-        yield self
-
-        for child in self.children:
-            for descendant in child:
-                yield descendant
-    """

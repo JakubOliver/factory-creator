@@ -6,41 +6,87 @@ import collections
 import heapq
 
 from .dependency_graph import DependencyTreeNode
-from .factory import Item
 
 
 #TODO: maybe makes sense that the entries in the dictionary are not only string which denotes the type
 # but also the size and roration (or at least rotation, if we can compute the size implicitly, but explicit
 # size maybe makes more sense)
 class Grid:
+    """
+    Represents the planar layout of the factory.
+    """
+
     def __init__(self):
         self.data = {}
         self.occupied = set()
 
-    def set_occupied(self, cord: tuple):
+    def set_occupied(self, cord: tuple) -> None:
+        """
+        Sets the provided coordinates as occupied in the grid.
+
+        :param cord: Coordinates in the grid.
+        """
+
         self.occupied.add(cord)
 
-    def __setitem__(self, key: tuple, value: GridEntry):
+    def __setitem__(self, key: tuple, value: GridEntry) -> None:
+        """
+        Adds elements into grid at the provided coordinates.
+
+        :param key: Coordinates where will be the elements placed.
+        :param value: Elements which will be placed into grid.
+        """
+
         self.data[key] = value
 
-    def __getitem__(self, key: tuple):
+    def __getitem__(self, key: tuple) -> GridEntry:
+        """
+        Returns elements laying at the provided coordinates.
+
+        :param key: Coordinates in the grid.
+        :return: Elements laying at the provided coordinates.
+        """
+
         return self.data[key]
 
-    def __contains__(self, cord: tuple):
+    def __contains__(self, cord: tuple) -> bool:
+        """
+        Returns whether in the grid at the provided coordinates is some element
+        of if the coordinate is occupied in general.
+
+        :param cord: Coordinate in the grid.
+        :return: Whether in the grid at the provided coordinates is some element
+        or if the coordinate is occupied in general.
+        """
+
         return cord in self.data or cord in self.occupied
 
     def __iter__(self):
+        """
+        Iterator over the coordinates with elements in the grid.
+
+        :return: Iterator over the coordinates with elements in the grid.
+        """
+
         for key in self.data.keys():
             yield key
 
 
 class GridEntry:
+    """
+    Represents an elements in the grid.
+    """
+
     def __init__(self, name: str, orientation: int = 0):
         self.name = name
         self.orientation = orientation
 
 
 class AStartNode:
+    """
+    Represents heap node witch wraps information necessary for A* computation.
+    """
+
     def __init__(self, cord, depth, comp):
         self.cord = cord
         self.depth = depth
@@ -58,6 +104,11 @@ class AStartNode:
 
 # TODO: factorio building has the coordination set to their center
 class GraphToMatrix:
+    """
+    Wrapper for the methods which transform factory from graph representation
+    into the grid representation.
+    """
+
     grid_moves = [(0, 1), (-1, 0), (0, -1), (1, 0)]
     # In Factorio the orientation is
     #  Up: 0
@@ -74,6 +125,15 @@ class GraphToMatrix:
 
     @staticmethod
     def convert_via_heuristics(graph: networkx.classes.DiGraph, root: DependencyTreeNode) -> Grid:
+        """
+        Converts factory from graph to grid representation with the use of heuristics
+        and general graph algorithms.
+
+        :param graph: Graph of the factory that will be transformed.
+        :param root: Root the recipe dependency tree.
+        :return: Grid representation of the factory.
+        """
+
         max_width = root.get_approx_width_of_tree()
         max_depth = networkx.dag_longest_path_length(graph) + 1
 
@@ -85,7 +145,7 @@ class GraphToMatrix:
         matrix_width = width_multiplicator * max_width
         matrix_depth = depth_multiplicator * max_depth + 10
 
-        matrix = Grid()
+        grid = Grid()
 
         #TODO: maybe we want nondeterministic BFS, so we get different planar graphs, therefore
         # we should shuffle the children of the nodes
@@ -97,9 +157,9 @@ class GraphToMatrix:
         #TODO: resolve warning (at method get_cords not only to factory but also item)
         for cord in root.factory.get_cords(root_cord):
             if cord != root_cord:
-                matrix.set_occupied(cord)
+                grid.set_occupied(cord)
             else:
-                matrix[cord] = GridEntry(str(root))
+                grid[cord] = GridEntry(str(root))
 
         graph.nodes[DependencyTreeNode.get_root_identifier()]["cord"] = root_cord
 
@@ -125,9 +185,9 @@ class GraphToMatrix:
 
                 for building_cord in dependency_node.factory.get_cords(cord):
                     if building_cord != cord:
-                        matrix.set_occupied(building_cord)
+                        grid.set_occupied(building_cord)
 
-                matrix[cord] = GridEntry(str(dependency_node))
+                grid[cord] = GridEntry(str(dependency_node))
 
                 is_in_cords = dependency_node.factory.get_cords_lambda(cord)
 
@@ -143,7 +203,7 @@ class GraphToMatrix:
 
                 #offset_in_layer += math.floor(0.25 * matrix_width)
 
-                matrix[cord] = GridEntry(from_node)
+                grid[cord] = GridEntry(from_node)
 
                 is_in_cords = lambda new_cord : new_cord == cord
                 from_cords = [cord]
@@ -168,25 +228,35 @@ class GraphToMatrix:
                         is_in_cords,
                         to_cords,
                         is_in_successor,
-                        matrix,
-                        type
+                        grid,
                     )
                 except Exception as e:
                     print(f"failed: {e}")
                     continue
 
-        return matrix
+        return grid
 
-    # TODO: heuristic for bfs
     @staticmethod
     def find_path(
         from_cords,
         is_in_cords,
         to_cords,
         is_in_successor,
-        matrix,
-        belt_type
-    ):
+        grid,
+    ) -> None:
+        """
+        Finds path between provided coordinates/elements in the grid
+        and updates the grid.
+
+        :param from_cords: Coordinate of the starting elements.
+        :param is_in_cords: Function denoting whether coordinate is
+            inside the starting elements.
+        :param to_cords: Coordinate of the ending elements.
+        :param is_in_successor: Function denoting whether coordinate is
+            inside the ending elements.
+        :param grid: Grid representation of the factory.
+        """
+
         """
         active_cord, visited_matrix = GraphToMatrix.bfs(
             from_cords,
@@ -198,7 +268,7 @@ class GraphToMatrix:
             from_cords,
             is_in_successor,
             to_cords,
-            matrix
+            grid
         )
 
         active_orientation = None
@@ -209,21 +279,34 @@ class GraphToMatrix:
                 distance = GraphToMatrix.distance_between_basis_vectors(active_cord, next_cord)
                 if distance == 1:
                     #active_orientation = 0 if active_orientation is None else active_orientation #TODO: remove
-                    matrix[active_cord] = GridEntry("transport-belt", active_orientation)
+                    grid[active_cord] = GridEntry("transport-belt", active_orientation)
                 else:
                     #TODO: better approach will be to remember, that we used underground belts and
                     # create it in next step, because in this form, it only "works" with skipping one belt
                     start_of_underground_belt = GraphToMatrix.cord_after_previous_in_direction(next_cord, active_cord)
                     opposite_orientation = GraphToMatrix.get_orientation_in_opposite_direction(active_orientation)
-                    matrix[start_of_underground_belt] = GridEntry("fast-underground-belt", opposite_orientation)
+                    grid[start_of_underground_belt] = GridEntry("fast-underground-belt", opposite_orientation)
 
-                    matrix[active_cord] = GridEntry("fast-underground-belt", active_orientation)
+                    grid[active_cord] = GridEntry("fast-underground-belt", active_orientation)
 
             active_cord = next_cord
             active_orientation = next_orientation
 
     @staticmethod
-    def bfs(from_cords, is_in_successor, matrix):
+    def bfs(from_cords, is_in_successor, grid):
+        """
+        Finds path between elements in the grid with the usage
+        of Breath First Search (BFS).
+
+        :param from_cords: Coordinate of the starting elements.
+        :param is_in_successor: Function provided information whether the coordinate
+            is inside the ending element.
+        :param grid: Grid representation of the factory.
+        :return: Returns the pair of the points in the grid, which lays inside the ending elements
+            and has the shortest distance to the starting element. And the matrix of the coordinates
+            with the information in how many steps can be coordinate achieved.
+        """
+
         queue = collections.deque([(from_cord, 1) for from_cord in from_cords])
 
         visited_matrix = {}
@@ -243,7 +326,7 @@ class GraphToMatrix:
                     found = True
                     break
 
-                if new_cord not in matrix:
+                if new_cord not in grid:
                     queue.append((new_cord, depth + 1))
                     visited_matrix[new_cord] = depth + 1
                 else:
@@ -252,7 +335,21 @@ class GraphToMatrix:
         return active_cord, visited_matrix
 
     @staticmethod
-    def a_star(from_cords, is_in_successor, to_cords, matrix):
+    def a_star(from_cords, is_in_successor, to_cords, grid):
+        """
+        Finds path between elements in the grid with the usage
+        of the A* algorithm and manhattan distance.
+
+        :param from_cords: Coordinate of the starting elements.
+        :param is_in_successor: Function provided information whether the coordinate
+            is inside the ending element.
+        :param to_cords: Coordinate of the ending elements.
+        :param grid: Grid representation of the factory.
+        :return: Returns the pair of the points in the grid, which lays inside the ending elements
+            and has the shortest distance to the starting element. And the matrix of the coordinates
+            with the information in how many steps can be coordinate achieved.
+        """
+
         heap = [AStartNode(from_cord, 0, GraphToMatrix.get_manhattan_metric(from_cord, to_cords)) for from_cord in from_cords]
         heapq.heapify(heap)
 
@@ -287,7 +384,7 @@ class GraphToMatrix:
                         found = True
                         break
 
-                    if new_cord in matrix:
+                    if new_cord in grid:
                         visited_matrix[new_cord] = -1
                     else:
                         heapq.heappush(
@@ -315,10 +412,30 @@ class GraphToMatrix:
 
     @staticmethod
     def get_manhattan_metric(from_cord, to_cords):
+        """
+        Returns the minimal manhattan distance between coordinate and the
+        coordinates of the final elements.
+
+        :param from_cord: Staring coordinates.
+        :param to_cords:
+        :return: The minimal manhattan distance between coordinate and
+            the coordinates of the final elements.
+        """
+
         return min((sum(abs(x - y) for x, y in zip(from_cord, to_cord)) for to_cord in to_cords))
 
     @staticmethod
     def get_moves(from_cord, visited_matrix, multiplier = 1, was_visited = False, return_enumeration = False):
+        """
+        Iterator over the coordinates which can be achieved from the provided coordinate.
+
+        :param from_cord: Starting coordinate.
+        :param visited_matrix: Matrix denoting if we achieved position and in how many steps.
+        :param multiplier: How may points in the grid can se move across in one points.
+        :param was_visited: Denotes whether we return position which were previously visited.
+        :param return_enumeration: Denotes whether we return the number of the orientation.
+        :return: Coordination of the points achievable from the provided coordinate.
+        """
 
         """
         for multiplier in range(1, GraphToMatrix.UNDERGROUND_MOVE_LENGTH):
@@ -354,6 +471,14 @@ class GraphToMatrix:
 
     @staticmethod
     def get_path_predecessor(cord, visited_matrix):
+        """
+        Returns coordinate from which we could have gone to the current one.
+
+        :param cord: Coordinates of the current position.
+        :param visited_matrix: Matrix denoting if we achieved position and in how many steps.
+        :return: Coordinate from which we could have gone to the current one.
+        """
+
         for multiplier in range(1, GraphToMatrix.UNDERGROUND_MOVE_LENGTH):
             for enumeration, new_cord in GraphToMatrix.get_moves(cord, visited_matrix, multiplier=multiplier, was_visited=True, return_enumeration=True):
                 if (visited_matrix[cord] - visited_matrix[new_cord]) == 1:
@@ -365,21 +490,54 @@ class GraphToMatrix:
         raise ValueError("No predecessors")
 
     @staticmethod
-    def get_enumeration_to_orientation(enumeration):
+    def get_enumeration_to_orientation(enumeration: int) -> int:
+        """
+        Returns orientation representation in Factorio format from the number of basis vector.
+
+        :param enumeration: Number of the basis vector.
+        :return: Returns orientation representation in Factorio format.
+        """
+
         return enumeration * 4
 
     @staticmethod
-    def get_orientation_in_opposite_direction(orientation: int):
+    def get_orientation_in_opposite_direction(orientation: int) -> int:
+        """
+        Returns opposite orientation in the Factorio format.
+
+        :param orientation: Original orientation.
+        :return: Opposite orientation in the Factorio format.
+        """
+
         return (orientation + 8) % 16
 
     @staticmethod
-    def distance_between_basis_vectors(x: tuple, y:tuple):
+    def distance_between_basis_vectors(x: tuple, y:tuple) -> int:
+        """
+        Returns size of multiple of basis vector which applied to the one
+        vector the other one can be achieved.
+
+        :param x: First 2D vector.
+        :param y: Second 2D vector.
+        :return: Returns size of multiple basis vector.
+        """
+
         #TODO: check whether are same basis vector
 
         return max(abs(x[0] - y[0]), abs(x[1] - y[1]))
 
     @staticmethod
     def cord_after_previous_in_direction(active: tuple, prev: tuple):
+        """
+        Returns coordinates of the grid position which comes right
+        before the active coordinates.
+
+        :param active: Coordinates of the active position in the grid.
+        :param prev: Coordinates of the previous position in the grid.
+        :return: Coordinates of the grid position which comes right before
+            the active coordinates.
+        """
+
         distance = GraphToMatrix.distance_between_basis_vectors(active, prev)
         orientation_vector = ((active[0] - prev[0]) / distance, (active[1] - prev[1]) / distance)
 
