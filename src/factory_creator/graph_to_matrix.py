@@ -167,21 +167,27 @@ class GraphToMatrix:
         #TODO: maybe makes more sense to compute the layers only based on the graph with the inbuild networkx function
         # best thing would be to use networkx.brf_layers but this methods (as far a know) does not provided the reverse option
 
-        offset_in_layer = padding + math.floor(0.1 * matrix_width)
-        active_layer = -1
-        for to_node, from_node in networkx.bfs_edges(graph, source=DependencyTreeNode.get_root_identifier(), reverse=True):
+        active_layer = {}
+
+        #for to_node, from_node in networkx.bfs_edges(graph, source=DependencyTreeNode.get_root_identifier(), reverse=True):
+        for from_node in reversed(list(networkx.topological_sort(graph))):
+            print(from_node)
+
+            # Filter out the sink node, because we are define it above.
+            if graph.out_degree(from_node) == 0:
+                continue
+
             if "ref" in graph.nodes[from_node]:
                 dependency_node = graph.nodes[from_node]["ref"]
                 node_layer = dependency_node.get_layer()
-                type = str(dependency_node)
+                element_type = str(dependency_node)
 
-                if active_layer != node_layer:
-                    offset_in_layer = padding + math.floor(0.1 * matrix_width)
-                    active_layer = node_layer
+                if node_layer not in active_layer:
+                    active_layer[node_layer] = padding + math.floor(0.1 * matrix_width)
 
-                cord = (node_layer * depth_multiplicator + 10, offset_in_layer + dependency_node.get_approx_width_of_tree() // 2)
+                cord = (node_layer * depth_multiplicator + 10, active_layer[node_layer] + dependency_node.get_approx_width_of_tree() // 2)
 
-                offset_in_layer += dependency_node.get_approx_width_of_tree() * width_multiplicator
+                active_layer[node_layer] += dependency_node.get_approx_width_of_tree() * width_multiplicator
 
                 for building_cord in dependency_node.factory.get_cords(cord):
                     if building_cord != cord:
@@ -193,15 +199,15 @@ class GraphToMatrix:
 
                 from_cords = [c for c in dependency_node.factory.get_cords(cord)]
             else:
-                active_layer = max(matrix_depth - 1, active_layer)
+                source_layer = max(matrix_depth - 1, max(x for x in active_layer.keys()) + 1)
+
+                if source_layer not in active_layer:
+                    active_layer[source_layer] = padding + padding + math.floor(0.1 * matrix_width)
 
                 offset_in_layer = math.floor((0.1 + random.random() / 2)  * matrix_width)
-                active_layer += 1
 
-                cord = (active_layer, offset_in_layer)
-                type = from_node
-
-                #offset_in_layer += math.floor(0.25 * matrix_width)
+                cord = (source_layer, offset_in_layer)
+                element_type = from_node
 
                 grid[cord] = GridEntry(from_node)
 
@@ -211,15 +217,15 @@ class GraphToMatrix:
             graph.nodes[from_node]["cord"] = cord
 
             for successor in graph.successors(from_node):
-                print(type, from_node, cord, successor, graph.nodes[successor]["cord"])
+                print(element_type, from_node, cord, successor, graph.nodes[successor]["cord"])
 
                 if "ref" in graph.nodes[successor]:
                     is_in_successor = graph.nodes[successor]["ref"].factory.get_cords_lambda(graph.nodes[successor]["cord"])
-                    #to_cords = graph.nodes[successor]["ref"].factory.get_cords(graph.nodes[successor]["cord"])
+
                     to_cords = [c for c in graph.nodes[successor]["ref"].factory.get_cords(graph.nodes[successor]["cord"])]
                 else:
                     is_in_successor = lambda new_cord : new_cord == graph.nodes[successor]["cord"]
-                    #to_cords = Item.get_dummy_cords(graph.nodes[successor]["cord"])
+
                     to_cords = [graph.nodes[successor]["cord"]]
 
                 try:
@@ -359,7 +365,7 @@ class GraphToMatrix:
 
         active_cord = 0
         found = False
-        while not found and len(heap) != 0: #TODO: remove limit
+        while not found and len(heap) != 0 and len(heap) <= 1_000_000: #TODO: remove limit
             a_star_node = heapq.heappop(heap)
             #print(a_star_node)
 
