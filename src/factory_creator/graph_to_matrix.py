@@ -169,6 +169,12 @@ class GraphToMatrix:
 
         active_layer = {}
 
+        # TODO: rewrite to more prettier way
+
+        # TODO: remove and repair the code
+        EXPERIMENTAL = False
+        max_layer_used = 0
+
         #for to_node, from_node in networkx.bfs_edges(graph, source=DependencyTreeNode.get_root_identifier(), reverse=True):
         for from_node in reversed(list(networkx.topological_sort(graph))):
             print(from_node)
@@ -180,6 +186,10 @@ class GraphToMatrix:
             if "ref" in graph.nodes[from_node]:
                 dependency_node = graph.nodes[from_node]["ref"]
                 node_layer = dependency_node.get_layer()
+
+                if EXPERIMENTAL:
+                    max_layer_used = max(max_layer_used, node_layer)
+
                 element_type = str(dependency_node)
 
                 if node_layer not in active_layer:
@@ -199,7 +209,10 @@ class GraphToMatrix:
 
                 from_cords = [c for c in dependency_node.factory.get_cords(cord)]
             else:
-                source_layer = max(matrix_depth - 1, max(x for x in active_layer.keys()) + 1)
+                if EXPERIMENTAL:
+                    source_layer = max(max_layer_used, max(x for x in active_layer.keys()) + 3)
+                else:
+                    source_layer = max(matrix_depth - 1, max(x for x in active_layer.keys()) + 3)
 
                 if source_layer not in active_layer:
                     active_layer[source_layer] = padding + padding + math.floor(0.1 * matrix_width)
@@ -397,7 +410,7 @@ class GraphToMatrix:
                             heap,
                             AStartNode(
                                 new_cord,
-                                a_star_node.depth + 1,
+                                a_star_node.depth + 1, # TODO: maybe makes sense to instead all times have 1 to use multiplier so using underground belts hold some wight
                                 a_star_node.depth + 1 + GraphToMatrix.get_manhattan_metric(new_cord, to_cords)
                             )
                         )

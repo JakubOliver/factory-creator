@@ -93,17 +93,52 @@ class DependencyTreeNode:
         #  because one belts can service multiple ones. This difference can be good way
         #  how to differ individuals in the population generating
 
+        # TODO: remove, and then repair inside the loop
+        EXPERIMENTAL = True
+
         for type in terminal_nodes.keys():
-            source_node_id = f"{type}_source"
+            if EXPERIMENTAL and len(terminal_nodes[type]) > 1:
+                source_node_counter = 0
 
-            # TODO: add ref
-            graph.add_node(source_node_id, label=source_node_id, shape="ellipse")
+                unprocessed_nodes = list(terminal_nodes[type])
 
-            for terminal_node in terminal_nodes[type]:
-                graph.add_edge(
-                    source_node_id,
-                    terminal_node,
-                )
+                while len(unprocessed_nodes) != 1:
+                    unprocessed_nodes_next = []
+
+                    for i in range(0, len(unprocessed_nodes) - 1, 2):
+                        source_node_id = f"{type}_source_{source_node_counter}"
+                        source_node_counter += 1
+
+                        graph.add_node(source_node_id, label=source_node_id, shape="ellipse")
+
+                        unprocessed_nodes_next.append(source_node_id)
+
+                        graph.add_edge(
+                            source_node_id,
+                            unprocessed_nodes[i],
+                        )
+
+                        graph.add_edge(
+                            source_node_id,
+                            unprocessed_nodes[i + 1]
+                        )
+
+                    if len(unprocessed_nodes) % 2 == 1:
+                        unprocessed_nodes_next.append(unprocessed_nodes[-1])
+
+                    unprocessed_nodes = unprocessed_nodes_next
+
+            else:
+                source_node_id = f"{type}_source"
+
+                # TODO: add ref
+                graph.add_node(source_node_id, label=source_node_id, shape="ellipse")
+
+                for terminal_node in terminal_nodes[type]:
+                    graph.add_edge(
+                        source_node_id,
+                        terminal_node,
+                    )
 
         return graph
 
