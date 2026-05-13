@@ -272,6 +272,9 @@
               "topics": [
                 {
                   "title": "Překladače se dají simulovat tak, že pásy musí udělat jedno políčko přímo a až potom mohou zahnout, tedy nemohou být přímo paralelně s výrobnou"
+                },
+                {
+                  "title": "Použít Numba"
                 }
               ]
             },
@@ -472,6 +475,165 @@
                 },
                 {
                   "title": "Doporučení na nějaké zdroje"
+                }
+              ]
+            },
+            {
+              "title": "2026.06.12",
+              "topics": [
+                {
+                  "title": "Komunikace přes léto"
+                },
+                {
+                  "title": "Evoluce DAGu",
+                  "topics": [
+                    {
+                      "title": "Principy z NEAT",
+                      "topics": [
+                        {
+                          "title": "NEAT crossover",
+                          "link": "https://www.researchgate.net/figure/NEAT-crossover-operation-example-Although-Parent-1-and-Parent-2-look-different-their_fig3_339228419"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Fitness",
+                  "topics": [
+                    {
+                      "title": "Počet zatočení (negativně)"
+                    },
+                    {
+                      "title": "Zastavěná plocha (negativně)",
+                      "topics": [
+                        {
+                          "title": "Vložení do obdelníku"
+                        },
+                        {
+                          "title": "Součet plochy objektů"
+                        }
+                      ]
+                    },
+                    {
+                      "title": "Terminální",
+                      "topics": [
+                        {
+                          "title": "Je elektrifikován"
+                        },
+                        {
+                          "title": "Vedou správně pásy (je vše propojené)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Grid",
+                  "topics": [
+                    {
+                      "title": "Co s source nodama",
+                      "topics": [
+                        {
+                          "title": "Existuje nějaké místo/heuristika jak je někam uložit"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Heuristika tak nějak hotová, co dál?",
+                  "topics": [
+                    {
+                      "title": "Existují nedostatky na úrovni nákresu, ale to jsou věci, které tak nějak vím jak udělat, pouze ještě nebyl čas."
+                    },
+                    {
+                      "title": "Má cenu vymýšlet nějaký komplikovanější způsob, nebo rovnou na evoluci"
+                    },
+                    {
+                      "title": "U komplikovanější továren je problém, že odhad na šířku je nedostačující, poněvadž pásy to celkem zaplní.",
+                      "topics": [
+                        {
+                          "title": "Přidat nějaký multiplikátor, a když failne výstavba tak přenásobit vzdálenosti mezi"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Domluveno",
+                  "topics": [
+                    {
+                      "title": "Hill-climbing algorithm",
+                      "topics": [
+                        {
+                          "title": "Mutace",
+                          "topics": [
+                            {
+                              "title": "Posunutí o dx nebo dy (nebo zároveň)",
+                              "topics": [
+                                {
+                                  "title": "Snaha shlukovat do středu"
+                                },
+                                {
+                                  "title": "Vyřešit zda cesty generovat úplně od znova, nebo nebo je jenom \"posunout\""
+                                }
+                              ]
+                            },
+                            {
+                              "title": "prohození větví stromu (tedy nějaká část, která je ve výkresů nalevo tak ji dáme do středu)"
+                            }
+                          ]
+                        },
+                        {
+                          "title": "Fitness",
+                          "topics": [
+                            {
+                              "title": "Jak malý obdelník ho dokáže opsat"
+                            },
+                            {
+                              "title": "Pravidelnost pásů"
+                            },
+                            {
+                              "title": "Jsou továrny v vrstvách?"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Factorio",
+          "topics": [
+            {
+              "title": "Recepty",
+              "topics": [
+                {
+                  "title": "/home/jakub/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Factorio/data/base/prototypes/"
+                },
+                {
+                  "title": "Crafting speed",
+                  "topics": [
+                    {
+                      "title": "Energy required/assempy machine multiplier"
+                    }
+                  ]
+                },
+                {
+                  "title": "https://github.com/wube/factorio-data/tree/master"
+                },
+                {
+                  "title": "Problém že data některé recepty nemají energy_cost, dle redditu když není hodnota tak implicitně je to 0.5 sekundy",
+                  "topics": [
+                    {
+                      "title": "https://lua-api.factorio.com/latest/prototypes/RecipePrototype.html?utm_source=chatgpt.com#energy_required"
+                    }
+                  ]
                 }
               ]
             }
