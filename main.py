@@ -26,10 +26,11 @@ if __name__ == "__main__":
     if not args.cli:
         sys.exit(main())
     else:
-        factory_seed = MainWindow.process_factory(
+        factory_seed, evolution_seed = MainWindow.process_factory(
             args.input,
             args.building,
             evolution_iteration = args.iteration
         )
 
         print(MainWindow.create_factory_url_link(factory_seed))
+        print(MainWindow.create_factory_url_link(evolution_seed))

@@ -195,6 +195,7 @@ class GraphToMatrix:
                         grid,
                     )
                 except Exception as e:
+                    #TODO: repair with extra margin
                     print(f"failed: {e}")
                     continue
 

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import IntEnum
 import prettytable
+from collections import deque
 
 #TODO: maybe makes sense that the entries in the dictionary are not only string which denotes the type
 # but also the size and roration (or at least rotation, if we can compute the size implicitly, but explicit
@@ -29,15 +30,28 @@ class Grid:
         self.data[building_cord].add_surrounding(cord)
 
     def add_factory(self, cord: tuple, name: str, sur_cord) -> None:
+        if cord in self.data.keys():
+            raise "Building cannot be placed"
+
         self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Factory))
 
         for sur in sur_cord:
+            if sur in self.occupied:
+                raise Exception("Building cannot be placed")
+
             self.set_occupied(sur, cord)
 
     def add_source(self, cord: tuple, name: str) -> None:
         self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Source))
 
-    def add_transportation(self, cord: tuple, name: str, orientation: int, from_cord: tuple, to_cord: tuple) -> None:
+    def add_transportation(
+        self,
+        cord: tuple,
+        name: str,
+        orientation: int,
+        from_cord: tuple,
+        to_cord: tuple
+    ) -> None:
         self.__setitem__(
             cord,
             GridEntry(
@@ -201,6 +215,34 @@ class Grid:
 
         return neighbors
 
+    def is_belt_with_id(self, cord, id) -> bool:
+        if not cord in self.data:
+            return False
+
+        return self.data[cord].get_id_text() == id
+
+    def exists_path(
+        self,
+        a: list[tuple],
+        b: list[tuple],
+        id: str
+    ) -> bool:
+        queue = deque((x, y, 0) for x, y in a)
+
+        while len(queue) > 0:
+            x,y,d = queue.popleft()
+
+            for dx, dy in [(0,1), (-1, 0), (1,0), (0, -1)]:
+                nx, ny = x + dx, y + dy
+
+                if (nx, ny) in b and d > 0:
+                    return True
+
+                if self.__contains__((nx, ny)) and self.is_belt_with_id((nx, ny), id):
+                    queue.append((nx, ny, d + 1))
+
+        return False
+
 
 # TODO: We need some way how do distinguish belts, because at small factories, the do not overlap very much and
 # we can distinguish them by the "topology" but when we have some intersection when we cannot 100% say which
@@ -239,10 +281,17 @@ class GridEntryTransportationId(GridEntryId):
         self.to_id = to_id
 
     def get_id(self) -> str:
-        return self.from_id.get_id() + "-" + self.to_id.get_id()
+        return GridEntryTransportationId.create_belt_id(
+            self.from_id.get_id(),
+            self.to_id.get_id()
+        )
 
     def is_connected_to(self, con_id: GridEntryId) -> bool:
         return con_id == self.from_id or con_id == self.to_id
+
+    @staticmethod
+    def create_belt_id(from_id: str, to_id: str) -> str:
+        return from_id + "-" + to_id
 
 class GridEntry:
     """

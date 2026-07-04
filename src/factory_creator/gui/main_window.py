@@ -164,7 +164,8 @@ class MainWindow(QMainWindow):
         FileUtil.create_output_dir()
 
         #TODO: whether file exists
-        factory_seed = MainWindow.process_factory(
+        #TODO: resolve ignoring matrix after evolution
+        factory_seed, _ = MainWindow.process_factory(
             path,
             recipe_type,
             show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
@@ -222,13 +223,13 @@ class MainWindow(QMainWindow):
             #print(factory_seed)
             #print(Evolution.fitness(matrix))
 
-            Evolution.evol(
+            after_evolution = Evolution.evol(
                 matrix,
                 iteration=evolution_iteration,
                 stagnation_break=evolution_stagnation
             )
 
-            return factory_seed
+            return factory_seed, BluePrintRepresentation.encode(MatrixJsonConvertor.encode(after_evolution))
         else:
             return None
 
