@@ -1,4 +1,8 @@
 import copy
+import itertools
+
+from .graph_to_matrix import GraphToMatrix
+from .grid import *
 
 class Evolution:
     generation_print = True
@@ -11,8 +15,28 @@ class Evolution:
             stagnation_break = stagnation_break
         )
 
+
+    # TODO: REPAIR!!!!!! GET CORDS EXISTS AS CLASS FUNCTION IN FACTORY CLASS BUT AT THIS STAGE
+    # I DO NOT HAVE ANY REFERENCES TO THEM
+    # !!! THIS IS ONLY TEMPORARY SOLUTION TO SEE IF THE HILL CLIMBING WORKS
     @staticmethod
-    def hill_climb(grid, iteration = float("inf"), stagnation_break = 10):
+    def get_cords(cords):
+        x, y = cords
+
+        for dx, dy in itertools.product(range(0, 3), range(0, 3)):
+            yield x + dx, y + dy
+
+    @staticmethod
+    def get_cords_lambda(cord):
+        return lambda new_cord : any(new_cord == building_cord for building_cord in Evolution.get_cords(cord))
+
+    @staticmethod
+    def get_changed_cords(cord):
+        for dx, dy in [(1,0), (0,1), (-1,0), (0,-1)]:
+            yield cord[0] + dx, cord[1] + dy
+
+    @staticmethod
+    def hill_climb(grid: Grid, iteration = float("inf"), stagnation_break = 10):
         active_iteration = 0
         stagnation_streak = 0
         last_fitness = None
@@ -24,17 +48,75 @@ class Evolution:
                 print("----------- NEXT GENERATION -------------")
                 print(fitness)
                 print(grid)
-                print([entry.get_detailed_name() for entry in grid.data.values()])
+                #print([entry.get_detailed_name() for entry in grid.data.values()])
 
-            for cord, factory in grid.get_factories():
-                new_grid = copy.deepcopy(grid)
+            best_worlds = None
+            best_world_fitness = fitness
+            for active_cord, grid_entry in grid.get_factories():
+                #TODO: Add mechanism to do not allow merging or overlying of buildings
+                for new_cord in Evolution.get_changed_cords(active_cord):
+                    new_grid = copy.deepcopy(grid)
+                    neighbors = new_grid.erase_factory(active_cord)
 
-            if fitness == last_fitness:
+                    #print(active_cord, new_cord)
+                    new_grid.add_factory(
+                        new_cord,
+                        grid_entry.name,
+                        [sur for sur in Evolution.get_cords(new_cord) if sur != new_cord]
+                    )
+
+                    if grid_entry.entry_type == GridEntryTypes.Factory:
+                        active_cords = [c for c in Evolution.get_cords(new_cord)]
+                        active_is_in_cords = Evolution.get_cords_lambda(new_cord)
+                    else:
+                        active_cords = [new_cord]
+                        active_is_in_cords = lambda x: x == new_cord
+
+
+
+                    for neighbor, direction in neighbors:
+                        neighbor_type = new_grid.data[neighbor].entry_type
+
+                        if neighbor_type == GridEntryTypes.Factory:
+                            nei_cords = [c for c in Evolution.get_cords(neighbor)]
+                            nei_is_in_cords = Evolution.get_cords_lambda(neighbor)
+                        else:
+                            nei_cords = [neighbor]
+                            nei_is_in_cords = lambda x: x == neighbor
+
+                        if direction:
+                            GraphToMatrix.find_path(
+                                new_cord,
+                                active_cords,
+                                active_is_in_cords,
+                                neighbor,
+                                nei_cords,
+                                nei_is_in_cords,
+                                new_grid
+                            )
+                        else:
+                            GraphToMatrix.find_path(
+                                neighbor,
+                                nei_cords,
+                                nei_is_in_cords,
+                                new_cord,
+                                active_cords,
+                                active_is_in_cords,
+                                new_grid
+                            )
+
+                    if Evolution.fitness(new_grid) > best_world_fitness:
+                        best_worlds = new_grid
+
+            if best_worlds is not None:
+                grid = best_worlds
+
+            if best_world_fitness == last_fitness:
                 stagnation_streak += 1
             else:
                 stagnation_streak = 0
 
-            last_fitness = fitness
+            last_fitness = best_world_fitness
             active_iteration += 1
 
     @staticmethod
