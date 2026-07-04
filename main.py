@@ -28,7 +28,8 @@ if __name__ == "__main__":
     else:
         factory_seed = MainWindow.process_factory(
             args.input,
-            args.building
+            args.building,
+            evolution_iteration = args.iteration
         )
 
         print(MainWindow.create_factory_url_link(factory_seed))

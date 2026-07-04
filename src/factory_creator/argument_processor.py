@@ -29,6 +29,15 @@ class ArgumentProcessor:
             help="building name"
         )
 
+        parser.add_argument(
+            "-t",
+            "--iteration",
+            required=False,
+            type=int,
+            help="number of iteration of evolution",
+            default = 10 # TODO: const
+        )
+
         args = parser.parse_args()
 
         if args.cli and (not args.input or not args.building):

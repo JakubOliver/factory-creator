@@ -1,9 +1,12 @@
 import math
 import random
+from abc import ABC, abstractmethod
 
 import networkx
 import collections
 import heapq
+
+import prettytable
 
 from .dependency_graph import DependencyTreeNode
 
@@ -17,10 +20,12 @@ class Grid:
     """
 
     def __init__(self):
-        self.data = {} # TODO: maybe occupied whould be also for not only belts
+        self.id_counter = 0
+
+        self.data : dict[tuple, GridEntry] = {} # TODO: maybe occupied whould be also for not only belts
         self.occupied = set()
 
-    def set_occupied(self, cord: tuple) -> None:
+    def set_occupied(self, cord: tuple, building_cord: tuple) -> None:
         """
         Sets the provided coordinates as occupied in the grid.
 
@@ -28,6 +33,35 @@ class Grid:
         """
 
         self.occupied.add(cord)
+        self.data[building_cord].add_surrounding(cord)
+
+    def add_factory(self, cord: tuple, name: str, sur_cord) -> None:
+        self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Factory))
+
+        for sur in sur_cord:
+            self.set_occupied(sur, cord)
+
+    def add_source(self, cord: tuple, name: str) -> None:
+        self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Source))
+
+    def add_transportation(self, cord: tuple, name: str, orientation: int, from_cord: tuple, to_cord: tuple) -> None:
+        self.__setitem__(
+            cord,
+            GridEntry(
+                GridEntryTransportationId(self._find_movable_id(from_cord), self._find_movable_id(to_cord)),
+                name,
+                orientation,
+                GridEntryTypes.Transportation
+            )
+        )
+
+    def _get_movable_id(self) -> GridEntryId:
+        self.id_counter += 1
+
+        return GridEntryMovableId(self.id_counter)
+
+    def _find_movable_id(self, cord: tuple) -> GridEntryId:
+        return self.data[cord].id
 
     def __setitem__(self, key: tuple, value: GridEntry) -> None:
         """
@@ -71,6 +105,34 @@ class Grid:
         for key in self.data.keys():
             yield key
 
+    def __str__(self):
+        min_x = min(self.get_x_cord())
+        min_y = min(self.get_y_cord())
+
+        max_x = max(self.get_x_cord())
+        max_y = max(self.get_y_cord())
+
+        header = ["#"]
+        for x in range(min_x, max_x + 1):
+            header.append(str(x))
+
+        table = prettytable.PrettyTable(header)
+
+        for y in range(min_y, max_y + 1):
+            row = [str(y)]
+            for x in range(min_x, max_x + 1):
+                if (x, y) in self.occupied:
+                    row.append("B")
+                elif (x,y) in self.data.keys():
+                    #row.append("F")
+                    row.append(self.data[(x, y)])
+                else:
+                    row.append("_")
+
+            table.add_row(row)
+
+        return str(table)
+
     def get_x_cord(self):
         return map(lambda x: x[0], self.occupied.union(self.data.keys()))
 
@@ -87,15 +149,88 @@ class Grid:
     def get_used_block(self):
         return len(self.occupied) + len(self.data)
 
+    def get_factories(self):
+        for grid_entry_cord in self.data.keys():
+            if self.data[grid_entry_cord].is_movable():
+                yield grid_entry_cord, self.data[grid_entry_cord]
+
+
+# TODO: We need some way how do distinguish belts, because at small factories, the do not overlap very much and
+# we can distinguish them by the "topology" but when we have some intersection when we cannot 100% say which
+# one is correct -> add ID to the factories and all belts etc. would have ID from-to according to factories
+
+# Also we have 3 magor types -> factories, belts (other ways how to transport) and sources -> at this time
+# we only distinguish factories and others so maybe it is good idea to add some enum for all three
+
+from enum import IntEnum
+
+class GridEntryTypes(IntEnum):
+    Factory = 0
+    Transportation = 1
+    Source = 2
+
+class GridEntryId(ABC):
+    @abstractmethod
+    def get_id(self) -> str:
+        pass
+
+class GridEntryMovableId(GridEntryId):
+    def __init__(self, id: int):
+        self.id = str(id)
+
+    def get_id(self) -> str:
+        return self.id
+
+class GridEntryTransportationId(GridEntryId):
+    def __init__(self, from_id: GridEntryId, to_id: GridEntryId):
+        self.id = from_id.get_id() + "-" + to_id.get_id()
+
+    def get_id(self):
+        return self.id
 
 class GridEntry:
     """
     Represents an elements in the grid.
     """
 
-    def __init__(self, name: str, orientation: int = 0):
+    def __init__(
+        self,
+        entry_id: GridEntryId,
+        name: str,
+        orientation: int = 0,
+        entry_type: GridEntryTypes = GridEntryTypes.Transportation
+    ):
+        self.id = entry_id
         self.name = name
         self.orientation = orientation
+        self.entry_type = entry_type
+        self.surroundings = set()
+
+    def add_surrounding(self, cord: tuple):
+        self.surroundings.add(cord)
+
+    def is_factory(self):
+        return self.entry_type == GridEntryTypes.Factory
+
+    def is_source(self):
+        return self.entry_type == GridEntryTypes.Source
+
+    def is_movable(self):
+        return self.is_factory() or self.is_source()
+
+    def get_id(self):
+        return self.id.get_id()
+
+    def get_detailed_name(self):
+        if self.is_factory():
+            return self.name + "-factory"
+        elif self.is_source():
+            return self.name + "-source"
+        else:
+            return self.name
+
+    def __str__(self):
+        return self.name[:2]
 
 
 class AStartNode:
@@ -171,11 +306,19 @@ class GraphToMatrix:
 
         root_cord = (10, matrix_width // 2)
         #TODO: resolve warning (at method get_cords not only to factory but also item)
+
+        grid.add_factory(
+            root_cord,
+            str(root),
+            [sur for sur in root.factory.get_cords(root_cord) if sur != root_cord]
+        )
+        """
+        grid[root_cord] = GridEntry(str(root), is_factory=True)
         for cord in root.factory.get_cords(root_cord):
             if cord != root_cord:
-                grid.set_occupied(cord)
-            else:
-                grid[cord] = GridEntry(str(root))
+                grid.set_occupied(cord, root_cord)
+        """
+
 
         graph.nodes[DependencyTreeNode.get_root_identifier()]["cord"] = root_cord
 
@@ -215,11 +358,19 @@ class GraphToMatrix:
 
                 active_layer[node_layer] += dependency_node.get_approx_width_of_tree() * width_multiplicator
 
+                # TODO: add functino for this, because this work if and only if building is created before surroundings
+                grid.add_factory(
+                    cord,
+                    str(dependency_node),
+                    [sur for sur in dependency_node.factory.get_cords(cord) if sur != cord]
+                )
+
+                """
+                grid[cord] = GridEntry(str(dependency_node), is_factory=True)
                 for building_cord in dependency_node.factory.get_cords(cord):
                     if building_cord != cord:
-                        grid.set_occupied(building_cord)
-
-                grid[cord] = GridEntry(str(dependency_node))
+                        grid.set_occupied(building_cord, cord)
+                """
 
                 is_in_cords = dependency_node.factory.get_cords_lambda(cord)
 
@@ -238,7 +389,8 @@ class GraphToMatrix:
                 cord = (source_layer, offset_in_layer)
                 element_type = from_node
 
-                grid[cord] = GridEntry(from_node)
+                #grid[cord] = GridEntry(from_node, entry_type=GridEntryTypes.Source)
+                grid.add_source(cord, from_node)
 
                 is_in_cords = lambda new_cord : new_cord == cord
                 from_cords = [cord]
@@ -259,8 +411,10 @@ class GraphToMatrix:
 
                 try:
                     GraphToMatrix.find_path(
+                        cord,
                         from_cords,
                         is_in_cords,
+                        graph.nodes[successor]["cord"],
                         to_cords,
                         is_in_successor,
                         grid,
@@ -273,8 +427,10 @@ class GraphToMatrix:
 
     @staticmethod
     def find_path(
+        from_cord,
         from_cords,
         is_in_cords,
+        to_cord,
         to_cords,
         is_in_successor,
         grid,
@@ -314,15 +470,37 @@ class GraphToMatrix:
                 distance = GraphToMatrix.distance_between_basis_vectors(active_cord, next_cord)
                 if distance == 1:
                     #active_orientation = 0 if active_orientation is None else active_orientation #TODO: remove
-                    grid[active_cord] = GridEntry("transport-belt", active_orientation)
+                    #grid[active_cord] = GridEntry("transport-belt", orientation=active_orientation)
+                    grid.add_transportation(
+                        cord = active_cord,
+                        name = "transport-belt",
+                        orientation = active_orientation,
+                        from_cord= from_cord,
+                        to_cord= to_cord
+                    )
                 else:
                     #TODO: better approach will be to remember, that we used underground belts and
                     # create it in next step, because in this form, it only "works" with skipping one belt
                     start_of_underground_belt = GraphToMatrix.cord_after_previous_in_direction(next_cord, active_cord)
                     opposite_orientation = GraphToMatrix.get_orientation_in_opposite_direction(active_orientation)
-                    grid[start_of_underground_belt] = GridEntry("fast-underground-belt", opposite_orientation)
 
-                    grid[active_cord] = GridEntry("fast-underground-belt", active_orientation)
+                    #grid[start_of_underground_belt] = GridEntry("fast-underground-belt", orientation=opposite_orientation)
+                    grid.add_transportation(
+                        cord = start_of_underground_belt,
+                        name = "fast-underground-belt",
+                        orientation = opposite_orientation,
+                        from_cord= from_cord,
+                        to_cord= to_cord
+                    )
+
+                    #grid[active_cord] = GridEntry("fast-underground-belt", active_orientation)
+                    grid.add_transportation(
+                        cord = active_cord,
+                        name = "fact-underground-belt",
+                        orientation = active_orientation,
+                        from_cord= from_cord,
+                        to_cord= to_cord
+                    )
 
             active_cord = next_cord
             active_orientation = next_orientation

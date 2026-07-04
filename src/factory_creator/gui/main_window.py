@@ -169,6 +169,7 @@ class MainWindow(QMainWindow):
             recipe_type,
             show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
             simplified_structure=self.show_simplified_structure.isChecked(),
+            evolution_iteration=1,
             show_graph=True
         )
 
@@ -184,6 +185,8 @@ class MainWindow(QMainWindow):
         recipe_type,
         show_amounts = True,
         simplified_structure = False,
+        evolution_iteration = float("inf"),
+        evolution_stagnation = 10,
         show_graph = False
     ):
         factories = FactoryLoader.load(path)
@@ -217,7 +220,13 @@ class MainWindow(QMainWindow):
             factory_seed = BluePrintRepresentation.encode(json_obj)
 
             #print(factory_seed)
-            print(Evolution.fitness(matrix))
+            #print(Evolution.fitness(matrix))
+
+            Evolution.evol(
+                matrix,
+                iteration=evolution_iteration,
+                stagnation_break=evolution_stagnation
+            )
 
             return factory_seed
         else:
