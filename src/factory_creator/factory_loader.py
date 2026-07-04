@@ -57,6 +57,10 @@ class FactoryLoader:
         return factories
 
     @staticmethod
+    def is_valid_recipe(factory_definition_file_path: str, recipe: str) -> bool:
+        return recipe in FactoryLoader.load_recipe_names(factory_definition_file_path)
+
+    @staticmethod
     def load_recipe_names(factory_definition_file_path: str) -> list[str]:
         """
         Returns list of recipe names loaded from the json input file.

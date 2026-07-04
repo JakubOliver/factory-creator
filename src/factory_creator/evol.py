@@ -2,11 +2,14 @@ import copy
 import itertools
 from collections.abc import Callable, Iterator
 
+from networkx.algorithms.reciprocity import overall_reciprocity
+
 from .graph_to_matrix import GraphToMatrix
 from .grid import *
 
 class Evolution:
-    generation_print = True
+    GENERATION_PRINT = True
+    SHOW_REASONS_FOR_INDIVIDUAL_FAILURE = True
 
     @staticmethod
     def evol(
@@ -91,13 +94,15 @@ class Evolution:
         while active_iteration < iteration and stagnation_streak < stagnation_break:
             fitness = Evolution.fitness(grid)
 
-            if Evolution.generation_print:
+            if Evolution.GENERATION_PRINT:
                 print(f"----------- NEXT GENERATION ({active_iteration}) -------------")
                 print(fitness)
-                print(grid)
+                #print(grid)
 
             overall_best_worlds = None
-            best_world_fitness = fitness
+            overall_best_world_fitness = fitness
+
+            c, n = 0, grid.get_number_of_factories()
             for active_cord, grid_entry in grid.get_factories():
                 best_world = Evolution._hill_climbing_process_building(
                     grid,
@@ -105,18 +110,26 @@ class Evolution:
                     grid_entry
                 )
 
-                if best_world is not None and Evolution.fitness(best_world) > best_world_fitness:
+                if best_world is not None:
+                    best_world_fitness = Evolution.fitness(best_world)
+                else:
+                    best_world_fitness = -float("inf")
+
+                if best_world_fitness > overall_best_world_fitness:
                     overall_best_worlds = best_world
+
+                c += 1
+                print(f"processed: {c/n:.3f} ({grid_entry.name}: {best_world_fitness})")
 
             if overall_best_worlds is not None:
                 grid = overall_best_worlds
 
-            if best_world_fitness == last_fitness:
+            if overall_best_world_fitness == last_fitness:
                 stagnation_streak += 1
             else:
                 stagnation_streak = 0
 
-            last_fitness = best_world_fitness
+            last_fitness = overall_best_world_fitness
             active_iteration += 1
 
         return grid
@@ -220,10 +233,11 @@ class Evolution:
                     connection_pair=connection_pairs
                 )
 
-                if new_fitness > best_world_fitness:
+                if best_grid is None or new_fitness > best_world_fitness:
                     best_grid = new_grid
             except Exception as e:
-                print(e)
+                if Evolution.SHOW_REASONS_FOR_INDIVIDUAL_FAILURE:
+                    print(f"Individual failed because of \"{e}\"")
 
         return best_grid
 
@@ -251,15 +265,16 @@ class Evolution:
 
         fitness = 0
 
-        fitness += grid.get_area()
-        fitness += grid.get_used_block()
+        fitness -= grid.get_area()
+        fitness -= grid.get_used_block()
+        fitness += grid.get_number_of_pointing_to_center() * 10
 
         if test_connection:
             if not Evolution.fitness_connection(grid, connection_pair):
-                fitness += float("inf")
+                fitness -= float("inf")
 
         #return 1 / fitness
-        return -fitness
+        return fitness
 
     @staticmethod
     def fitness_connection(

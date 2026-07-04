@@ -5,6 +5,8 @@ import networkx
 import collections
 import heapq
 
+from networkx import DiGraph
+
 from .dependency_graph import DependencyTreeNode
 from .grid import *
 
@@ -35,16 +37,6 @@ class GraphToMatrix:
     into the grid representation.
     """
 
-    grid_moves = [(0, 1), (-1, 0), (0, -1), (1, 0)]
-    # In Factorio the orientation is
-    #  Up: 0
-    #  Right: 4
-    #  Down: 8
-    #  Left: 12
-
-    # When we compute the path between assemblers we go against the orientation.
-    # Therefore, the move array is in this strange order.
-
     # This is the number of tiles red fast underground belt can travel
     UNDERGROUND_MOVE_LENGTH = 6
     UNDERGROUND_MOVES_ENABLED = True
@@ -54,7 +46,7 @@ class GraphToMatrix:
     DEFAULT_PADDING = 1
 
     @staticmethod
-    def convert_via_heuristics(graph: networkx.classes.DiGraph, root: DependencyTreeNode) -> Grid:
+    def convert_via_heuristics(graph: DiGraph, root: DependencyTreeNode) -> Grid:
         """
         Converts factory from graph to grid representation with the use of heuristics
         and general graph algorithms.
@@ -92,6 +84,8 @@ class GraphToMatrix:
                 padding *= 2
                 width_multiplier *= 2
                 depth_multiplier *= 2
+
+                print(padding, width_multiplier, depth_multiplier)
 
                 print(e)
 
@@ -141,6 +135,10 @@ class GraphToMatrix:
         EXPERIMENTAL = False
         max_layer_used = 0
 
+        number_of_sources = GraphToMatrix.get_number_of_sources(graph) + 1
+        print(number_of_sources)
+        number_of_sources_placed = 1
+
         # for to_node, from_node in networkx.bfs_edges(graph, source=DependencyTreeNode.get_root_identifier(), reverse=True):
         for from_node in reversed(list(networkx.topological_sort(graph))):
             print(from_node)
@@ -177,6 +175,7 @@ class GraphToMatrix:
 
                 from_cords = [c for c in dependency_node.factory.get_cords(cord)]
             else:
+                """
                 if EXPERIMENTAL:
                     source_layer = max(max_layer_used, max(x for x in active_layer.keys()) + 3)
                 else:
@@ -186,11 +185,16 @@ class GraphToMatrix:
                     active_layer[source_layer] = padding + padding + math.floor(0.1 * matrix_width)
 
                 offset_in_layer = math.floor((0.1 + random.random() / 2) * matrix_width)
+                """
+
+                source_layer = matrix_depth - 1
+                offset_in_layer = math.floor(number_of_sources_placed / number_of_sources * matrix_width)
+
+                number_of_sources_placed += 1
 
                 cord = (source_layer, offset_in_layer)
                 element_type = from_node
 
-                # grid[cord] = GridEntry(from_node, entry_type=GridEntryTypes.Source)
                 grid.add_source(cord, from_node)
 
                 is_in_cords = lambda new_cord: new_cord == cord
@@ -261,10 +265,14 @@ class GraphToMatrix:
             grid
         )
 
+        start_cord = None
         last_cord = None
         active_orientation = None
         while not is_in_cords(active_cord):
             next_cord, next_orientation = GraphToMatrix.get_path_predecessor(active_cord, visited_matrix)
+
+            if start_cord is None:
+                start_cord = next_cord
 
             if not is_in_cords(active_cord) and not is_in_successor(active_cord):
                 distance = GraphToMatrix.distance_between_basis_vectors(active_cord, next_cord)
@@ -304,6 +312,20 @@ class GraphToMatrix:
             active_orientation = next_orientation
 
         grid.transform_into_inserter(last_cord)
+
+        if start_cord != last_cord:
+            grid.transform_into_inserter(start_cord) # TODO: it is needed to ensure that path is find that way that last 2 and first 2 transportation elements has same orientation (same orientation is not necessary but it has to be one of possible approaches such as L connection etc.)
+
+        """
+        (Belt) -> (Inserter) -> (Factory)
+        (Belt)
+          |
+          v
+        (inserter)
+          |
+          V
+        (Factory)
+        """
 
     @staticmethod
     def bfs(from_cords, is_in_successor, grid):
@@ -372,7 +394,13 @@ class GraphToMatrix:
 
         active_cord = 0
         found = False
-        while not found and len(heap) != 0 and len(heap) <= 1_000_000: #TODO: remove limit
+
+        last_len = 0
+        while not found and len(heap) != 0 and len(visited_matrix) <= 1_000_000: #TODO: remove limit
+            if len(visited_matrix) - last_len >= 100_000:
+                last_len = len(visited_matrix)
+                print(f"tu {len(visited_matrix)}")
+
             a_star_node = heapq.heappop(heap)
             #print(a_star_node)
 
@@ -386,6 +414,10 @@ class GraphToMatrix:
                 if new_cord in matrix:
                     visited_matrix[new_cord] = -1
             """
+
+            # TODO: at this points we are looking for arbitrary shortest path, but if we want to enforce "esthetics" maybe
+            #  makes sense for example to get values to the surrounding of factory and if we preferre it to be at the center
+            #  we give the points more or less points
             found_way = False
 
             for multiplier in range(1, GraphToMatrix.UNDERGROUND_MOVE_LENGTH):
@@ -416,10 +448,13 @@ class GraphToMatrix:
                     #TODO: remove
                     active_cord = new_cord
 
-                if found_way or found:
+                if found_way or found or not GraphToMatrix.UNDERGROUND_MOVES_ENABLED:
                     break
 
                 #print("way not found")
+
+        if len(visited_matrix) > 1_000_000:
+            raise Exception("Unable to find a path")
 
         return active_cord, visited_matrix
 
@@ -461,7 +496,7 @@ class GraphToMatrix:
             #print("vetsi pouzit", multiplier + 1)
         """
 
-        for i, move in enumerate(GraphToMatrix.grid_moves):
+        for i, move in enumerate(Grid.GRID_MOVES):
             new_cord = (from_cord[0] + multiplier * move[0], from_cord[1] + multiplier * move[1])
 
             if (was_visited and new_cord in visited_matrix) or (not was_visited and new_cord not in visited_matrix):
@@ -472,7 +507,7 @@ class GraphToMatrix:
     def _get_standard_move(from_cord, visited_matrix, multiplier, was_visited = False, return_enumeration = False):
         normal_move_was_used = False
 
-        for i, move in enumerate(GraphToMatrix.grid_moves):
+        for i, move in enumerate(Grid.GRID_MOVES):
             new_cord = (from_cord[0] + multiplier * move[0], from_cord[1] + multiplier * move[1])
 
             if (was_visited and new_cord in visited_matrix) or (not was_visited and new_cord not in visited_matrix):
@@ -555,6 +590,16 @@ class GraphToMatrix:
         orientation_vector = ((active[0] - prev[0]) / distance, (active[1] - prev[1]) / distance)
 
         return prev[0] + 2 * orientation_vector[0], prev[1] + 2 * orientation_vector[1]
+
+    @staticmethod
+    def get_number_of_sources(graph: DiGraph) -> int:
+        n = 0
+
+        for node in graph.nodes:
+            if "source" in graph.nodes[node]["label"]:
+                n += 1
+
+        return n
 
 # https://wiki.factorio.com/Blueprint_string_format
 # https://github.com/redruin1/factorio-blueprint-schemas

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from enum import IntEnum
@@ -11,6 +9,17 @@ class Grid:
     """
     Represents the planar layout of the factory.
     """
+
+    GRID_MOVES = [(0, 1), (-1, 0), (0, -1), (1, 0)]
+
+    # In Factorio the orientation is
+    #  Up: 0
+    #  Right: 4
+    #  Down: 8
+    #  Left: 12
+
+    # When we compute the path between assemblers we go against the orientation.
+    # Therefore, the move array is in this strange order.
 
     def __init__(self) -> None:
         """
@@ -98,10 +107,11 @@ class Grid:
         :param cord: Coordinates of the transportation element.
         """
 
-        if self.data[cord].entry_type != GridEntryTypes.Transportation:
-            raise Exception("Inserter cannot be placed instead of factory or source")
+        if cord not in self.data.keys() or self.data[cord].entry_type != GridEntryTypes.Transportation:
+            raise Exception(f"Inserter cannot be placed at {cord} instead of factory or source.")
 
         self.data[cord].name = "inserter"
+        self.data[cord].orientation = (self.data[cord].orientation + 8) % 16
 
     def _get_movable_id(self) -> GridEntryId:
         """
@@ -251,6 +261,15 @@ class Grid:
             if self.data[grid_entry_cord].is_movable():
                 yield grid_entry_cord, self.data[grid_entry_cord]
 
+    def get_number_of_factories(self) -> int:
+        n = 0
+
+        for grid_entry_cord in self.data.keys():
+            if self.data[grid_entry_cord].is_movable():
+                n += 1
+
+        return n
+
     def _erase_building(self, grid_entry: GridEntry) -> None:
         """
         Removes occupied surroundings of the provided building from the grid.
@@ -346,6 +365,30 @@ class Grid:
 
         return self.data[cord].get_id_text() == id
 
+    @staticmethod
+    def orientation_to_vector(orientation):
+        return Grid.GRID_MOVES[orientation // 4]
+
+    def _is_pointing_to_center(self, cord):
+        x, y = cord
+
+        fdx, fdy = Grid.orientation_to_vector(self.data[cord].orientation)
+        rdx, rdy = self.orientation_to_vector((self.data[cord].orientation + 4) % 16)
+        ldx, ldy = Grid.orientation_to_vector((self.data[cord].orientation - 4) % 16)
+
+        borders = [(x + fdx, y + fdy), (x + rdx + fdx, y + rdy + fdy), (x + ldx + fdx, y + ldy + fdy)]
+
+        return all(map(lambda b: self.__contains__(b), borders))
+
+    def get_number_of_pointing_to_center(self) -> int:
+        n = 0
+
+        for entry_key in self.data.keys():
+            if self.data[entry_key].is_transportation() and self._is_pointing_to_center(entry_key):
+                n += 1
+
+        return n
+
     def exists_path(
         self,
         a: list[tuple],
@@ -362,19 +405,30 @@ class Grid:
         """
 
         queue = deque((x, y, 0) for x, y in a)
+        visited = set()
 
         while len(queue) > 0:
+            if len(queue) >= 100_000:
+                raise Exception("Cannot find connection")
+
             x,y,d = queue.popleft()
+            #print(x,y)
 
-            for dx, dy in [(0,1), (-1, 0), (1,0), (0, -1)]:
-                nx, ny = x + dx, y + dy
+            found = False
+            multiplier = 0
+            while not found and multiplier < 10: #TODO: some constant for underground (but cannot use that from GraphToMatrix because of circular imports)
+                multiplier += 1
 
-                if (nx, ny) in b and d > 0:
-                    return True
+                for dx, dy in [(0,1), (-1, 0), (1,0), (0, -1)]:
+                    nx, ny = x + multiplier * dx, y + multiplier * dy
 
-                if self.__contains__((nx, ny)) and self.is_belt_with_id((nx, ny), id):
-                    queue.append((nx, ny, d + 1))
+                    if (nx, ny) in b and d > 0:
+                        return True
 
+                    if self.__contains__((nx, ny)) and self.is_belt_with_id((nx, ny), id) and (nx, ny) not in visited:
+                        queue.append((nx, ny, d + 1))
+                        visited.add((nx, ny))
+                        found = True
         return False
 
 
@@ -537,6 +591,9 @@ class GridEntry:
         """
 
         return self.entry_type == GridEntryTypes.Source
+
+    def is_transportation(self) -> bool:
+        return self.entry_type == GridEntryTypes.Transportation
 
     def is_movable(self) -> bool:
         """
