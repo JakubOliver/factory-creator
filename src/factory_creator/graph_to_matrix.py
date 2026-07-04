@@ -17,7 +17,7 @@ class Grid:
     """
 
     def __init__(self):
-        self.data = {}
+        self.data = {} # TODO: maybe occupied whould be also for not only belts
         self.occupied = set()
 
     def set_occupied(self, cord: tuple) -> None:
@@ -70,6 +70,22 @@ class Grid:
 
         for key in self.data.keys():
             yield key
+
+    def get_x_cord(self):
+        return map(lambda x: x[0], self.occupied.union(self.data.keys()))
+
+    def get_y_cord(self):
+        return map(lambda x: x[1], self.occupied.union(self.data.keys()))
+
+    def get_area(self):
+        dx = abs(max(self.get_x_cord()) - min(self.get_x_cord()))
+
+        dy = abs(max(self.get_y_cord()) - min(self.get_y_cord()))
+
+        return dx * dy
+
+    def get_used_block(self):
+        return len(self.occupied) + len(self.data)
 
 
 class GridEntry:

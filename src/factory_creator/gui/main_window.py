@@ -19,6 +19,7 @@ from PySide6.QtCore import QUrl
 import networkx
 import matplotlib.pyplot as plt
 
+from ..evol import Evolution
 from ..factory_loader import FactoryLoader
 from ..graph_to_matrix import GraphToMatrix
 from ..json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
@@ -163,44 +164,68 @@ class MainWindow(QMainWindow):
         FileUtil.create_output_dir()
 
         #TODO: whether file exists
+        factory_seed = MainWindow.process_factory(
+            path,
+            recipe_type,
+            show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
+            simplified_structure=self.show_simplified_structure.isChecked(),
+            show_graph=True
+        )
 
+        if factory_seed is not None:
+            self.factory_link = MainWindow.create_factory_url_link(factory_seed)
+
+            self.factory_link_container.show()
+
+    # TODO: find better place for this function than GUI
+    @staticmethod
+    def process_factory(
+        path,
+        recipe_type,
+        show_amounts = True,
+        simplified_structure = False,
+        show_graph = False
+    ):
         factories = FactoryLoader.load(path)
 
         root = FactoryLoader.get_dependency_tree(factories, recipe_type)
 
         if root is not None:
             graph = root.get_dependency_graph(
-                show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
-                show_simplified=self.show_simplified_structure.isChecked()
+                show_amounts=show_amounts,
+                show_simplified=simplified_structure
             )
 
-            graph_layout = networkx.nx_pydot.graphviz_layout(graph, prog="dot")
-            networkx.draw(graph, graph_layout, with_labels=False)
+            if show_graph:
+                graph_layout = networkx.nx_pydot.graphviz_layout(graph, prog="dot")
+                networkx.draw(graph, graph_layout, with_labels=False)
 
-            node_labels = networkx.get_node_attributes(graph, "label")
-            networkx.draw_networkx_labels(graph, graph_layout, node_labels)
+                node_labels = networkx.get_node_attributes(graph, "label")
+                networkx.draw_networkx_labels(graph, graph_layout, node_labels)
 
-            edge_labels = networkx.get_edge_attributes(graph, "label")
-            networkx.draw_networkx_edge_labels(graph, graph_layout, edge_labels=edge_labels)
+                edge_labels = networkx.get_edge_attributes(graph, "label")
+                networkx.draw_networkx_edge_labels(graph, graph_layout, edge_labels=edge_labels)
 
-            plt.show()
+                plt.show()
 
-            p = networkx.drawing.nx_pydot.to_pydot(graph)
-            p.write_png("output/tree.png")
-            p.write_svg("output/tree.svg")
+                p = networkx.drawing.nx_pydot.to_pydot(graph)
+                p.write_png("output/tree.png")
+                p.write_svg("output/tree.svg")
 
             matrix = GraphToMatrix.convert_via_heuristics(graph, root)
             json_obj = MatrixJsonConvertor.encode(matrix)
             factory_seed = BluePrintRepresentation.encode(json_obj)
 
-            print(factory_seed)
+            #print(factory_seed)
+            print(Evolution.fitness(matrix))
 
-            self.factory_link = MainWindow._create_factory_url_link(factory_seed)
+            return factory_seed
+        else:
+            return None
 
-            self.factory_link_container.show()
-
+    # TODO: find better place
     @staticmethod
-    def _create_factory_url_link(seed: str) -> str:
+    def create_factory_url_link(seed: str) -> str:
         return f"https://fbe.teoxoy.com/?source={seed}"
 
     def _show_error(self, error_message: str) -> None:

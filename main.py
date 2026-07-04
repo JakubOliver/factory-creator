@@ -3,6 +3,7 @@
 import sys
 from PySide6.QtWidgets import QApplication
 
+from src.factory_creator.argument_processor import ArgumentProcessor
 #TODO: setup pyproject.toml (and use pip install -e .   so it is not needed to write src.factory... but only factory...)
 
 from src.factory_creator.gui.main_window import MainWindow
@@ -20,4 +21,14 @@ def main():
     return app.exec()
 
 if __name__ == "__main__":
-    sys.exit(main())
+    args = ArgumentProcessor.process_arguments()
+
+    if not args.cli:
+        sys.exit(main())
+    else:
+        factory_seed = MainWindow.process_factory(
+            args.input,
+            args.building
+        )
+
+        print(MainWindow.create_factory_url_link(factory_seed))
