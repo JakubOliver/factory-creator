@@ -49,6 +49,10 @@ class GraphToMatrix:
     UNDERGROUND_MOVE_LENGTH = 6
     UNDERGROUND_MOVES_ENABLED = True
 
+    DEFAULT_WIDTH_MULTIPLIER = 10
+    DEFAULT_DEPTH_MULTIPLIER = 10
+    DEFAULT_PADDING = 1
+
     @staticmethod
     def convert_via_heuristics(graph: networkx.classes.DiGraph, root: DependencyTreeNode) -> Grid:
         """
@@ -60,45 +64,73 @@ class GraphToMatrix:
         :return: Grid representation of the factory.
         """
 
+        padding = GraphToMatrix.DEFAULT_PADDING
+
         max_width = root.get_approx_width_of_tree()
         max_depth = networkx.dag_longest_path_length(graph) + 1
 
-        #TODO: better
-        width_multiplicator = 10
-        depth_multiplicator = 10
+        width_multiplier = GraphToMatrix.DEFAULT_WIDTH_MULTIPLIER
+        depth_multiplier = GraphToMatrix.DEFAULT_DEPTH_MULTIPLIER
 
-        padding = 0
-        matrix_width = width_multiplicator * max_width
-        matrix_depth = depth_multiplicator * max_depth + 10
+        grid = None
+
+        successful = False
+        while not successful:
+            try:
+                grid =  GraphToMatrix._compute_grid(
+                    graph,
+                    root,
+                    padding = padding,
+                    width_multiplier = width_multiplier,
+                    max_width = max_width,
+                    depth_multiplier = depth_multiplier,
+                    max_depth = max_depth
+                )
+
+                successful = True
+            except Exception as e:
+                padding *= 2
+                width_multiplier *= 2
+                depth_multiplier *= 2
+
+                print(e)
+
+        return grid
+
+    @staticmethod
+    def _compute_grid(
+        graph: networkx.classes.DiGraph,
+        root: DependencyTreeNode,
+        padding,
+        width_multiplier,
+        max_width,
+        depth_multiplier,
+        max_depth
+    ) -> Grid:
+        matrix_width = width_multiplier * max_width
+        matrix_depth = depth_multiplier * max_depth + 10
 
         grid = Grid()
 
-        #TODO: maybe we want nondeterministic BFS, so we get different planar graphs, therefore
+        # TODO: maybe we want nondeterministic BFS, so we get different planar graphs, therefore
         # we should shuffle the children of the nodes
 
-        #TODO: consider using custom BFS that would non-deterministically assign the depth to the node,
+        # TODO: consider using custom BFS that would non-deterministically assign the depth to the node,
         # if there is space of change
 
         root_cord = (10, matrix_width // 2)
-        #TODO: resolve warning (at method get_cords not only to factory but also item)
+        # TODO: resolve warning (at method get_cords not only to factory but also item)
 
         grid.add_factory(
             root_cord,
             str(root),
             [sur for sur in root.factory.get_cords(root_cord) if sur != root_cord]
         )
-        """
-        grid[root_cord] = GridEntry(str(root), is_factory=True)
-        for cord in root.factory.get_cords(root_cord):
-            if cord != root_cord:
-                grid.set_occupied(cord, root_cord)
-        """
-
 
         graph.nodes[DependencyTreeNode.get_root_identifier()]["cord"] = root_cord
 
-        #TODO: fistly place building then find belts
-        #TODO: maybe makes more sense to compute the layers only based on the graph with the inbuild networkx function
+        # TODO: fistly place building then find belts
+        # TODO: maybe makes more sense to compute the layers only based on the graph with the inbuild networkx function
         # best thing would be to use networkx.brf_layers but this methods (as far a know) does not provided the reverse option
 
         active_layer = {}
@@ -109,7 +141,7 @@ class GraphToMatrix:
         EXPERIMENTAL = False
         max_layer_used = 0
 
-        #for to_node, from_node in networkx.bfs_edges(graph, source=DependencyTreeNode.get_root_identifier(), reverse=True):
+        # for to_node, from_node in networkx.bfs_edges(graph, source=DependencyTreeNode.get_root_identifier(), reverse=True):
         for from_node in reversed(list(networkx.topological_sort(graph))):
             print(from_node)
 
@@ -129,9 +161,10 @@ class GraphToMatrix:
                 if node_layer not in active_layer:
                     active_layer[node_layer] = padding + math.floor(0.1 * matrix_width)
 
-                cord = (node_layer * depth_multiplicator + 10, active_layer[node_layer] + dependency_node.get_approx_width_of_tree() // 2)
+                cord = (node_layer * depth_multiplier + 10,
+                        active_layer[node_layer] + dependency_node.get_approx_width_of_tree() // 2)
 
-                active_layer[node_layer] += dependency_node.get_approx_width_of_tree() * width_multiplicator
+                active_layer[node_layer] += dependency_node.get_approx_width_of_tree() * width_multiplier
 
                 # TODO: add functino for this, because this work if and only if building is created before surroundings
                 grid.add_factory(
@@ -139,13 +172,6 @@ class GraphToMatrix:
                     str(dependency_node),
                     [sur for sur in dependency_node.factory.get_cords(cord) if sur != cord]
                 )
-
-                """
-                grid[cord] = GridEntry(str(dependency_node), is_factory=True)
-                for building_cord in dependency_node.factory.get_cords(cord):
-                    if building_cord != cord:
-                        grid.set_occupied(building_cord, cord)
-                """
 
                 is_in_cords = dependency_node.factory.get_cords_lambda(cord)
 
@@ -159,15 +185,15 @@ class GraphToMatrix:
                 if source_layer not in active_layer:
                     active_layer[source_layer] = padding + padding + math.floor(0.1 * matrix_width)
 
-                offset_in_layer = math.floor((0.1 + random.random() / 2)  * matrix_width)
+                offset_in_layer = math.floor((0.1 + random.random() / 2) * matrix_width)
 
                 cord = (source_layer, offset_in_layer)
                 element_type = from_node
 
-                #grid[cord] = GridEntry(from_node, entry_type=GridEntryTypes.Source)
+                # grid[cord] = GridEntry(from_node, entry_type=GridEntryTypes.Source)
                 grid.add_source(cord, from_node)
 
-                is_in_cords = lambda new_cord : new_cord == cord
+                is_in_cords = lambda new_cord: new_cord == cord
                 from_cords = [cord]
 
             graph.nodes[from_node]["cord"] = cord
@@ -176,28 +202,25 @@ class GraphToMatrix:
                 print(element_type, from_node, cord, successor, graph.nodes[successor]["cord"])
 
                 if "ref" in graph.nodes[successor]:
-                    is_in_successor = graph.nodes[successor]["ref"].factory.get_cords_lambda(graph.nodes[successor]["cord"])
+                    is_in_successor = graph.nodes[successor]["ref"].factory.get_cords_lambda(
+                        graph.nodes[successor]["cord"])
 
-                    to_cords = [c for c in graph.nodes[successor]["ref"].factory.get_cords(graph.nodes[successor]["cord"])]
+                    to_cords = [c for c in
+                                graph.nodes[successor]["ref"].factory.get_cords(graph.nodes[successor]["cord"])]
                 else:
-                    is_in_successor = lambda new_cord : new_cord == graph.nodes[successor]["cord"]
+                    is_in_successor = lambda new_cord: new_cord == graph.nodes[successor]["cord"]
 
                     to_cords = [graph.nodes[successor]["cord"]]
 
-                try:
-                    GraphToMatrix.find_path(
-                        cord,
-                        from_cords,
-                        is_in_cords,
-                        graph.nodes[successor]["cord"],
-                        to_cords,
-                        is_in_successor,
-                        grid,
-                    )
-                except Exception as e:
-                    #TODO: repair with extra margin
-                    print(f"failed: {e}")
-                    continue
+                GraphToMatrix.find_path(
+                    cord,
+                    from_cords,
+                    is_in_cords,
+                    graph.nodes[successor]["cord"],
+                    to_cords,
+                    is_in_successor,
+                    grid,
+                )
 
         return grid
 
@@ -238,15 +261,15 @@ class GraphToMatrix:
             grid
         )
 
+        last_cord = None
         active_orientation = None
         while not is_in_cords(active_cord):
             next_cord, next_orientation = GraphToMatrix.get_path_predecessor(active_cord, visited_matrix)
 
             if not is_in_cords(active_cord) and not is_in_successor(active_cord):
                 distance = GraphToMatrix.distance_between_basis_vectors(active_cord, next_cord)
+
                 if distance == 1:
-                    #active_orientation = 0 if active_orientation is None else active_orientation #TODO: remove
-                    #grid[active_cord] = GridEntry("transport-belt", orientation=active_orientation)
                     grid.add_transportation(
                         cord = active_cord,
                         name = "transport-belt",
@@ -260,7 +283,6 @@ class GraphToMatrix:
                     start_of_underground_belt = GraphToMatrix.cord_after_previous_in_direction(next_cord, active_cord)
                     opposite_orientation = GraphToMatrix.get_orientation_in_opposite_direction(active_orientation)
 
-                    #grid[start_of_underground_belt] = GridEntry("fast-underground-belt", orientation=opposite_orientation)
                     grid.add_transportation(
                         cord = start_of_underground_belt,
                         name = "fast-underground-belt",
@@ -269,7 +291,6 @@ class GraphToMatrix:
                         to_cord= to_cord
                     )
 
-                    #grid[active_cord] = GridEntry("fast-underground-belt", active_orientation)
                     grid.add_transportation(
                         cord = active_cord,
                         name = "fact-underground-belt",
@@ -278,8 +299,11 @@ class GraphToMatrix:
                         to_cord= to_cord
                     )
 
+            last_cord = active_cord
             active_cord = next_cord
             active_orientation = next_orientation
+
+        grid.transform_into_inserter(last_cord)
 
     @staticmethod
     def bfs(from_cords, is_in_successor, grid):

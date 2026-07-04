@@ -1,11 +1,10 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from enum import IntEnum
 import prettytable
 from collections import deque
-
-#TODO: maybe makes sense that the entries in the dictionary are not only string which denotes the type
-# but also the size and roration (or at least rotation, if we can compute the size implicitly, but explicit
-# size maybe makes more sense)
 
 #TODO: maybe add mapping id to object
 class Grid:
@@ -13,10 +12,14 @@ class Grid:
     Represents the planar layout of the factory.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Creates an empty grid representation of the factory.
+        """
+
         self.id_counter = 0
 
-        self.data : dict[tuple, GridEntry] = {} # TODO: maybe occupied whould be also for not only belts
+        self.data : dict[tuple, GridEntry] = {}
         self.occupied = set()
 
     def set_occupied(self, cord: tuple, building_cord: tuple) -> None:
@@ -24,14 +27,23 @@ class Grid:
         Sets the provided coordinates as occupied in the grid.
 
         :param cord: Coordinates in the grid.
+        :param building_cord: Coordinates of the building which occupies the provided coordinates.
         """
 
         self.occupied.add(cord)
         self.data[building_cord].add_surrounding(cord)
 
-    def add_factory(self, cord: tuple, name: str, sur_cord) -> None:
+    def add_factory(self, cord: tuple, name: str, sur_cord: list[tuple]) -> None:
+        """
+        Adds a factory into the grid and marks its surrounding coordinates as occupied.
+
+        :param cord: Coordinates where the factory will be placed.
+        :param name: Name of the factory entry.
+        :param sur_cord: Coordinates occupied by the factory around the main coordinate.
+        """
+
         if cord in self.data.keys():
-            raise "Building cannot be placed"
+            raise Exception("Building cannot be placed")
 
         self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Factory))
 
@@ -42,6 +54,13 @@ class Grid:
             self.set_occupied(sur, cord)
 
     def add_source(self, cord: tuple, name: str) -> None:
+        """
+        Adds a source into the grid at the provided coordinates.
+
+        :param cord: Coordinates where the source will be placed.
+        :param name: Name of the source entry.
+        """
+
         self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Source))
 
     def add_transportation(
@@ -52,6 +71,16 @@ class Grid:
         from_cord: tuple,
         to_cord: tuple
     ) -> None:
+        """
+        Adds a transportation element connecting two movable grid entries.
+
+        :param cord: Coordinates where the transportation element will be placed.
+        :param name: Name of the transportation element.
+        :param orientation: Orientation of the transportation element.
+        :param from_cord: Coordinates of the source grid entry.
+        :param to_cord: Coordinates of the destination grid entry.
+        """
+
         self.__setitem__(
             cord,
             GridEntry(
@@ -62,12 +91,37 @@ class Grid:
             )
         )
 
+    def transform_into_inserter(self, cord: tuple) -> None:
+        """
+        Changes a transportation element at the provided coordinates into an inserter.
+
+        :param cord: Coordinates of the transportation element.
+        """
+
+        if self.data[cord].entry_type != GridEntryTypes.Transportation:
+            raise Exception("Inserter cannot be placed instead of factory or source")
+
+        self.data[cord].name = "inserter"
+
     def _get_movable_id(self) -> GridEntryId:
+        """
+        Creates a new identifier for a movable grid entry.
+
+        :return: New identifier for a movable grid entry.
+        """
+
         self.id_counter += 1
 
         return GridEntryMovableId(self.id_counter)
 
     def _find_movable_id(self, cord: tuple) -> GridEntryId:
+        """
+        Returns the identifier of a movable grid entry at the provided coordinates.
+
+        :param cord: Coordinates of the movable grid entry.
+        :return: Identifier of the movable grid entry.
+        """
+
         return self.data[cord].id
 
     def __setitem__(self, key: tuple, value: GridEntry) -> None:
@@ -102,7 +156,7 @@ class Grid:
 
         return cord in self.data or cord in self.occupied
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[tuple]:
         """
         Iterator over the coordinates with elements in the grid.
 
@@ -112,7 +166,13 @@ class Grid:
         for key in self.data.keys():
             yield key
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Returns a table representation of the occupied part of the grid.
+
+        :return: Table representation of the occupied part of the grid.
+        """
+
         min_x = min(self.get_x_cord())
         min_y = min(self.get_y_cord())
 
@@ -140,32 +200,74 @@ class Grid:
 
         return str(table)
 
-    def get_x_cord(self):
+    def get_x_cord(self) -> Iterator[int]:
+        """
+        Returns iterator over all used x coordinates in the grid.
+
+        :return: Iterator over all used x coordinates in the grid.
+        """
+
         return map(lambda x: x[0], self.occupied.union(self.data.keys()))
 
-    def get_y_cord(self):
+    def get_y_cord(self) -> Iterator[int]:
+        """
+        Returns iterator over all used y coordinates in the grid.
+
+        :return: Iterator over all used y coordinates in the grid.
+        """
+
         return map(lambda x: x[1], self.occupied.union(self.data.keys()))
 
-    def get_area(self):
+    def get_area(self) -> int:
+        """
+        Returns the area of the rectangle covering all used coordinates.
+
+        :return: Area of the rectangle covering all used coordinates.
+        """
+
         dx = abs(max(self.get_x_cord()) - min(self.get_x_cord()))
 
         dy = abs(max(self.get_y_cord()) - min(self.get_y_cord()))
 
         return dx * dy
 
-    def get_used_block(self):
+    def get_used_block(self) -> int:
+        """
+        Returns number of coordinates used by elements and occupied surroundings.
+
+        :return: Number of coordinates used by elements and occupied surroundings.
+        """
+
         return len(self.occupied) + len(self.data)
 
-    def get_factories(self):
+    def get_factories(self) -> Iterator[tuple[tuple, GridEntry]]:
+        """
+        Iterates over movable grid entries and their coordinates.
+
+        :return: Iterator over pairs of coordinates and movable grid entries.
+        """
+
         for grid_entry_cord in self.data.keys():
             if self.data[grid_entry_cord].is_movable():
                 yield grid_entry_cord, self.data[grid_entry_cord]
 
-    def _erase_building(self, grid_entry):
+    def _erase_building(self, grid_entry: GridEntry) -> None:
+        """
+        Removes occupied surroundings of the provided building from the grid.
+
+        :param grid_entry: Building whose surroundings will be removed.
+        """
+
         for sur in grid_entry.surroundings:
             self.occupied.remove(sur)
 
-    def _remove_belts(self, grid_entry) -> None:
+    def _remove_belts(self, grid_entry: GridEntry) -> None:
+        """
+        Removes all transportation elements connected to the provided grid entry.
+
+        :param grid_entry: Grid entry whose connected transportation elements will be removed.
+        """
+
         belts_cors = set()
 
         for entry_key in self.data.keys():
@@ -176,34 +278,49 @@ class Grid:
             self.data.pop(cord)
 
     def _get_neighbors(self, grid_entry: GridEntry) -> list[tuple]:
+        """
+        Returns movable neighbors connected to the provided grid entry.
+
+        :param grid_entry: Grid entry whose neighbors will be found.
+        :return: List of connected neighbor coordinates and connection directions.
+        """
+
         neighbors = set()
-        is_to = {} # TODO: TEMPORARY USE OF INT USE ENUM OR SOMETHING ELSE
+        is_from_removed_to_neighbor = {}
 
         for entry_key in self.data.keys():
             if self.data[entry_key].is_connected_to(grid_entry.get_id()):
-                belt_id = self.data[entry_key].get_id_text().split("-") # TODO: maybe better
+                belt_id = self.data[entry_key].get_id_text().split("-")
+
+                if len(belt_id) != 2:
+                    raise ValueError(f"Identifier of belts {self.data[entry_key].get_id_text()} is not valid.")
 
                 if belt_id[0] == grid_entry.get_id_text():
                     neighbors.add(belt_id[1])
-                    is_to[belt_id[1]] = True
-                else:
+                    is_from_removed_to_neighbor[belt_id[1]] = True
+                elif belt_id[1] == grid_entry.get_id_text():
                     neighbors.add(belt_id[0])
-                    is_to[belt_id[0]] = False
-
-                """
-                for neighbor in belt_id:
-                    if neighbor != grid_entry.get_id_text():
-                        neighbors.add(neighbor)
-                """
+                    is_from_removed_to_neighbor[belt_id[0]] = False
+                else:
+                    raise ValueError(f"Identifier of belts {self.data[entry_key].get_id_text()} does not match grid entry {grid_entry.get_id_text()}")
 
         neighbors_cord = []
         for entry_key in self.data.keys():
             if self.data[entry_key].get_id_text() in neighbors:
-                neighbors_cord.append((entry_key, is_to[self.data[entry_key].get_id_text()]))
+                neighbors_cord.append(
+                    (entry_key, is_from_removed_to_neighbor[self.data[entry_key].get_id_text()])
+                )
 
         return neighbors_cord
 
     def erase_factory(self, cord: tuple) -> list[tuple]:
+        """
+        Removes a movable grid entry and its connected transportation elements.
+
+        :param cord: Coordinates of the movable grid entry which will be removed.
+        :return: List of connected neighbor coordinates and connection directions.
+        """
+
         grid_entry = self.data[cord]
 
         neighbors = self._get_neighbors(grid_entry)
@@ -215,7 +332,15 @@ class Grid:
 
         return neighbors
 
-    def is_belt_with_id(self, cord, id) -> bool:
+    def is_belt_with_id(self, cord: tuple, id: str) -> bool:
+        """
+        Returns whether a transportation element at the provided coordinates has the provided id.
+
+        :param cord: Coordinates checked in the grid.
+        :param id: Identifier of the transportation element.
+        :return: Whether a transportation element at the provided coordinates has the provided id.
+        """
+
         if not cord in self.data:
             return False
 
@@ -227,6 +352,15 @@ class Grid:
         b: list[tuple],
         id: str
     ) -> bool:
+        """
+        Returns whether a path with the provided transportation id exists between two coordinate sets.
+
+        :param a: Starting coordinates of the path.
+        :param b: Ending coordinates of the path.
+        :param id: Identifier of the transportation elements forming the path.
+        :return: Whether a path with the provided transportation id exists.
+        """
+
         queue = deque((x, y, 0) for x, y in a)
 
         while len(queue) > 0:
@@ -244,54 +378,111 @@ class Grid:
         return False
 
 
-# TODO: We need some way how do distinguish belts, because at small factories, the do not overlap very much and
-# we can distinguish them by the "topology" but when we have some intersection when we cannot 100% say which
-# one is correct -> add ID to the factories and all belts etc. would have ID from-to according to factories
-
-# Also we have 3 magor types -> factories, belts (other ways how to transport) and sources -> at this time
-# we only distinguish factories and others so maybe it is good idea to add some enum for all three
-
 class GridEntryTypes(IntEnum):
     Factory = 0
     Transportation = 1
     Source = 2
 
+
 class GridEntryId(ABC):
     @abstractmethod
     def get_id(self) -> str:
+        """
+        Returns textual representation of the grid entry identifier.
+
+        :return: Textual representation of the grid entry identifier.
+        """
+
         pass
 
     @abstractmethod
     def is_connected_to(self, to_id: GridEntryId) -> bool:
+        """
+        Returns whether this identifier is connected to the provided identifier.
+
+        :param to_id: Identifier checked for connection.
+        :return: Whether this identifier is connected to the provided identifier.
+        """
+
         pass
 
+
 class GridEntryMovableId(GridEntryId):
-    def __init__(self, entry_id: int):
+    def __init__(self, entry_id: int) -> None:
+        """
+        Creates an identifier for a movable grid entry.
+
+        :param entry_id: Numeric identifier of the movable grid entry.
+        """
+
         self.id = str(entry_id)
 
     def get_id(self) -> str:
+        """
+        Returns textual representation of the movable grid entry identifier.
+
+        :return: Textual representation of the movable grid entry identifier.
+        """
+
         return self.id
 
     def is_connected_to(self, to_id: GridEntryId) -> bool:
+        """
+        Returns whether this movable identifier is connected to the provided identifier.
+
+        :param to_id: Identifier checked for connection.
+        :return: Always false because movable identifiers do not connect directly.
+        """
+
         return False
 
+
 class GridEntryTransportationId(GridEntryId):
-    def __init__(self, from_id: GridEntryId, to_id: GridEntryId):
+    def __init__(self, from_id: GridEntryId, to_id: GridEntryId) -> None:
+        """
+        Creates an identifier for a transportation connection.
+
+        :param from_id: Identifier of the source grid entry.
+        :param to_id: Identifier of the destination grid entry.
+        """
+
         self.from_id = from_id
         self.to_id = to_id
 
     def get_id(self) -> str:
+        """
+        Returns textual representation of the transportation identifier.
+
+        :return: Textual representation of the transportation identifier.
+        """
+
         return GridEntryTransportationId.create_belt_id(
             self.from_id.get_id(),
             self.to_id.get_id()
         )
 
     def is_connected_to(self, con_id: GridEntryId) -> bool:
+        """
+        Returns whether the transportation identifier is connected to the provided identifier.
+
+        :param con_id: Identifier checked for connection.
+        :return: Whether the transportation identifier is connected to the provided identifier.
+        """
+
         return con_id == self.from_id or con_id == self.to_id
 
     @staticmethod
     def create_belt_id(from_id: str, to_id: str) -> str:
+        """
+        Creates textual identifier for a transportation connection.
+
+        :param from_id: Textual identifier of the source grid entry.
+        :param to_id: Textual identifier of the destination grid entry.
+        :return: Textual identifier for a transportation connection.
+        """
+
         return from_id + "-" + to_id
+
 
 class GridEntry:
     """
@@ -304,35 +495,93 @@ class GridEntry:
         name: str,
         orientation: int = 0,
         entry_type: GridEntryTypes = GridEntryTypes.Transportation
-    ):
+    ) -> None:
+        """
+        Creates an element stored in the grid.
+
+        :param entry_id: Identifier of the grid entry.
+        :param name: Name of the grid entry.
+        :param orientation: Orientation of the grid entry.
+        :param entry_type: Type of the grid entry.
+        """
+
         self.id = entry_id
         self.name = name
         self.orientation = orientation
         self.entry_type = entry_type
         self.surroundings = set()
 
-    def add_surrounding(self, cord: tuple):
+    def add_surrounding(self, cord: tuple) -> None:
+        """
+        Adds occupied surrounding coordinates to the grid entry.
+
+        :param cord: Occupied surrounding coordinates.
+        """
+
         self.surroundings.add(cord)
 
-    def is_factory(self):
+    def is_factory(self) -> bool:
+        """
+        Returns whether the grid entry represents a factory.
+
+        :return: Whether the grid entry represents a factory.
+        """
+
         return self.entry_type == GridEntryTypes.Factory
 
-    def is_source(self):
+    def is_source(self) -> bool:
+        """
+        Returns whether the grid entry represents a source.
+
+        :return: Whether the grid entry represents a source.
+        """
+
         return self.entry_type == GridEntryTypes.Source
 
-    def is_movable(self):
+    def is_movable(self) -> bool:
+        """
+        Returns whether the grid entry can be moved by the evolution process.
+
+        :return: Whether the grid entry can be moved by the evolution process.
+        """
+
         return self.is_factory() or self.is_source()
 
-    def get_id(self):
+    def get_id(self) -> GridEntryId:
+        """
+        Returns identifier of the grid entry.
+
+        :return: Identifier of the grid entry.
+        """
+
         return self.id
 
-    def get_id_text(self):
+    def get_id_text(self) -> str:
+        """
+        Returns textual identifier of the grid entry.
+
+        :return: Textual identifier of the grid entry.
+        """
+
         return self.id.get_id()
 
     def is_connected_to(self, con_id: GridEntryId) -> bool:
+        """
+        Returns whether the grid entry is connected to the provided identifier.
+
+        :param con_id: Identifier checked for connection.
+        :return: Whether the grid entry is connected to the provided identifier.
+        """
+
         return self.id.is_connected_to(con_id)
 
-    def get_detailed_name(self):
+    def get_detailed_name(self) -> str:
+        """
+        Returns name of the grid entry extended by its type when applicable.
+
+        :return: Name of the grid entry extended by its type when applicable.
+        """
+
         if self.is_factory():
             return self.name + "-factory"
         elif self.is_source():
@@ -340,6 +589,12 @@ class GridEntry:
         else:
             return self.name
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Returns textual representation of the grid entry.
+
+        :return: Textual representation of the grid entry.
+        """
+
         return self.get_id_text()
         return self.name[:2]

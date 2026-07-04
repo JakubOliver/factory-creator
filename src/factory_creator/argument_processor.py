@@ -1,6 +1,9 @@
 import argparse
 
 class ArgumentProcessor:
+    CLI_DEFAULT_ITERATION = 10
+    CLI_DEFAULT_STAGNATION = 10
+
     @staticmethod
     def process_arguments():
         parser = argparse.ArgumentParser()
@@ -35,7 +38,16 @@ class ArgumentProcessor:
             required=False,
             type=int,
             help="number of iteration of evolution",
-            default = 10 # TODO: const
+            default = ArgumentProcessor.CLI_DEFAULT_ITERATION
+        )
+
+        parser.add_argument(
+            "-s",
+            "--stagnation",
+            required=False,
+            type=int,
+            help="number of generation after what will be evolution algorithm terminated if no progress occurs",
+            default = ArgumentProcessor.CLI_DEFAULT_STAGNATION
         )
 
         args = parser.parse_args()

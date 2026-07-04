@@ -1,6 +1,8 @@
 import itertools
 from typing import override
 
+from docutils.io import InputError
+
 from .assembler import Assembler
 
 class Item:
@@ -38,8 +40,7 @@ class Item:
             if ingredient.name == ingredient_name:
                 return ingredient.amount
 
-        # TODO: throw ingredient now found
-        return 1
+        raise ValueError(f"{ingredient_name} not found in ingredients")
 
     def get_cords(self, cord):
         """
@@ -50,7 +51,7 @@ class Item:
         :return: Iterator across all 2D coordination that the item occupies.
         """
 
-        # TODO: this is only dummy function (it is needed to check if this makes sense)
+        # This is only dummy function (it is needed to check if this makes sense)
         yield  cord
 
     @staticmethod
@@ -84,7 +85,7 @@ class Item:
         :return: Coordination of the center of the item.
         """
 
-        # TODO: this is only dummy function (it is needed to check if this makes sense)
+        # This is only dummy function (it is needed to check if this makes sense)
         x, y = cord
 
         return x + 0.5, y + 0.5

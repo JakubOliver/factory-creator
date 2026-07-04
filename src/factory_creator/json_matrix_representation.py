@@ -45,7 +45,8 @@ class MatrixJsonConvertor:
         for i, j in matrix:
             entry = matrix[i, j]
 
-            if entry.name == "transport-belt" or entry.name == "fast-underground-belt":
+            #TODO: maybe is needed to rotate inserters
+            if entry.name in ["transport-belt", "fast-underground-belt", "inserter"]:
                 entities["entities"].append(MatrixJsonConvertor._get_entity(
                     entry.name,
                     (i + 1/2, j + 1/2),
