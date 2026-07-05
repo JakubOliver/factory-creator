@@ -77,8 +77,6 @@ class GraphToMatrix:
     into the grid representation.
     """
 
-    # This is the number of tiles red fast underground belt can travel
-    UNDERGROUND_MOVE_LENGTH = 6
     UNDERGROUND_MOVES_ENABLED = True
 
     USE_A_STAR = True # If false, then BFS would be used
@@ -301,9 +299,9 @@ class GraphToMatrix:
         last_node = None
         underground_next = False
 
-        print(from_cords, to_cords)
+        #print(from_cords, to_cords)
         while not is_in_cords(a_star_node.cord):
-            print(a_star_node)
+            #print(a_star_node)
             #next_cord, next_orientation = GraphToMatrix.get_path_predecessor(active_cord, visited_matrix, to_cords)
             next_node = a_star_node.predecessor
 
@@ -480,7 +478,7 @@ class GraphToMatrix:
         for entry in heap:
             visited_matrix[(entry.cord, entry.orientation, entry.streak)] = 0
 
-        active_node = 0
+        active_node = None
         found = False
 
         last_len = 0
@@ -509,7 +507,7 @@ class GraphToMatrix:
             # TODO: at this points we are looking for arbitrary shortest path, but if we want to enforce "esthetics" maybe
             #  makes sense for example to get values to the surrounding of factory and if we preferre it to be at the center
             #  we give the points more or less points
-            for multiplier in range(1, GraphToMatrix.UNDERGROUND_MOVE_LENGTH):
+            for multiplier in range(1, Grid.UNDERGROUND_MOVE_LENGTH):
                 if a_star_node.streak < GraphToMatrix.A_STAR_STREAK_THRESHOLD and multiplier > 1:
                     break
 
@@ -540,7 +538,7 @@ class GraphToMatrix:
                         #TODO: remove
                         active_node = node
 
-        if len(visited_matrix) > 1_000_000 and not GraphToMatrix.ENABLE_UNFINISH_BELTS:
+        if len(visited_matrix) > 1_000_000 and not GraphToMatrix.ENABLE_UNFINISH_BELTS or active_node is None:
             raise Exception("Unable to find a path")
 
         return active_node, visited_matrix
@@ -640,7 +638,7 @@ class GraphToMatrix:
         :return: Coordinate from which we could have gone to the current one.
         """
 
-        for multiplier in range(1, GraphToMatrix.UNDERGROUND_MOVE_LENGTH):
+        for multiplier in range(1, Grid.UNDERGROUND_MOVE_LENGTH):
             for enumeration, new_cord in GraphToMatrix.get_moves(cord, visited_matrix, multiplier=multiplier, was_visited=True, return_enumeration=True):
                 if (visited_matrix[cord] - visited_matrix[new_cord]) == multiplier and new_cord not in to_cords:
                     return new_cord, GraphToMatrix.get_enumeration_to_orientation(enumeration)

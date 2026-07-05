@@ -3,7 +3,7 @@ import sys
 
 import json
 
-from .graph_to_matrix import Grid
+from .graph_to_matrix import Grid, GridEntry
 
 
 class MatrixJsonConvertor:
@@ -54,11 +54,12 @@ class MatrixJsonConvertor:
                     entity_number
                 ))
             elif "source" in entry.name:
-                entities["entities"].append(MatrixJsonConvertor._get_entity(
+                entities["entities"].append(MatrixJsonConvertor._get_chest_entity(
                     "wooden-chest",
                     (i + 1/2, j + 1/2),
                     entry.orientation,
-                    entity_number
+                    entity_number,
+                    GridEntry.extract_item_name_from_source(entry.name)
                 ))
             else:
                 entities["entities"].append(MatrixJsonConvertor._get_assembling_machine(
@@ -73,6 +74,28 @@ class MatrixJsonConvertor:
 
         return entities
 
+
+    @staticmethod
+    def _get_chest_entity(name: str, position: tuple, orientation: int, entity_number: int, content_name: str):
+        content= MatrixJsonConvertor._get_entity(name, position, orientation, entity_number)
+        content["items"] = [
+            {
+                "id": {
+                    "name": content_name
+                },
+                "items": {
+                    "in_inventory": [
+                        {
+                            "inventory": 1,
+                            "stack": 0,
+                            "count": 100
+                        }
+                    ]
+                }
+            }
+        ]
+
+        return content
 
     @staticmethod
     def _get_entity(name: str, position: tuple, orientation: int, entity_number: int):

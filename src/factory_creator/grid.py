@@ -1,3 +1,4 @@
+import itertools
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from enum import IntEnum
@@ -21,6 +22,9 @@ class Grid:
 
     # When we compute the path between assemblers we go against the orientation.
     # Therefore, the move array is in this strange order.
+
+    # This is the number of tiles red fast underground belt can travel
+    UNDERGROUND_MOVE_LENGTH = 6
 
     def __init__(self) -> None:
         """
@@ -198,6 +202,9 @@ class Grid:
         for key in self.data.keys():
             yield key
 
+    def __len__(self):
+        return len(self.occupied) + len(self.data)
+
     def __str__(self) -> str:
         """
         Returns a table representation of the occupied part of the grid.
@@ -270,7 +277,39 @@ class Grid:
         :return: Number of coordinates used by elements and occupied surroundings.
         """
 
-        return len(self.occupied) + len(self.data)
+        #return len(self.occupied) + len(self.data)
+
+        n = len(self.occupied)
+
+        for entry_key in self.data.keys():
+            if self.data[entry_key].name == "fast-underground-belt": #TODO: better (add cost to the gridEntry)
+                n += 6
+            else:
+                n += 1
+
+        return n
+
+    def _get_center_cord(self) -> tuple[float, float]:
+        x, y = 0, 0
+
+        for dx, dy in itertools.chain(self.occupied, self.data.keys()):
+            x += dx
+            y += dy
+
+        n = len(self)
+
+        return x / n, y / n
+
+    def get_distances_from_center(self) -> int:
+        cx, cy = self._get_center_cord()
+
+        d = 0
+
+        for dx, dy in itertools.chain(self.occupied, self.data.keys()):
+            d += abs(cx - dx)
+            d += abs(cy - dy)
+
+        return d
 
     def get_factories(self) -> Iterator[tuple[tuple, GridEntry]]:
         """
@@ -442,7 +481,7 @@ class Grid:
 
             found = False
             multiplier = 0
-            while not found and multiplier < 10: #TODO: some constant for underground (but cannot use that from GraphToMatrix because of circular imports)
+            while not found and multiplier < Grid.UNDERGROUND_MOVE_LENGTH:
                 multiplier += 1
 
                 for dx, dy in [(0,1), (-1, 0), (1,0), (0, -1)]:
@@ -681,3 +720,7 @@ class GridEntry:
 
         return self.get_id_text()
         return self.name[:2]
+
+    @staticmethod
+    def extract_item_name_from_source(name: str) -> str:
+        return name.split("_source")[0]

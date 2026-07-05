@@ -268,6 +268,7 @@ class Evolution:
         fitness -= grid.get_area()
         fitness -= grid.get_used_block() / 1.5
         fitness += grid.get_number_of_pointing_to_center() * 10
+        fitness -= grid.get_distances_from_center()
 
         if test_connection:
             if not Evolution.fitness_connection(grid, connection_pair):
