@@ -1,6 +1,6 @@
-from .factory_loader import FactoryLoader
-from .factory_processor import FactoryProcessor
-from .gui.main_window import MainWindow
+from src.factory_creator.factory_loader import FactoryLoader
+from src.factory_creator.factory_processor import FactoryProcessor
+from src.factory_creator.gui.main_window import MainWindow
 
 
 class CLI:

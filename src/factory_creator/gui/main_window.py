@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..factory_graph_renderer import FactoryGraphRenderer
+from ..export.factory_graph_renderer import FactoryGraphRenderer
 from ..factory_loader import FactoryLoader
 from ..util.file_util import FileUtil
 from .compute_recipe_worker import ComputeRecipeWorker

@@ -1,8 +1,6 @@
 import itertools
 from typing import override
 
-from docutils.io import InputError
-
 from .assembler import Assembler
 
 class Item:
