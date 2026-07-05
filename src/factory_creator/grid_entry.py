@@ -120,7 +120,8 @@ class GridEntry:
         entry_id: GridEntryId,
         name: str,
         orientation: int = 0,
-        entry_type: GridEntryTypes = GridEntryTypes.Transportation
+        entry_type: GridEntryTypes = GridEntryTypes.Transportation,
+        underground_belt_type: str | None = None
     ) -> None:
         """
         Creates an element stored in the grid.
@@ -135,6 +136,7 @@ class GridEntry:
         self.name = name
         self.orientation = orientation
         self.entry_type = entry_type
+        self.underground_belt_type = underground_belt_type
         self.surroundings = set()
 
     def add_surrounding(self, cord: tuple) -> None:

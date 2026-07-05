@@ -12,8 +12,6 @@ from .dependency_graph import DependencyTreeNode
 from .grid import *
 from .util.factorio_const import FactorioConst
 
-# TODO: add distinguishing between input/output underground belts
-
 class AStartNode:
     """
     Represents heap node witch wraps information necessary for A* computation.
@@ -48,7 +46,12 @@ class AStartNode:
         if self.comp != other.comp:
             return self.comp < other.comp
 
-        return self.streak > other.streak
+        if self.is_underground_belt_end() != other.is_underground_belt_end():
+            return not self.is_underground_belt_end()
+
+        if self.streak != other.streak:
+            return self.streak > other.streak
+
         return self.cord < other.cord
 
     def __str__(self):
@@ -71,7 +74,6 @@ class VisitedMatrix:
         return str(self.visited)
 
 
-# TODO: factorio building has the coordination set to their center
 class GraphToMatrix:
     """
     Wrapper for the methods which transform factory from graph representation
@@ -164,7 +166,6 @@ class GraphToMatrix:
         # if there is space of change
 
         root_cord = (10, matrix_width // 2)
-        # TODO: resolve warning (at method get_cords not only to factory but also item)
 
         grid.add_factory(
             root_cord,
@@ -174,7 +175,6 @@ class GraphToMatrix:
 
         graph.nodes[DependencyTreeNode.get_root_identifier()]["cord"] = root_cord
 
-        # TODO: fistly place building then find belts
         # TODO: maybe makes more sense to compute the layers only based on the graph with the inbuild networkx function
         # best thing would be to use networkx.brf_layers but this methods (as far a know) does not provided the reverse option
 
@@ -329,7 +329,8 @@ class GraphToMatrix:
                         name=FactorioConst.FAST_UNDERGROUND_BELT,
                         orientation=opposite_orientation,
                         from_cord=from_cord,
-                        to_cord=to_cord
+                        to_cord=to_cord,
+                        underground_belt_type=FactorioConst.UNDERGROUND_BELT_INPUT
                     )
 
                     underground_next = False
@@ -351,7 +352,8 @@ class GraphToMatrix:
                             GraphToMatrix.get_enumeration_to_orientation(last_node.orientation)
                         ),
                         from_cord=from_cord,
-                        to_cord=to_cord
+                        to_cord=to_cord,
+                        underground_belt_type=FactorioConst.UNDERGROUND_BELT_OUTPUT
                     )
 
                     underground_next = True
@@ -362,7 +364,9 @@ class GraphToMatrix:
         grid.transform_into_inserter(last_node.cord, from_cord, to_cord)
 
         if start_cord != last_node:
-            grid.transform_into_inserter(start_cord, from_cord, to_cord) # TODO: it is needed to ensure that path is find that way that last 2 and first 2 transportation elements has same orientation (same orientation is not necessary but it has to be one of possible approaches such as L connection etc.)
+            grid.transform_into_inserter(start_cord, from_cord, to_cord) 
+
+        #TODO: when we have path length 2 we can not use anything else than big inserter
 
         """
         (Belt) -> (Inserter) -> (Factory)
@@ -418,6 +422,11 @@ class GraphToMatrix:
         return active_cord, visited_matrix
 
     @staticmethod
+    def get_a_star_visited_key(cord, orientation, streak):
+        max_tracked_streak = GraphToMatrix.A_STAR_STREAK_THRESHOLD + 1
+        return (cord, orientation, min(streak, max_tracked_streak))
+
+    @staticmethod
     def a_star(from_cords, is_in_successor, to_cords, grid):
         """
         Finds path between elements in the grid with the usage
@@ -447,27 +456,15 @@ class GraphToMatrix:
 
         heapq.heapify(heap)
 
-        # TODO: add the requirements for same orientation also for start not only for underground and end
-
         visited_matrix = VisitedMatrix()
         for entry in heap:
-            visited_matrix[(entry.cord, entry.orientation, entry.streak)] = 0
+            visited_matrix[GraphToMatrix.get_a_star_visited_key(entry.cord, entry.orientation, entry.streak)] = 0
 
         active_node = None
         found = False
 
-        last_len = 0
-        while not found and len(heap) != 0 and len(visited_matrix) <= 1_000_000: #TODO: remove limit
+        while not found and len(heap) != 0 and len(visited_matrix) <= 1_000_000:
             a_star_node = heapq.heappop(heap)
-
-            # TODO: There is a problem with underground belts, I want them to be used if and only if are needed
-            #  but every configuration I think of needs to know about the obstacles
-            #  Maybe the solutions is to always "enable" underground belts but give them cost as if it was
-            #  multiple above ground (the cost would be the distance), so if there is both ways (same length)
-            #  under and above ground, then with the implementation as it is, we would choose the above ground
-
-            # TODO: We do not need to denote states by all streak, we only care if they pass, so we only need to
-            #  enumerate if the streak is less than threshold (but this info is useful for setting priority in heap)
 
             if is_in_successor(a_star_node.cord) and a_star_node.streak > GraphToMatrix.A_STAR_STREAK_THRESHOLD:
                 active_node = a_star_node
@@ -490,7 +487,7 @@ class GraphToMatrix:
                     else:
                         node = AStartNode(
                             new_cord,
-                            a_star_node.depth + multiplier, # TODO: maybe makes sense to instead all times have 1 to use multiplier so using underground belts hold some wight
+                            a_star_node.depth + multiplier,
                             a_star_node.depth + multiplier + GraphToMatrix.get_manhattan_metric(new_cord, to_cords) + GraphToMatrix.evaluate_borders(new_cord, to_cords),
                             orientation = orientation,
                             streak = streak,
@@ -503,10 +500,10 @@ class GraphToMatrix:
                             node
                         )
 
-                        visited_matrix[(new_cord, orientation, streak)] = a_star_node.depth + multiplier
+                        visited_matrix[GraphToMatrix.get_a_star_visited_key(new_cord, orientation, streak)] = a_star_node.depth + multiplier
 
-                        #TODO: remove
-                        active_node = node
+                        if GraphToMatrix.ENABLE_UNFINISH_BELTS:
+                            active_node = node
 
         if len(visited_matrix) > 1_000_000 and not GraphToMatrix.ENABLE_UNFINISH_BELTS or active_node is None:
             raise Exception("Unable to find a path")
@@ -526,10 +523,6 @@ class GraphToMatrix:
 
         cx, cy = (sum(x[0] for x in points) / len(points), sum(x[1] for x in points) / len(points))
         x, y = cord
-
-        #print(f"x {cord}, {points}")
-        #if abs(cx - x) + abs(cy - y) == 1:
-            #print(cord, points)
 
         return 0 if abs(cx - x) + abs(cy - y) == 1 else NOT_CENTER_PENALTY
 
@@ -579,8 +572,9 @@ class GraphToMatrix:
             if (multiplier > 1 or a_star_node.same_direction_is_needed()) and enum_orientation != a_star_node.orientation:
                 continue
 
-            if ((was_visited and (new_cord, enum_orientation, streak) in visited_matrix)
-                    or (not was_visited and (new_cord, enum_orientation, streak) not in visited_matrix)):
+            visited_key = GraphToMatrix.get_a_star_visited_key(new_cord, enum_orientation, streak)
+            if ((was_visited and visited_key in visited_matrix)
+                    or (not was_visited and visited_key not in visited_matrix)):
                 yield new_cord if not return_enumeration else (enum_orientation, streak, new_cord)
 
 
@@ -624,10 +618,6 @@ class GraphToMatrix:
         :return: Returns orientation representation in Factorio format.
         """
 
-        # TODO: better
-        if enumeration is None:
-            return 0
-
         return enumeration * 4
 
     @staticmethod
@@ -652,7 +642,8 @@ class GraphToMatrix:
         :return: Returns size of multiple basis vector.
         """
 
-        #TODO: check whether are same basis vector
+        if x[0] - y[0] != 0 and x[1] - y[1] != 0:
+            raise ValueError(f"Vectors {x} and {y} are not achievable from each other with the use of basis vectors.")
 
         return max(abs(x[0] - y[0]), abs(x[1] - y[1]))
 

@@ -84,7 +84,8 @@ class Grid:
         name: str,
         orientation: int,
         from_cord: tuple,
-        to_cord: tuple
+        to_cord: tuple,
+        underground_belt_type: str | None = None
     ) -> None:
         """
         Adds a transportation element connecting two movable grid entries.
@@ -104,7 +105,8 @@ class Grid:
                 GridEntryTransportationId(self._find_movable_id(from_cord), self._find_movable_id(to_cord)),
                 name,
                 orientation,
-                GridEntryTypes.Transportation
+                GridEntryTypes.Transportation,
+                underground_belt_type
             )
         )
 
@@ -496,4 +498,3 @@ class Grid:
                         visited.add((nx, ny))
                         found = True
         return False
-

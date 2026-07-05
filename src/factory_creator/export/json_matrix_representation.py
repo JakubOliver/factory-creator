@@ -53,12 +53,17 @@ class MatrixJsonConvertor:
                 FactorioConst.FAST_UNDERGROUND_BELT,
                 FactorioConst.INSERTER
             ]:
-                entities["entities"].append(MatrixJsonConvertor._get_entity(
+                entity = MatrixJsonConvertor._get_entity(
                     entry.name,
                     (i + 1/2 + ox, j + 1/2 + oy),
                     entry.orientation,
                     entity_number
-                ))
+                )
+
+                if entry.name == FactorioConst.FAST_UNDERGROUND_BELT and entry.underground_belt_type is not None:
+                    entity["type"] = entry.underground_belt_type
+
+                entities["entities"].append(entity)
             elif "source" in entry.name:
                 entities["entities"].append(MatrixJsonConvertor._get_chest_entity(
                     FactorioConst.WOODEN_CHEST,

@@ -4,6 +4,7 @@ from collections.abc import Callable, Iterator
 
 from networkx.algorithms.reciprocity import overall_reciprocity
 
+from .factory import FactoryUtil
 from .graph_to_matrix import GraphToMatrix
 from .grid import *
 
@@ -36,34 +37,6 @@ class Evolution:
             report_method = report_method
         )
 
-    # TODO: REPAIR!!!!!! GET CORDS EXISTS AS CLASS FUNCTION IN FACTORY CLASS BUT AT THIS STAGE
-    # I DO NOT HAVE ANY REFERENCES TO THEM
-    # !!! THIS IS ONLY TEMPORARY SOLUTION TO SEE IF THE HILL CLIMBING WORKS
-    @staticmethod
-    def get_cords(cords: tuple) -> Iterator[tuple]:
-        """
-        Iterates over coordinates occupied by a temporary 3x3 factory footprint.
-
-        :param cords: Top left coordinates of the temporary factory footprint.
-        :return: Iterator over coordinates occupied by the temporary factory footprint.
-        """
-
-        x, y = cords
-
-        for dx, dy in itertools.product(range(0, 3), range(0, 3)):
-            yield x + dx, y + dy
-
-    @staticmethod
-    def get_cords_lambda(cord: tuple) -> Callable[[tuple], bool]:
-        """
-        Creates function checking whether coordinates are inside a temporary factory footprint.
-
-        :param cord: Top left coordinates of the temporary factory footprint.
-        :return: Function checking whether coordinates are inside the temporary factory footprint.
-        """
-
-        return lambda new_cord : any(new_cord == building_cord for building_cord in Evolution.get_cords(cord))
-
     @staticmethod
     def get_changed_cords(cord: tuple) -> Iterator[tuple]:
         """
@@ -73,7 +46,7 @@ class Evolution:
         :return: Iterator over coordinates adjacent to the provided coordinates.
         """
 
-        for dx, dy in [(1,0), (0,1), (-1,0), (0,-1)]:
+        for dx, dy in Grid.GRID_MOVES:
             yield cord[0] + dx, cord[1] + dy
 
     @staticmethod
@@ -131,7 +104,7 @@ class Evolution:
                     overall_best_worlds = best_world
 
                 c += 1
-                report_method(f"  Processed: {c/n:.3f} ({grid_entry.name}: {best_world_fitness})")
+                report_method(f"  Processed: {c/n * 100:.1f}% ({grid_entry.name}: {best_world_fitness})")
 
             if overall_best_worlds is not None:
                 grid = overall_best_worlds
@@ -168,7 +141,6 @@ class Evolution:
         best_grid = None
         best_world_fitness = Evolution.fitness(grid)
 
-        # TODO: Add mechanism to do not allow merging or overlying of buildings
         for new_cord in Evolution.get_changed_cords(active_cord):
             try:
                 new_grid = copy.deepcopy(grid)
@@ -178,7 +150,7 @@ class Evolution:
                     new_grid.add_factory(
                         new_cord,
                         grid_entry.name,
-                        [sur for sur in Evolution.get_cords(new_cord) if sur != new_cord]
+                        [sur for sur in FactoryUtil.get_cords(new_cord) if sur != new_cord]
                     )
                 else:
                     new_grid.add_source(
@@ -187,8 +159,8 @@ class Evolution:
                     )
 
                 if grid_entry.entry_type == GridEntryTypes.Factory:
-                    active_cords = [c for c in Evolution.get_cords(new_cord)]
-                    active_is_in_cords = Evolution.get_cords_lambda(new_cord)
+                    active_cords = [c for c in FactoryUtil.get_cords(new_cord)]
+                    active_is_in_cords = FactoryUtil.get_cords_lambda(new_cord)
                 else:
                     active_cords = [new_cord]
                     active_is_in_cords = lambda x: x == new_cord
@@ -198,8 +170,8 @@ class Evolution:
                     neighbor_type = new_grid.data[neighbor].entry_type
 
                     if neighbor_type == GridEntryTypes.Factory:
-                        nei_cords = [c for c in Evolution.get_cords(neighbor)]
-                        nei_is_in_cords = Evolution.get_cords_lambda(neighbor)
+                        nei_cords = [c for c in FactoryUtil.get_cords(neighbor)]
+                        nei_is_in_cords = FactoryUtil.get_cords_lambda(neighbor)
                     else:
                         nei_cords = [neighbor]
                         nei_is_in_cords = lambda x: x == neighbor
@@ -257,11 +229,12 @@ class Evolution:
 
         return best_grid
 
+    #TODO: maybe add to the GUI characteristic vector of enabled fitness parameters, so user can choose which parameters to use for fitness evaluation, so the evolution can be more flexible and user can choose what is important for him
     @staticmethod
     def fitness(
         grid: Grid,
         test_connection: bool = True,
-        connection_pair: list[tuple[list[tuple], list[tuple], str]] = [] #TODO
+        connection_pair: list[tuple[list[tuple], list[tuple], str]] = []
     ) -> int | float:
         """
         Computes the fitness value of the provided grid.

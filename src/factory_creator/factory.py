@@ -1,5 +1,6 @@
 import itertools
 from typing import override
+from collections.abc import Iterator, Callable
 
 from .assembler import Assembler
 
@@ -156,3 +157,29 @@ class Ingredient:
 
     def __str__(self) -> str:
         return f"{self.name}, {self.type}, {self.amount}"
+    
+class FactoryUtil:
+    @staticmethod
+    def get_cords(cords: tuple) -> Iterator[tuple]:
+        """
+        Iterates over coordinates occupied by a temporary 3x3 factory footprint.
+
+        :param cords: Top left coordinates of the temporary factory footprint.
+        :return: Iterator over coordinates occupied by the temporary factory footprint.
+        """
+
+        x, y = cords
+
+        for dx, dy in itertools.product(range(0, 3), range(0, 3)):
+            yield x + dx, y + dy
+
+    @staticmethod
+    def get_cords_lambda(cord: tuple) -> Callable[[tuple], bool]:
+        """
+        Creates function checking whether coordinates are inside a temporary factory footprint.
+
+        :param cord: Top left coordinates of the temporary factory footprint.
+        :return: Function checking whether coordinates are inside the temporary factory footprint.
+        """
+
+        return lambda new_cord : any(new_cord == building_cord for building_cord in FactoryUtil.get_cords(cord))

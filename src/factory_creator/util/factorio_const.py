@@ -1,6 +1,8 @@
 class FactorioConst:
     TRANSPORT_BELT = "transport-belt"
     FAST_UNDERGROUND_BELT = "fast-underground-belt"
+    UNDERGROUND_BELT_INPUT = "input"
+    UNDERGROUND_BELT_OUTPUT = "output"
     INSERTER = "inserter"
     WOODEN_CHEST = "wooden-chest"
     ASSEMBLING_MACHINE_2 = "assembling-machine-2"
