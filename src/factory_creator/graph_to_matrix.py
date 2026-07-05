@@ -41,6 +41,9 @@ class GraphToMatrix:
     UNDERGROUND_MOVE_LENGTH = 6
     UNDERGROUND_MOVES_ENABLED = True
 
+    USE_A_STAR = True # If false, then BFS would be used
+    ENABLE_UNFINISH_BELTS = False # ONLY FOR DEBUGGING PURPOSES
+
     DEFAULT_WIDTH_MULTIPLIER = 10
     DEFAULT_DEPTH_MULTIPLIER = 10
     DEFAULT_PADDING = 1
@@ -131,17 +134,11 @@ class GraphToMatrix:
 
         # TODO: rewrite to more prettier way
 
-        # TODO: remove and repair the code
-        EXPERIMENTAL = False
-        max_layer_used = 0
-
         number_of_sources = GraphToMatrix.get_number_of_sources(graph) + 1
-        print(number_of_sources)
         number_of_sources_placed = 1
 
-        # for to_node, from_node in networkx.bfs_edges(graph, source=DependencyTreeNode.get_root_identifier(), reverse=True):
         for from_node in reversed(list(networkx.topological_sort(graph))):
-            print(from_node)
+            print(f"Building building: {from_node}")
 
             # Filter out the sink node, because we are define it above.
             if graph.out_degree(from_node) == 0:
@@ -151,11 +148,6 @@ class GraphToMatrix:
                 dependency_node = graph.nodes[from_node]["ref"]
                 node_layer = dependency_node.get_layer()
 
-                if EXPERIMENTAL:
-                    max_layer_used = max(max_layer_used, node_layer)
-
-                element_type = str(dependency_node)
-
                 if node_layer not in active_layer:
                     active_layer[node_layer] = padding + math.floor(0.1 * matrix_width)
 
@@ -164,46 +156,41 @@ class GraphToMatrix:
 
                 active_layer[node_layer] += dependency_node.get_approx_width_of_tree() * width_multiplier
 
-                # TODO: add functino for this, because this work if and only if building is created before surroundings
                 grid.add_factory(
                     cord,
                     str(dependency_node),
                     [sur for sur in dependency_node.factory.get_cords(cord) if sur != cord]
                 )
-
-                is_in_cords = dependency_node.factory.get_cords_lambda(cord)
-
-                from_cords = [c for c in dependency_node.factory.get_cords(cord)]
             else:
-                """
-                if EXPERIMENTAL:
-                    source_layer = max(max_layer_used, max(x for x in active_layer.keys()) + 3)
-                else:
-                    source_layer = max(matrix_depth - 1, max(x for x in active_layer.keys()) + 3)
-
-                if source_layer not in active_layer:
-                    active_layer[source_layer] = padding + padding + math.floor(0.1 * matrix_width)
-
-                offset_in_layer = math.floor((0.1 + random.random() / 2) * matrix_width)
-                """
-
                 source_layer = matrix_depth - 1
                 offset_in_layer = math.floor(number_of_sources_placed / number_of_sources * matrix_width)
 
                 number_of_sources_placed += 1
 
                 cord = (source_layer, offset_in_layer)
-                element_type = from_node
 
                 grid.add_source(cord, from_node)
 
-                is_in_cords = lambda new_cord: new_cord == cord
-                from_cords = [cord]
-
             graph.nodes[from_node]["cord"] = cord
 
+        for from_node in reversed(list(networkx.topological_sort(graph))):
+            cord = graph.nodes[from_node]["cord"]
+
+            # TODO: extract into one function
+            if "ref" in graph.nodes[from_node]:
+                dependency_node = graph.nodes[from_node]["ref"]
+                from_cords = [c for c in dependency_node.factory.get_cords(cord)]
+                is_in_cords = dependency_node.factory.get_cords_lambda(cord)
+
+                element_type = str(dependency_node)
+            else:
+                from_cords = [cord]
+                is_in_cords = lambda new_cord: new_cord == cord
+
+                element_type = from_node
+
             for successor in graph.successors(from_node):
-                print(element_type, from_node, cord, successor, graph.nodes[successor]["cord"])
+                print(f"Building path: {element_type}, {from_node}, {cord}, {successor}, {graph.nodes[successor]["cord"]}")
 
                 if "ref" in graph.nodes[successor]:
                     is_in_successor = graph.nodes[successor]["ref"].factory.get_cords_lambda(
@@ -251,29 +238,65 @@ class GraphToMatrix:
         :param grid: Grid representation of the factory.
         """
 
-        """
-        active_cord, visited_matrix = GraphToMatrix.bfs(
-            from_cords,
-            is_in_successor,
-            matrix
-        )
-        """
-        active_cord, visited_matrix = GraphToMatrix.a_star(
-            from_cords,
-            is_in_successor,
-            to_cords,
-            grid
-        )
+        if GraphToMatrix.USE_A_STAR:
+            active_cord, visited_matrix = GraphToMatrix.a_star(
+                from_cords,
+                is_in_successor,
+                to_cords,
+                grid
+            )
+        else:
+            active_cord, visited_matrix = GraphToMatrix.bfs(
+                from_cords,
+                is_in_successor,
+                grid
+            )
 
         start_cord = None
         last_cord = None
         active_orientation = None
+        underground_next = False
         while not is_in_cords(active_cord):
-            next_cord, next_orientation = GraphToMatrix.get_path_predecessor(active_cord, visited_matrix)
+            next_cord, next_orientation = GraphToMatrix.get_path_predecessor(active_cord, visited_matrix, to_cords)
 
             if start_cord is None:
                 start_cord = next_cord
 
+            if not is_in_cords(active_cord) and not is_in_successor(active_cord):
+                distance = GraphToMatrix.distance_between_basis_vectors(active_cord, next_cord)
+
+                if underground_next:
+                    opposite_orientation = GraphToMatrix.get_orientation_in_opposite_direction(active_orientation)
+
+                    grid.add_transportation(
+                        cord=active_cord,
+                        name="fast-underground-belt",
+                        orientation=opposite_orientation,
+                        from_cord=from_cord,
+                        to_cord=to_cord
+                    )
+
+                    underground_next = False
+                elif distance == 1:
+                    grid.add_transportation(
+                        cord=active_cord,
+                        name="transport-belt",
+                        orientation=active_orientation,
+                        from_cord=from_cord,
+                        to_cord=to_cord
+                    )
+                else:
+                    grid.add_transportation(
+                        cord=active_cord,
+                        name="fast-underground-belt",
+                        orientation=active_orientation,
+                        from_cord=from_cord,
+                        to_cord=to_cord
+                    )
+
+                    underground_next = True
+
+            """
             if not is_in_cords(active_cord) and not is_in_successor(active_cord):
                 distance = GraphToMatrix.distance_between_basis_vectors(active_cord, next_cord)
 
@@ -306,6 +329,7 @@ class GraphToMatrix:
                         from_cord= from_cord,
                         to_cord= to_cord
                     )
+                """
 
             last_cord = active_cord
             active_cord = next_cord
@@ -385,7 +409,7 @@ class GraphToMatrix:
             with the information in how many steps can be coordinate achieved.
         """
 
-        heap = [AStartNode(from_cord, 0, GraphToMatrix.get_manhattan_metric(from_cord, to_cords)) for from_cord in from_cords]
+        heap = [AStartNode(from_cord, 0, GraphToMatrix.get_manhattan_metric(from_cord, to_cords) + GraphToMatrix.evaluate_borders(from_cord, from_cords)) for from_cord in from_cords]
         heapq.heapify(heap)
 
         visited_matrix = {}
@@ -409,11 +433,11 @@ class GraphToMatrix:
             #  Maybe the solutions is to always "enable" underground belts but give them cost as if it was
             #  multiple above ground (the cost would be the distance), so if there is both ways (same length)
             #  under and above ground, then with the implementation as it is, we would choose the above ground
-            """
-            for new_cord in GraphToMatrix.get_moves(a_star_node.cord, visited_matrix):
-                if new_cord in matrix:
-                    visited_matrix[new_cord] = -1
-            """
+
+            if is_in_successor(a_star_node.cord):
+                active_cord = a_star_node.cord
+
+                break
 
             # TODO: at this points we are looking for arbitrary shortest path, but if we want to enforce "esthetics" maybe
             #  makes sense for example to get values to the surrounding of factory and if we preferre it to be at the center
@@ -422,41 +446,50 @@ class GraphToMatrix:
 
             for multiplier in range(1, GraphToMatrix.UNDERGROUND_MOVE_LENGTH):
                 for new_cord in GraphToMatrix.get_moves(a_star_node.cord, visited_matrix, multiplier=multiplier):
-                    if is_in_successor(new_cord):
-                        visited_matrix[new_cord] = a_star_node.depth + 1
-                        active_cord = new_cord
-
-                        found = True
-                        break
-
-                    if new_cord in grid:
+                    if new_cord in grid and not is_in_successor(new_cord):
                         visited_matrix[new_cord] = -1
                     else:
                         heapq.heappush(
                             heap,
                             AStartNode(
                                 new_cord,
-                                a_star_node.depth + 1, # TODO: maybe makes sense to instead all times have 1 to use multiplier so using underground belts hold some wight
-                                a_star_node.depth + 1 + GraphToMatrix.get_manhattan_metric(new_cord, to_cords)
+                                a_star_node.depth + multiplier, # TODO: maybe makes sense to instead all times have 1 to use multiplier so using underground belts hold some wight
+                                a_star_node.depth + multiplier + GraphToMatrix.get_manhattan_metric(new_cord, to_cords) + GraphToMatrix.evaluate_borders(new_cord, to_cords)
                             )
                         )
-                        visited_matrix[new_cord] = a_star_node.depth + 1
+                        visited_matrix[new_cord] = a_star_node.depth + multiplier
                         found_way = True
-
-                        #print(GraphToMatrix.get_manhattan_metric(new_cord, to_cords))
 
                     #TODO: remove
                     active_cord = new_cord
 
-                if found_way or found or not GraphToMatrix.UNDERGROUND_MOVES_ENABLED:
-                    break
+                #if found_way or found or not GraphToMatrix.UNDERGROUND_MOVES_ENABLED:
+                #    break
 
-                #print("way not found")
-
-        if len(visited_matrix) > 1_000_000:
+        if len(visited_matrix) > 1_000_000 and not GraphToMatrix.ENABLE_UNFINISH_BELTS:
             raise Exception("Unable to find a path")
 
         return active_cord, visited_matrix
+
+    @staticmethod
+    def evaluate_borders(cord, points):
+        return 0
+
+        NOT_CENTER_PENALTY = 100
+
+        #TODO: for correct A* with penalties is necessary to add reopening
+
+        if cord not in points:
+            return NOT_CENTER_PENALTY
+
+        cx, cy = (sum(x[0] for x in points) / len(points), sum(x[1] for x in points) / len(points))
+        x, y = cord
+
+        #print(f"x {cord}, {points}")
+        #if abs(cx - x) + abs(cy - y) == 1:
+            #print(cord, points)
+
+        return 0 if abs(cx - x) + abs(cy - y) == 1 else NOT_CENTER_PENALTY
 
     @staticmethod
     def get_manhattan_metric(from_cord, to_cords):
@@ -518,7 +551,7 @@ class GraphToMatrix:
         return normal_move_was_used
 
     @staticmethod
-    def get_path_predecessor(cord, visited_matrix):
+    def get_path_predecessor(cord, visited_matrix, to_cords):
         """
         Returns coordinate from which we could have gone to the current one.
 
@@ -529,13 +562,10 @@ class GraphToMatrix:
 
         for multiplier in range(1, GraphToMatrix.UNDERGROUND_MOVE_LENGTH):
             for enumeration, new_cord in GraphToMatrix.get_moves(cord, visited_matrix, multiplier=multiplier, was_visited=True, return_enumeration=True):
-                if (visited_matrix[cord] - visited_matrix[new_cord]) == 1:
+                if (visited_matrix[cord] - visited_matrix[new_cord]) == multiplier and new_cord not in to_cords:
                     return new_cord, GraphToMatrix.get_enumeration_to_orientation(enumeration)
 
-        #TODO: better exception
-        print(cord)
-        print(visited_matrix)
-        raise ValueError("No predecessors")
+        raise ValueError(f"While backtracking path to the starting points at {cord} no predecessor was found.")
 
     @staticmethod
     def get_enumeration_to_orientation(enumeration: int) -> int:

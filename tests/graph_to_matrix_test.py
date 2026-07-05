@@ -100,3 +100,43 @@ def test_under_obstacle2():
 
     assert active_cord == final_cord
     assert visited_matrix[final_cord] == 1
+
+def test_under_obstacle3():
+    grid = Grid()
+    grid.add_source((10, 10), "barrel")
+    grid.add_source((20, 20), "barrel")
+
+    cords = set()
+
+    k = 10
+    for i in range(k):
+        cords.add((0, i))
+        cords.add((k - 1, i))
+        cords.add((i, 0))
+        cords.add((i, k - 1))
+
+    for cord in cords:
+        grid.add_transportation(
+            cord=cord,
+            name="transportation-belt",
+            orientation=0,
+            from_cord=(10, 10),
+            to_cord=(20, 20)
+        )
+
+    grid.add_source((4, 5), "barrel")
+    grid.add_source((5, 15), "barrel")
+
+    GraphToMatrix.find_path(
+        (4, 5),
+        [(4, 5)],
+        lambda x: x == (4, 5),
+        (5, 15),
+        [(5, 15)],
+        lambda x: x == (5, 15),
+        grid
+    )
+
+    print(grid)
+
+    assert True == False #TODO: remove dummy

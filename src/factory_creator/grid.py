@@ -4,6 +4,7 @@ from enum import IntEnum
 import prettytable
 from collections import deque
 
+
 #TODO: maybe add mapping id to object
 class Grid:
     """
@@ -51,14 +52,12 @@ class Grid:
         :param sur_cord: Coordinates occupied by the factory around the main coordinate.
         """
 
-        if cord in self.data.keys():
-            raise Exception("Building cannot be placed")
+        self.try_place(cord, name, GridEntryTypes.Factory)
 
         self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Factory))
 
         for sur in sur_cord:
-            if sur in self.occupied:
-                raise Exception("Building cannot be placed")
+            self.try_place(sur, name, GridEntryTypes.Factory)
 
             self.set_occupied(sur, cord)
 
@@ -69,6 +68,8 @@ class Grid:
         :param cord: Coordinates where the source will be placed.
         :param name: Name of the source entry.
         """
+
+        self.try_place(cord, name, GridEntryTypes.Source)
 
         self.__setitem__(cord, GridEntry(self._get_movable_id(), name, entry_type=GridEntryTypes.Source))
 
@@ -90,6 +91,8 @@ class Grid:
         :param to_cord: Coordinates of the destination grid entry.
         """
 
+        self.try_place(cord, name, GridEntryTypes.Transportation)
+
         self.__setitem__(
             cord,
             GridEntry(
@@ -100,6 +103,14 @@ class Grid:
             )
         )
 
+    def try_place(self, cord, name, grid_type):
+        if cord in self:
+            raise Exception(f"Building {name} ({grid_type.name}) at {cord} cannot be placed because if already occupies by {self.data[cord].name if cord in self.data else "factory part"}.")
+
+    def try_transportation(self, cord):
+        if cord in self.occupied or (cord in self.data and self.data[cord].entry_type != GridEntryTypes.Transportation):
+            raise Exception(f"Inserter cannot be placed at {cord} instead of factory or source.")
+
     def transform_into_inserter(self, cord: tuple) -> None:
         """
         Changes a transportation element at the provided coordinates into an inserter.
@@ -107,8 +118,7 @@ class Grid:
         :param cord: Coordinates of the transportation element.
         """
 
-        if cord not in self.data.keys() or self.data[cord].entry_type != GridEntryTypes.Transportation:
-            raise Exception(f"Inserter cannot be placed at {cord} instead of factory or source.")
+        self.try_transportation(cord)
 
         self.data[cord].name = "inserter"
         self.data[cord].orientation = (self.data[cord].orientation + 8) % 16

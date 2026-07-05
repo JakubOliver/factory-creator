@@ -266,7 +266,7 @@ class Evolution:
         fitness = 0
 
         fitness -= grid.get_area()
-        fitness -= grid.get_used_block()
+        fitness -= grid.get_used_block() / 1.5
         fitness += grid.get_number_of_pointing_to_center() * 10
 
         if test_connection:
@@ -296,3 +296,7 @@ class Evolution:
         return True
 
         #TODO: now tests only without underground block
+
+
+if __name__ == "__main__":
+    pass
