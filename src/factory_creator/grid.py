@@ -257,6 +257,12 @@ class Grid:
 
         return map(lambda x: x[1], self.occupied.union(self.data.keys()))
 
+    def get_with(self):
+        return abs(max(self.get_x_cord()) - min(self.get_x_cord()))
+
+    def get_height(self):
+        return abs(max(self.get_y_cord()) - min(self.get_y_cord()))
+
     def get_area(self) -> int:
         """
         Returns the area of the rectangle covering all used coordinates.
@@ -264,11 +270,7 @@ class Grid:
         :return: Area of the rectangle covering all used coordinates.
         """
 
-        dx = abs(max(self.get_x_cord()) - min(self.get_x_cord()))
-
-        dy = abs(max(self.get_y_cord()) - min(self.get_y_cord()))
-
-        return dx * dy
+        return self.get_with() * self.get_height()
 
     def get_used_block(self) -> int:
         """

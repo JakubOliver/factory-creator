@@ -13,6 +13,14 @@ Subpackages
 Submodules
 ----------
 
+factory\_creator.argument\_processor module
+-------------------------------------------
+
+.. automodule:: factory_creator.argument_processor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 factory\_creator.assembler module
 ---------------------------------
 
@@ -25,6 +33,14 @@ factory\_creator.dependency\_graph module
 -----------------------------------------
 
 .. automodule:: factory_creator.dependency_graph
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.evol module
+----------------------------
+
+.. automodule:: factory_creator.evol
    :members:
    :show-inheritance:
    :undoc-members:
@@ -49,6 +65,14 @@ factory\_creator.graph\_to\_matrix module
 -----------------------------------------
 
 .. automodule:: factory_creator.graph_to_matrix
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.grid module
+----------------------------
+
+.. automodule:: factory_creator.grid
    :members:
    :show-inheritance:
    :undoc-members:

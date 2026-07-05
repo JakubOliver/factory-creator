@@ -188,7 +188,8 @@ class MainWindow(QMainWindow):
         simplified_structure = False,
         evolution_iteration = float("inf"),
         evolution_stagnation = 10,
-        show_graph = False
+        show_graph = False,
+        create_presentation = False
     ):
         factories = FactoryLoader.load(path)
 
@@ -226,8 +227,12 @@ class MainWindow(QMainWindow):
             after_evolution = Evolution.evol(
                 matrix,
                 iteration=evolution_iteration,
-                stagnation_break=evolution_stagnation
+                stagnation_break=evolution_stagnation,
+                create_presentation=create_presentation
             )
+
+            if create_presentation:
+                return factory_seed, BluePrintRepresentation.encode(MatrixJsonConvertor.process_presentation(after_evolution))
 
             return factory_seed, BluePrintRepresentation.encode(MatrixJsonConvertor.encode(after_evolution))
         else:

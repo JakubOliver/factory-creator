@@ -15,7 +15,8 @@ class Evolution:
     def evol(
         grid: Grid,
         iteration: int | float = float("inf"),
-        stagnation_break: int = 10
+        stagnation_break: int = 10,
+        create_presentation = False
     ) -> Grid:
         """
         Runs the evolution process over the provided grid.
@@ -29,7 +30,8 @@ class Evolution:
         return Evolution.hill_climb(
             grid,
             iteration = iteration,
-            stagnation_break = stagnation_break
+            stagnation_break = stagnation_break,
+            create_presentation = create_presentation
         )
 
     # TODO: REPAIR!!!!!! GET CORDS EXISTS AS CLASS FUNCTION IN FACTORY CLASS BUT AT THIS STAGE
@@ -76,7 +78,8 @@ class Evolution:
     def hill_climb(
         grid: Grid,
         iteration: int | float = float("inf"),
-        stagnation_break: int = 10
+        stagnation_break: int = 10,
+        create_presentation = False
     ) -> Grid:
         """
         Improves the grid by repeatedly moving buildings to neighboring coordinates.
@@ -91,7 +94,13 @@ class Evolution:
         stagnation_streak = 0
         last_fitness = None
 
+        if create_presentation:
+            presentation = []
+
         while active_iteration < iteration and stagnation_streak < stagnation_break:
+            if create_presentation:
+                presentation.append(grid)
+
             fitness = Evolution.fitness(grid)
 
             if Evolution.GENERATION_PRINT:
@@ -131,6 +140,9 @@ class Evolution:
 
             last_fitness = overall_best_world_fitness
             active_iteration += 1
+
+        if create_presentation:
+            return presentation
 
         return grid
 

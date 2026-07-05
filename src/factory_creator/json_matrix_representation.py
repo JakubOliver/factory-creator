@@ -36,12 +36,13 @@ class MatrixJsonConvertor:
         }
 
     @staticmethod
-    def _load_entities(matrix: Grid):
+    def _load_entities(matrix: Grid, offset: tuple[int, int] = (0, 0), entity_number: int = 1):
+        ox, oy = offset
+
         entities = {
             "entities" : []
         }
 
-        entity_number = 1
         for i, j in matrix:
             entry = matrix[i, j]
 
@@ -49,14 +50,14 @@ class MatrixJsonConvertor:
             if entry.name in ["transport-belt", "fast-underground-belt", "inserter"]:
                 entities["entities"].append(MatrixJsonConvertor._get_entity(
                     entry.name,
-                    (i + 1/2, j + 1/2),
+                    (i + 1/2 + ox, j + 1/2 + oy),
                     entry.orientation,
                     entity_number
                 ))
             elif "source" in entry.name:
                 entities["entities"].append(MatrixJsonConvertor._get_chest_entity(
                     "wooden-chest",
-                    (i + 1/2, j + 1/2),
+                    (i + 1/2 + ox, j + 1/2 + oy),
                     entry.orientation,
                     entity_number,
                     GridEntry.extract_item_name_from_source(entry.name)
@@ -64,7 +65,7 @@ class MatrixJsonConvertor:
             else:
                 entities["entities"].append(MatrixJsonConvertor._get_assembling_machine(
                     "assembling-machine-2",
-                    (i + 3/2, j + 3/2),
+                    (i + 3/2 + ox, j + 3/2 + oy),
                     entry.orientation,
                     entity_number,
                     entry.name
@@ -117,7 +118,37 @@ class MatrixJsonConvertor:
         return entry
 
     @staticmethod
-    def encode(grid: Grid):
+    def process_presentation(worlds: list[Grid]):
+        blueprint_json = {
+            "blueprint": (
+                MatrixJsonConvertor._get_blueprint_header() |
+                MatrixJsonConvertor._get_blueprint_footer()
+            )
+        }
+
+        blueprint_json["blueprint"]["entities"] = []
+
+        horizontal_offset = 0
+        entity_number_offset = 1
+        for world in worlds:
+            loaded = MatrixJsonConvertor._load_entities(
+                world,
+                offset = (horizontal_offset, 0),
+                entity_number = entity_number_offset
+            )
+
+            blueprint_json["blueprint"]["entities"].extend(loaded["entities"])
+
+            horizontal_offset += world.get_with() + 10
+            entity_number_offset += len(loaded["entities"])
+
+        with open("output/data_presentation.json", "w", encoding="utf-8") as f:
+            json.dump(blueprint_json, f, ensure_ascii=False, separators=(",", ":"))
+
+        return blueprint_json
+
+    @staticmethod
+    def encode(grid: Grid, offset: tuple[int, int] = (0, 0)):
         """
         Encodes the grid representation into json and returns the json representation.
 
@@ -128,7 +159,7 @@ class MatrixJsonConvertor:
         blueprint_json = {
             "blueprint": (
                     MatrixJsonConvertor._get_blueprint_header() |
-                    MatrixJsonConvertor._load_entities(grid) |
+                    MatrixJsonConvertor._load_entities(grid, offset = offset) |
                     MatrixJsonConvertor._get_blueprint_footer()
             )
         }

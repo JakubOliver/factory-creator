@@ -35,6 +35,7 @@ if __name__ == "__main__":
             args.building,
             evolution_iteration = args.iteration,
             evolution_stagnation=args.stagnation,
+            create_presentation = False
         )
 
         print(MainWindow.create_factory_url_link(factory_seed))
