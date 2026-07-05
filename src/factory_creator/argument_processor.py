@@ -49,6 +49,14 @@ class ArgumentProcessor:
             help="number of generation after what will be evolution algorithm terminated if no progress occurs",
             default = ArgumentProcessor.CLI_DEFAULT_STAGNATION
         )
+        parser.add_argument(
+            "-n",
+            "--no-browser",
+            required=False,
+            action="store_true",
+            default=False,
+            help="use external browser links instead of embedded GUI browser"
+        )
 
         args = parser.parse_args()
 

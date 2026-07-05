@@ -131,7 +131,7 @@ class Evolution:
                     overall_best_worlds = best_world
 
                 c += 1
-                report_method(f"\tProcessed: {c/n:.3f} ({grid_entry.name}: {best_world_fitness})")
+                report_method(f"  Processed: {c/n:.3f} ({grid_entry.name}: {best_world_fitness})")
 
             if overall_best_worlds is not None:
                 grid = overall_best_worlds
@@ -253,7 +253,7 @@ class Evolution:
                     best_grid = new_grid
             except Exception as e:
                 if Evolution.SHOW_REASONS_FOR_INDIVIDUAL_FAILURE:
-                    report_method(f"\tIndividual failed because of \"{e}\"")
+                    report_method(f"  Individual failed because of \"{e}\"")
 
         return best_grid
 

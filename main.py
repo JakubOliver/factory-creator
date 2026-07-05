@@ -10,13 +10,13 @@ from src.factory_creator.cli import CLI
 from src.factory_creator.gui.main_window import MainWindow
 
 
-def main():
+def main(no_browser: bool = False):
     """
     Main function which call the GUI.
     """
     app = QApplication(sys.argv)
 
-    window = MainWindow()
+    window = MainWindow(use_embedded_browser=not no_browser)
     window.show()
 
     return app.exec()
@@ -25,6 +25,6 @@ if __name__ == "__main__":
     args = ArgumentProcessor.process_arguments()
 
     if not args.cli:
-        sys.exit(main())
+        sys.exit(main(args.no_browser))
     else:
         CLI.run(args)
