@@ -107,18 +107,30 @@ class Grid:
         if cord in self:
             raise Exception(f"Building {name} ({grid_type.name}) at {cord} cannot be placed because if already occupies by {self.data[cord].name if cord in self.data else "factory part"}.")
 
-    def try_transportation(self, cord):
-        if cord in self.occupied or (cord in self.data and self.data[cord].entry_type != GridEntryTypes.Transportation):
+    def try_transportation(self, cord: tuple, from_cord: tuple, to_cord: tuple):
+        entry_id = GridEntryTransportationId.create_belt_id(
+            self.data[from_cord].get_id_text(),
+            self.data[to_cord].get_id_text()
+        )
+
+        if cord in self.occupied or (cord in self.data and (self.data[cord].entry_type != GridEntryTypes.Transportation or self.data[cord].get_id_text() != entry_id)):
+            print(entry_id)
+
             raise Exception(f"Inserter cannot be placed at {cord} instead of factory or source.")
 
-    def transform_into_inserter(self, cord: tuple) -> None:
+    def transform_into_inserter(
+        self,
+        cord: tuple,
+        from_cord: tuple,
+        to_cord: tuple
+    ) -> None:
         """
         Changes a transportation element at the provided coordinates into an inserter.
 
         :param cord: Coordinates of the transportation element.
         """
 
-        self.try_transportation(cord)
+        self.try_transportation(cord, from_cord, to_cord)
 
         self.data[cord].name = "inserter"
         self.data[cord].orientation = (self.data[cord].orientation + 8) % 16
@@ -378,6 +390,10 @@ class Grid:
     @staticmethod
     def orientation_to_vector(orientation):
         return Grid.GRID_MOVES[orientation // 4]
+
+    @staticmethod
+    def is_opposite_orientation_enum(orientation_a: int, orientation_b: int) -> bool:
+        return (orientation_a + 8) % 16 == orientation_b
 
     def _is_pointing_to_center(self, cord):
         x, y = cord
