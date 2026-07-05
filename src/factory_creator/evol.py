@@ -16,7 +16,8 @@ class Evolution:
         grid: Grid,
         iteration: int | float = float("inf"),
         stagnation_break: int = 10,
-        create_presentation = False
+        create_presentation = False,
+        report_method = print
     ) -> Grid:
         """
         Runs the evolution process over the provided grid.
@@ -31,7 +32,8 @@ class Evolution:
             grid,
             iteration = iteration,
             stagnation_break = stagnation_break,
-            create_presentation = create_presentation
+            create_presentation = create_presentation,
+            report_method = report_method
         )
 
     # TODO: REPAIR!!!!!! GET CORDS EXISTS AS CLASS FUNCTION IN FACTORY CLASS BUT AT THIS STAGE
@@ -79,7 +81,8 @@ class Evolution:
         grid: Grid,
         iteration: int | float = float("inf"),
         stagnation_break: int = 10,
-        create_presentation = False
+        create_presentation = False,
+        report_method = print
     ) -> Grid:
         """
         Improves the grid by repeatedly moving buildings to neighboring coordinates.
@@ -104,9 +107,8 @@ class Evolution:
             fitness = Evolution.fitness(grid)
 
             if Evolution.GENERATION_PRINT:
-                print(f"----------- NEXT GENERATION ({active_iteration}) -------------")
-                print(fitness)
-                #print(grid)
+                report_method(f"----------- NEXT GENERATION ({active_iteration}) -------------")
+                report_method(f"Fitness: {fitness}")
 
             overall_best_worlds = None
             overall_best_world_fitness = fitness
@@ -116,7 +118,8 @@ class Evolution:
                 best_world = Evolution._hill_climbing_process_building(
                     grid,
                     active_cord,
-                    grid_entry
+                    grid_entry,
+                    report_method=report_method
                 )
 
                 if best_world is not None:
@@ -128,7 +131,7 @@ class Evolution:
                     overall_best_worlds = best_world
 
                 c += 1
-                print(f"processed: {c/n:.3f} ({grid_entry.name}: {best_world_fitness})")
+                report_method(f"\tProcessed: {c/n:.3f} ({grid_entry.name}: {best_world_fitness})")
 
             if overall_best_worlds is not None:
                 grid = overall_best_worlds
@@ -150,7 +153,8 @@ class Evolution:
     def _hill_climbing_process_building(
         grid: Grid,
         active_cord: tuple,
-        grid_entry: GridEntry
+        grid_entry: GridEntry,
+        report_method = print
     ) -> Grid | None:
         """
         Finds the best neighboring grid produced by moving one building.
@@ -249,7 +253,7 @@ class Evolution:
                     best_grid = new_grid
             except Exception as e:
                 if Evolution.SHOW_REASONS_FOR_INDIVIDUAL_FAILURE:
-                    print(f"Individual failed because of \"{e}\"")
+                    report_method(f"\tIndividual failed because of \"{e}\"")
 
         return best_grid
 
@@ -307,8 +311,6 @@ class Evolution:
                 return False
 
         return True
-
-        #TODO: now tests only without underground block
 
 
 if __name__ == "__main__":

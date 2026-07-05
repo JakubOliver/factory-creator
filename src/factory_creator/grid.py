@@ -118,7 +118,6 @@ class Grid:
         )
 
         if cord in self.occupied or (cord in self.data and (self.data[cord].entry_type != GridEntryTypes.Transportation or self.data[cord].get_id_text() != entry_id)):
-            print(entry_id)
 
             raise Exception(f"Inserter cannot be placed at {cord} instead of factory or source.")
 
@@ -479,7 +478,6 @@ class Grid:
                 raise Exception("Cannot find connection")
 
             x,y,d = queue.popleft()
-            #print(x,y)
 
             found = False
             multiplier = 0

@@ -34,6 +34,7 @@ pydot==4.0.1
 Pygments==2.20.0
 pyparsing==3.3.2
 pyright==1.1.408
+pyrsistent==0.20.0
 PySide6==6.10.2
 PySide6_Addons==6.10.2
 PySide6_Essentials==6.10.2

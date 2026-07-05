@@ -10,26 +10,70 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QMessageBox,
+    QTextEdit,
+    QSpinBox,
+    QToolButton,
 )
 
 from PySide6.QtGui import QDesktopServices
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QUrl, QObject, QThread, Signal, Slot, Qt
 
-import networkx
-import matplotlib.pyplot as plt
-
-from ..evol import Evolution
 from ..factory_loader import FactoryLoader
-from ..graph_to_matrix import GraphToMatrix
-from ..json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
+from ..factory_graph_renderer import FactoryGraphRenderer
+from ..factory_processor import FactoryProcessor
 from ..util.file_util import FileUtil
 
-#TODO: add hiding the recipe combobox (same for the link) selecting when the name of the input file changes (it could be done via signals)
-#TODO: limit the vertical size of the combobox
+
+class ComputeRecipeWorker(QObject):
+    result = Signal(object)
+    error = Signal(str)
+    message = Signal(str)
+    finished = Signal()
+
+    def __init__(
+        self,
+        path: str,
+        recipe_type: str,
+        show_amounts: bool,
+        simplified_structure: bool,
+        evolution_iterations: int,
+        evolution_stagnation: int,
+    ) -> None:
+        super().__init__()
+        self.path = path
+        self.recipe_type = recipe_type
+        self.show_amounts = show_amounts
+        self.simplified_structure = simplified_structure
+        self.evolution_iterations = evolution_iterations
+        self.evolution_stagnation = evolution_stagnation
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            FileUtil.create_output_dir()
+
+            self.message.emit("Computing factory...")
+            self.result.emit(FactoryProcessor.process_factory(
+                self.path,
+                self.recipe_type,
+                show_amounts=self.show_amounts,
+                simplified_structure=self.simplified_structure,
+                evolution_iteration=self.evolution_iterations,
+                evolution_stagnation=self.evolution_stagnation,
+                report_method=self.message.emit
+            ))
+            self.message.emit("Factory computation finished.")
+        except Exception as e:
+            self.message.emit("Factory computation failed.")
+            self.error.emit(str(e))
+        finally:
+            self.finished.emit()
 
 
 class MainWindow(QMainWindow):
+    COMBOBOX_ITEMS = 8
+
     """
     Main GUI windows of the GUI.
 
@@ -40,6 +84,10 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Factory layout creation")
         self.resize(500, 250)
+
+        self.compute_thread = None
+        self.compute_worker = None
+        self.show_graph_after_compute = False
 
         self._setup_ui()
         self._connect_signals()
@@ -59,6 +107,7 @@ class MainWindow(QMainWindow):
         self._setup_file_layout()
         self._setup_characteristic_vector_layout()
         self._factory_link_layout()
+        self._setup_messages_layout()
 
         self.main_layout.addStretch()
 
@@ -78,12 +127,12 @@ class MainWindow(QMainWindow):
         file_layout.addWidget(self.input_path)
         file_layout.addWidget(self.recipe_import_button)
 
-        #self.type_input = QLineEdit()
-        #self.type_input.setPlaceholderText("Recipes")
-
         self.type_container = QWidget()
 
         self.type_input = QComboBox()
+        # Does not work at Linux!!!
+        self.type_input.setMaxVisibleItems(MainWindow.COMBOBOX_ITEMS)
+
         self.type_input_compute_button = QPushButton("Compute recipe")
 
         recipe_layout = QHBoxLayout(self.type_container)
@@ -96,17 +145,50 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.type_container)
 
     def _setup_characteristic_vector_layout(self) -> None:
+        self.options_toggle_button = QToolButton()
+        self.options_toggle_button.setText("Options")
+        self.options_toggle_button.setCheckable(True)
+        self.options_toggle_button.setChecked(True)
+        self.options_toggle_button.setArrowType(Qt.DownArrow)
+        self.options_toggle_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.options_toggle_button.setAutoRaise(True)
+
+        self.options_container = QWidget()
+        options_layout = QVBoxLayout(self.options_container)
+
         graph_characteristic_vector_layout = QHBoxLayout()
 
         self.show_amounts_on_edges_check_box = QCheckBox("Show amounts")
 
         self.show_simplified_structure = QCheckBox("Simplified structure")
-        self.show_simplified_structure.setChecked(True)
+        self.show_simplified_structure.setChecked(False)
+
+        self.show_graph_check_box = QCheckBox("Show graph")
 
         graph_characteristic_vector_layout.addWidget(self.show_amounts_on_edges_check_box)
         graph_characteristic_vector_layout.addWidget(self.show_simplified_structure)
+        graph_characteristic_vector_layout.addWidget(self.show_graph_check_box)
 
-        self.main_layout.addLayout(graph_characteristic_vector_layout)
+        evolution_parameters_layout = QHBoxLayout()
+
+        self.evolution_iterations_input = QSpinBox()
+        self.evolution_iterations_input.setRange(1, 1_000_000)
+        self.evolution_iterations_input.setValue(1)
+
+        self.evolution_stagnation_input = QSpinBox()
+        self.evolution_stagnation_input.setRange(1, 1_000_000)
+        self.evolution_stagnation_input.setValue(10)
+
+        evolution_parameters_layout.addWidget(QLabel("Iterations"))
+        evolution_parameters_layout.addWidget(self.evolution_iterations_input)
+        evolution_parameters_layout.addWidget(QLabel("Stagnation threshold"))
+        evolution_parameters_layout.addWidget(self.evolution_stagnation_input)
+
+        options_layout.addLayout(graph_characteristic_vector_layout)
+        options_layout.addLayout(evolution_parameters_layout)
+
+        self.main_layout.addWidget(self.options_toggle_button)
+        self.main_layout.addWidget(self.options_container)
 
     def _factory_link_layout(self) -> None:
         self.factory_link_container = QWidget()
@@ -115,19 +197,36 @@ class MainWindow(QMainWindow):
         self.factory_link_button = QPushButton("Show factory")
         factory_link_layout.addWidget(self.factory_link_button)
 
+        self.evolved_factory_link_button = QPushButton("Show evolved factory")
+        factory_link_layout.addWidget(self.evolved_factory_link_button)
+
         self.factory_link = None
+        self.evolved_factory_link = None
 
         self.factory_link_container.hide()
 
         self.main_layout.addWidget(self.factory_link_container)
 
+    def _setup_messages_layout(self) -> None:
+        self.worker_messages = QTextEdit()
+        self.worker_messages.setReadOnly(True)
+        self.worker_messages.setPlaceholderText("Worker messages...")
+        self.worker_messages.setFixedHeight(180)
+
+        self.main_layout.addWidget(self.worker_messages)
+
     def _open_factory_link(self) -> None:
-        if self.factory_link is None:
-            #TODO: better
-            print("Factory link is empty")
+        self._open_link(self.factory_link, "Factory link is empty")
+
+    def _open_evolved_factory_link(self) -> None:
+        self._open_link(self.evolved_factory_link, "Evolved factory link is empty")
+
+    def _open_link(self, link: str | None, error_message: str) -> None:
+        if link is None:
+            self._show_error(error_message)
             return
 
-        QDesktopServices.openUrl(QUrl(self.factory_link))
+        QDesktopServices.openUrl(QUrl(link))
 
     def _update_recipe_combobox(self, values: list[str]) -> None:
         self.type_input.clear()
@@ -137,10 +236,33 @@ class MainWindow(QMainWindow):
 
         self.type_container.show()
 
+    def _hide_file_dependent_widgets(self) -> None:
+        self.type_container.hide()
+        self.factory_link = None
+        self.evolved_factory_link = None
+        self.factory_link_container.hide()
+
     def _connect_signals(self) -> None:
+        self.input_path.textChanged.connect(self._hide_file_dependent_widgets)
         self.recipe_import_button.clicked.connect(self._import_recipes)
         self.type_input_compute_button.clicked.connect(self._compute_recipe)
         self.factory_link_button.clicked.connect(self._open_factory_link)
+        self.evolved_factory_link_button.clicked.connect(self._open_evolved_factory_link)
+        self.options_toggle_button.toggled.connect(self._toggle_options)
+        self.show_simplified_structure.toggled.connect(self._show_simplified_structure_info)
+
+    def _toggle_options(self, checked: bool) -> None:
+        self.options_container.setVisible(checked)
+        self.options_toggle_button.setArrowType(Qt.DownArrow if checked else Qt.RightArrow)
+
+    def _show_simplified_structure_info(self, checked: bool) -> None:
+        if checked:
+            QMessageBox.information(
+                self,
+                "Simplified structure",
+                "Simplified structure changes the backend dependency graph. "
+                "That also changes the generated grid, matrix, and evolution result."
+            )
 
     def _import_recipes(self) -> None:
         path = self.input_path.text()
@@ -156,89 +278,67 @@ class MainWindow(QMainWindow):
         self._update_recipe_combobox(recipe_names)
 
     def _compute_recipe(self) -> None:
-        #TODO: create now thread for this action so the gui is still responsive
-
         path = self.input_path.text()
         recipe_type = self.type_input.currentText()
 
-        FileUtil.create_output_dir()
+        self.type_input_compute_button.setEnabled(False)
+        self.factory_link_button.setEnabled(False)
+        self.evolved_factory_link_button.setEnabled(False)
+        self.factory_link = None
+        self.evolved_factory_link = None
+        self.factory_link_container.hide()
+        self.show_graph_after_compute = self.show_graph_check_box.isChecked()
+        self.worker_messages.clear()
 
-        #TODO: whether file exists
-        #TODO: resolve ignoring matrix after evolution
-        factory_seed, _ = MainWindow.process_factory(
+        self.compute_thread = QThread()
+        self.compute_worker = ComputeRecipeWorker(
             path,
             recipe_type,
-            show_amounts=self.show_amounts_on_edges_check_box.isChecked(),
-            simplified_structure=self.show_simplified_structure.isChecked(),
-            evolution_iteration=1,
-            show_graph=True
+            self.show_amounts_on_edges_check_box.isChecked(),
+            self.show_simplified_structure.isChecked(),
+            self.evolution_iterations_input.value(),
+            self.evolution_stagnation_input.value(),
         )
+        self.compute_worker.moveToThread(self.compute_thread)
 
-        if factory_seed is not None:
-            self.factory_link = MainWindow.create_factory_url_link(factory_seed)
+        self.compute_thread.started.connect(self.compute_worker.run)
+        self.compute_worker.result.connect(self._handle_compute_result)
+        self.compute_worker.error.connect(self._show_error)
+        self.compute_worker.error.connect(self._append_worker_message)
+        self.compute_worker.message.connect(self._append_worker_message)
+        self.compute_worker.finished.connect(self.compute_thread.quit)
+        self.compute_worker.finished.connect(self.compute_worker.deleteLater)
+        self.compute_thread.finished.connect(self.compute_thread.deleteLater)
+        self.compute_thread.finished.connect(self._cleanup_compute_thread)
 
+        self.compute_thread.start()
+
+    @Slot(object)
+    def _handle_compute_result(self, result) -> None:
+        if result is None:
+            return
+
+        if result.factory_seed is not None:
+            self.factory_link = MainWindow.create_factory_url_link(result.factory_seed)
+            self.evolved_factory_link = MainWindow.create_factory_url_link(result.evolution_seed)
             self.factory_link_container.show()
+            self._append_worker_message("Factory links are ready.")
 
-    # TODO: find better place for this function than GUI
-    @staticmethod
-    def process_factory(
-        path,
-        recipe_type,
-        show_amounts = True,
-        simplified_structure = False,
-        evolution_iteration = float("inf"),
-        evolution_stagnation = 10,
-        show_graph = False,
-        create_presentation = False
-    ):
-        factories = FactoryLoader.load(path)
+        if self.show_graph_after_compute:
+            FactoryGraphRenderer.show_graph(result.dependency_graph)
 
-        root = FactoryLoader.get_dependency_tree(factories, recipe_type)
+    @Slot(str)
+    def _append_worker_message(self, message: str) -> None:
+        self.worker_messages.append(message)
 
-        if root is not None:
-            graph = root.get_dependency_graph(
-                show_amounts=show_amounts,
-                show_simplified=simplified_structure
-            )
+    @Slot()
+    def _cleanup_compute_thread(self) -> None:
+        self.type_input_compute_button.setEnabled(True)
+        self.factory_link_button.setEnabled(True)
+        self.evolved_factory_link_button.setEnabled(True)
+        self.compute_thread = None
+        self.compute_worker = None
 
-            if show_graph:
-                graph_layout = networkx.nx_pydot.graphviz_layout(graph, prog="dot")
-                networkx.draw(graph, graph_layout, with_labels=False)
-
-                node_labels = networkx.get_node_attributes(graph, "label")
-                networkx.draw_networkx_labels(graph, graph_layout, node_labels)
-
-                edge_labels = networkx.get_edge_attributes(graph, "label")
-                networkx.draw_networkx_edge_labels(graph, graph_layout, edge_labels=edge_labels)
-
-                plt.show()
-
-                p = networkx.drawing.nx_pydot.to_pydot(graph)
-                p.write_png("output/tree.png")
-                p.write_svg("output/tree.svg")
-
-            matrix = GraphToMatrix.convert_via_heuristics(graph, root)
-            json_obj = MatrixJsonConvertor.encode(matrix)
-            factory_seed = BluePrintRepresentation.encode(json_obj)
-
-            #print(factory_seed)
-            #print(Evolution.fitness(matrix))
-
-            after_evolution = Evolution.evol(
-                matrix,
-                iteration=evolution_iteration,
-                stagnation_break=evolution_stagnation,
-                create_presentation=create_presentation
-            )
-
-            if create_presentation:
-                return factory_seed, BluePrintRepresentation.encode(MatrixJsonConvertor.process_presentation(after_evolution))
-
-            return factory_seed, BluePrintRepresentation.encode(MatrixJsonConvertor.encode(after_evolution))
-        else:
-            return None
-
-    # TODO: find better place
     @staticmethod
     def create_factory_url_link(seed: str) -> str:
         return f"https://fbe.teoxoy.com/?source={seed}"

@@ -89,7 +89,11 @@ class GraphToMatrix:
     DEFAULT_PADDING = 1
 
     @staticmethod
-    def convert_via_heuristics(graph: DiGraph, root: DependencyTreeNode) -> Grid:
+    def convert_via_heuristics(
+        graph: DiGraph, 
+        root: DependencyTreeNode,
+        report_method: callable = print
+    ) -> Grid:
         """
         Converts factory from graph to grid representation with the use of heuristics
         and general graph algorithms.
@@ -119,7 +123,8 @@ class GraphToMatrix:
                     width_multiplier = width_multiplier,
                     max_width = max_width,
                     depth_multiplier = depth_multiplier,
-                    max_depth = max_depth
+                    max_depth = max_depth,
+                    report_method=report_method
                 )
 
                 successful = True
@@ -128,9 +133,9 @@ class GraphToMatrix:
                 width_multiplier *= 2
                 depth_multiplier *= 2
 
-                print(padding, width_multiplier, depth_multiplier)
+                report_method(f"padding, width_multiplier, depth_multiplier")
 
-                print(e)
+                report_method(e)
                 raise e
 
         return grid
@@ -143,7 +148,8 @@ class GraphToMatrix:
         width_multiplier,
         max_width,
         depth_multiplier,
-        max_depth
+        max_depth,
+        report_method: callable = print
     ) -> Grid:
         matrix_width = width_multiplier * max_width
         matrix_depth = depth_multiplier * max_depth + 10
@@ -179,7 +185,7 @@ class GraphToMatrix:
         number_of_sources_placed = 1
 
         for from_node in reversed(list(networkx.topological_sort(graph))):
-            print(f"Building building: {from_node}")
+
 
             # Filter out the sink node, because we are define it above.
             if graph.out_degree(from_node) == 0:
@@ -202,6 +208,8 @@ class GraphToMatrix:
                     str(dependency_node),
                     [sur for sur in dependency_node.factory.get_cords(cord) if sur != cord]
                 )
+
+                report_building_name = str(dependency_node)
             else:
                 source_layer = matrix_depth - 1
                 offset_in_layer = math.floor(number_of_sources_placed / number_of_sources * matrix_width)
@@ -211,6 +219,10 @@ class GraphToMatrix:
                 cord = (source_layer, offset_in_layer)
 
                 grid.add_source(cord, from_node)
+
+                report_building_name = from_node
+
+            report_method(f"Building source: {report_building_name}")
 
             graph.nodes[from_node]["cord"] = cord
 
@@ -231,7 +243,7 @@ class GraphToMatrix:
                 element_type = from_node
 
             for successor in graph.successors(from_node):
-                print(f"Building path: {element_type}, {from_node}, {cord}, {successor}, {graph.nodes[successor]["cord"]}")
+                report_method(f"Building path: {element_type}, {from_node}, {cord}, {successor}, {graph.nodes[successor]["cord"]}")
 
                 if "ref" in graph.nodes[successor]:
                     is_in_successor = graph.nodes[successor]["ref"].factory.get_cords_lambda(
@@ -299,10 +311,7 @@ class GraphToMatrix:
         last_node = None
         underground_next = False
 
-        #print(from_cords, to_cords)
         while not is_in_cords(a_star_node.cord):
-            #print(a_star_node)
-            #next_cord, next_orientation = GraphToMatrix.get_path_predecessor(active_cord, visited_matrix, to_cords)
             next_node = a_star_node.predecessor
 
             if not is_in_cords(a_star_node.cord) and not is_in_successor(a_star_node.cord):
@@ -345,41 +354,6 @@ class GraphToMatrix:
                     )
 
                     underground_next = True
-
-            """
-            if not is_in_cords(a_star_node) and not is_in_successor(a_star_node):
-                distance = GraphToMatrix.distance_between_basis_vectors(a_star_node, next_cord)
-
-                if distance == 1:
-                    grid.add_transportation(
-                        cord = a_star_node,
-                        name = "transport-belt",
-                        orientation = active_orientation,
-                        from_cord= from_cord,
-                        to_cord= to_cord
-                    )
-                else:
-                    #TODO: better approach will be to remember, that we used underground belts and
-                    # create it in next step, because in this form, it only "works" with skipping one belt
-                    start_of_underground_belt = GraphToMatrix.cord_after_previous_in_direction(next_cord, a_star_node)
-                    opposite_orientation = GraphToMatrix.get_orientation_in_opposite_direction(active_orientation)
-
-                    grid.add_transportation(
-                        cord = start_of_underground_belt,
-                        name = "fast-underground-belt",
-                        orientation = opposite_orientation,
-                        from_cord= from_cord,
-                        to_cord= to_cord
-                    )
-
-                    grid.add_transportation(
-                        cord = a_star_node,
-                        name = "fact-underground-belt",
-                        orientation = active_orientation,
-                        from_cord= from_cord,
-                        to_cord= to_cord
-                    )
-                """
 
             last_node = a_star_node
             a_star_node = next_node
@@ -483,12 +457,7 @@ class GraphToMatrix:
 
         last_len = 0
         while not found and len(heap) != 0 and len(visited_matrix) <= 1_000_000: #TODO: remove limit
-            if len(visited_matrix) - last_len >= 100_000:
-                last_len = len(visited_matrix)
-                print(f"tu {len(visited_matrix)}")
-
             a_star_node = heapq.heappop(heap)
-            #print(a_star_node)
 
             # TODO: There is a problem with underground belts, I want them to be used if and only if are needed
             #  but every configuration I think of needs to know about the obstacles
