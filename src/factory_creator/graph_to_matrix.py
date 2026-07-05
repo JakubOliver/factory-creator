@@ -10,6 +10,7 @@ from pyrsistent import pset
 
 from .dependency_graph import DependencyTreeNode
 from .grid import *
+from .util.factorio_const import FactorioConst
 
 # TODO: add distinguishing between input/output underground belts
 
@@ -325,7 +326,7 @@ class GraphToMatrix:
 
                     grid.add_transportation(
                         cord=a_star_node.cord,
-                        name="fast-underground-belt",
+                        name=FactorioConst.FAST_UNDERGROUND_BELT,
                         orientation=opposite_orientation,
                         from_cord=from_cord,
                         to_cord=to_cord
@@ -335,7 +336,7 @@ class GraphToMatrix:
                 elif distance == 1:
                     grid.add_transportation(
                         cord=a_star_node.cord,
-                        name="transport-belt",
+                        name=FactorioConst.TRANSPORT_BELT,
                         orientation=GraphToMatrix.get_orientation_in_opposite_direction(
                             GraphToMatrix.get_enumeration_to_orientation(last_node.orientation)
                         ),
@@ -345,7 +346,7 @@ class GraphToMatrix:
                 else:
                     grid.add_transportation(
                         cord=a_star_node.cord,
-                        name="fast-underground-belt",
+                        name=FactorioConst.FAST_UNDERGROUND_BELT,
                         orientation=GraphToMatrix.get_orientation_in_opposite_direction(
                             GraphToMatrix.get_enumeration_to_orientation(last_node.orientation)
                         ),

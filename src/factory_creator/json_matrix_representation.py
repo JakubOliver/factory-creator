@@ -4,6 +4,7 @@ import sys
 import json
 
 from .graph_to_matrix import Grid, GridEntry
+from .util.factorio_const import FactorioConst
 
 
 class MatrixJsonConvertor:
@@ -20,7 +21,7 @@ class MatrixJsonConvertor:
             "icons" : [{
                 "signal" : {
                     "type" : "recipe",
-                    "name" : "transport-belt"
+                    "name" : FactorioConst.TRANSPORT_BELT
                 },
                 "index" : 1
             }]
@@ -29,7 +30,7 @@ class MatrixJsonConvertor:
     @staticmethod
     def _get_blueprint_footer():
         return {
-            "item" : "blueprint",
+            "item" : FactorioConst.BLUEPRINT,
             "version" : 562949956239360,
             "label" : "Blueprint",
             "wires" : []
@@ -47,7 +48,11 @@ class MatrixJsonConvertor:
             entry = matrix[i, j]
 
             #TODO: maybe is needed to rotate inserters
-            if entry.name in ["transport-belt", "fast-underground-belt", "inserter"]:
+            if entry.name in [
+                FactorioConst.TRANSPORT_BELT,
+                FactorioConst.FAST_UNDERGROUND_BELT,
+                FactorioConst.INSERTER
+            ]:
                 entities["entities"].append(MatrixJsonConvertor._get_entity(
                     entry.name,
                     (i + 1/2 + ox, j + 1/2 + oy),
@@ -56,7 +61,7 @@ class MatrixJsonConvertor:
                 ))
             elif "source" in entry.name:
                 entities["entities"].append(MatrixJsonConvertor._get_chest_entity(
-                    "wooden-chest",
+                    FactorioConst.WOODEN_CHEST,
                     (i + 1/2 + ox, j + 1/2 + oy),
                     entry.orientation,
                     entity_number,
@@ -64,7 +69,7 @@ class MatrixJsonConvertor:
                 ))
             else:
                 entities["entities"].append(MatrixJsonConvertor._get_assembling_machine(
-                    "assembling-machine-2",
+                    FactorioConst.ASSEMBLING_MACHINE_2,
                     (i + 3/2 + ox, j + 3/2 + oy),
                     entry.orientation,
                     entity_number,
