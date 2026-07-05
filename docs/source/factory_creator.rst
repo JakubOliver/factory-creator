@@ -7,19 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   factory_creator.cli
+   factory_creator.export
    factory_creator.gui
    factory_creator.util
 
 Submodules
 ----------
-
-factory\_creator.argument\_processor module
--------------------------------------------
-
-.. automodule:: factory_creator.argument_processor
-   :members:
-   :show-inheritance:
-   :undoc-members:
 
 factory\_creator.assembler module
 ---------------------------------
@@ -37,10 +31,10 @@ factory\_creator.dependency\_graph module
    :show-inheritance:
    :undoc-members:
 
-factory\_creator.evol module
-----------------------------
+factory\_creator.evolution module
+---------------------------------
 
-.. automodule:: factory_creator.evol
+.. automodule:: factory_creator.evolution
    :members:
    :show-inheritance:
    :undoc-members:
@@ -61,6 +55,14 @@ factory\_creator.factory\_loader module
    :show-inheritance:
    :undoc-members:
 
+factory\_creator.factory\_processor module
+------------------------------------------
+
+.. automodule:: factory_creator.factory_processor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 factory\_creator.graph\_to\_matrix module
 -----------------------------------------
 
@@ -77,10 +79,10 @@ factory\_creator.grid module
    :show-inheritance:
    :undoc-members:
 
-factory\_creator.json\_matrix\_representation module
-----------------------------------------------------
+factory\_creator.grid\_entry module
+-----------------------------------
 
-.. automodule:: factory_creator.json_matrix_representation
+.. automodule:: factory_creator.grid_entry
    :members:
    :show-inheritance:
    :undoc-members:

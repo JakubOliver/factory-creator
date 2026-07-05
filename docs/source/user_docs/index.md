@@ -8,29 +8,101 @@ The code can be run via command
 python3 main.py
 ```
 
-or 
+or
 
 ```
 ./main.py
 ```
 
-Required modules can be imported by 
+Required modules can be imported by
 
 ```
 pip install -r requirements_in_construction.txt
 ```
 
-* I was trying a lot of different libraries therefore in this **not final** requirements is several imports that are not used.
+- I was trying a lot of different libraries therefore in this **not final**
+  requirements is several imports that are not used.
 
 ## Controls
 
-The project is controlled via basic GUI. Firstly, you can enter the json file which contains the definition of the recipes. One of these files is prepared in file `data/recipe.json`. After loading the JSON file you can select for which recipe you want to create factory. At this stage (19.4.2026, very work in progress) works 100 % only on very small factories, you can try:
-* barrel - very small
-* engine-unit - medium 
-* electric-mining-drill - bigger (does not work 100 %)
-* or inserter - bigger (does not work 100 %)
+### CLI
 
-After generation a schematic dependency graph pop pup and shows up also button in the GUI which by clicking open browser with [online factory editor](https://fbe.teoxoy.com/) and loaded factory. 
+The CLI mode is started with the `--cli` flag. In this mode, the input recipe
+file and target recipe/building name are required:
+
+```bash
+python3 main.py --cli --input data/recipe.json --building barrel
+```
+
+Short argument names can also be used:
+
+```bash
+python3 main.py -c -i data/recipe.json -b barrel
+```
+
+The command validates that the selected JSON file contains the requested recipe.
+If the input is valid, it computes the factory and prints two URLs:
+
+- the factory before evolution
+- the factory after evolution
+
+The evolution can be configured by two optional arguments:
+
+```bash
+python3 main.py -c -i data/recipe.json -b engine-unit --iteration 100 --stagnation 20
+```
+
+Available CLI arguments:
+
+| Argument       | Short | Description                                                                 | Default  |
+| -------------- | ----- | --------------------------------------------------------------------------- | -------- |
+| `--cli`        | `-c`  | Run the application without the GUI.                                        | disabled |
+| `--input`      | `-i`  | Path to the JSON recipe file. Required in CLI mode.                         | none     |
+| `--building`   | `-b`  | Name of the recipe/building to compute. Required in CLI mode.               | none     |
+| `--iteration`  | `-t`  | Maximum number of evolution iterations.                                     | `10`     |
+| `--stagnation` | `-s`  | Stop evolution after this many generations without progress.                | `10`     |
+| `--no-browser` | `-n`  | In GUI mode, use external browser buttons instead of embedded browser tabs. | disabled |
+
+### GUI
+
+The GUI mode is the default mode:
+
+```bash
+python3 main.py
+```
+
+The GUI contains these controls:
+
+| Control                | Description                                                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Recipes path...`      | Text field for the path to the JSON recipe file.                                                                  |
+| `Browse...`            | Opens a file picker for selecting a JSON recipe file.                                                             |
+| `Import recipes`       | Validates the selected file and loads available recipe names into the recipe dropdown.                            |
+| `Recipe dropdown`      | Selects which recipe should be computed. It is shown after recipes are imported.                                  |
+| `Compute recipe`       | Starts the factory computation in a background thread.                                                            |
+| `Options`              | Expands or collapses additional graph and evolution settings.                                                     |
+| `Show amounts`         | Shows ingredient amounts on dependency graph edges.                                                               |
+| `Simplified structure` | Uses a simplified backend dependency graph. This changes the generated graph, grid, matrix, and evolution result. |
+| `Show graph`           | Opens the rendered dependency graph after computation.                                                            |
+| `Iterations`           | Maximum number of evolution iterations.                                                                           |
+| `Stagnation threshold` | Stops evolution after this many generations without improvement.                                                  |
+| Worker messages        | Displays progress and error messages from the computation.                                                        |
+
+When computation finishes, the result area shows the generated factory layouts.
+By default, they are loaded in two embedded tabs:
+
+- `Factory` - the layout before evolution
+- `Evolved factory` - the layout after evolution
+
+If the application is started with `--no-browser`, the GUI uses buttons instead
+of embedded browser tabs:
+
+```bash
+python3 main.py --no-browser
+```
+
+In this mode, `Show factory` and `Show evolved factory` open the generated links
+in the system browser.
 
 ## Examples
 
@@ -48,5 +120,8 @@ After generation a schematic dependency graph pop pup and shows up also button i
 
 - [Inserter with spliter 2](https://fbe.teoxoy.com/?source=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)
 
-- Basic Hill climbing [Before](https://fbe.teoxoy.com/?source=0eNqtmt1u2kAUhN/F11B5z/5z2deooookq8QSGGQ7TaMo796lbVoUcD1z1CsI2N96nRnP2cO+Nre7p3Icun5qNq9Nd3fox2bz5bUZu4d+uzt9Nr0cS7NphnLX1Terpt/uT39Pw7Yfj4dhWt+W3dS8rZquvy/fm415u1k1pZ+6qSu/WL/P2I5j2d/uuv5hvd/ePXZ9WUvlHQ9jPfTQn8Y6nW4++VXzUt+ET75S77s68q/v29/cl6/90/62DPWY1ft1bepXDyfkU9+droYcVd5H9cuDytmgx9PL2WhdP5Zhqkddzkve5+WWh7BnyA83+h9g+xGcLsBOBZZlsFeBzTI4qMDtMjhqwHmZmzTctMzNGm5c5ppWAw4A2DBgOwc2ckkWhuwYMuU8z5Ap6wWGTHkvMmTKfIkhR+yhmeeY7hKZ9E99Azz2TT577nfDoV8/lO2wfn4sZQdGgJ0d7nI60mo0fkm+cvPFaESOoUWjcgxtNTLH0E6jcwztOaFD0gi00i1T38SPQj/uthNY5si7xh0wDyYqxc2Br911JizFE2TL2FICQ2ZcKZEhM6aUxJAtJoqMi8I6vbiRx7j1/0PdBplJ0MjbQPc9avSNoZNG4Bg6axQOoV2rkTiGNpzGEWk40dcqAojc2TORj1OtUBiV/11GAcsSp1tSZmASqjWltABZtagUA5BVq0oRgKxaV4oFyKqVpQBtDN9qVoCCuNIbTXmMoUVTHmNoqymPMbTTlMcY2mvKYwwduPJYgIerP/fg8+FwX/r13WMZr1ysy7MNoytqTtC12vl+3BUm4z3LNORCqyIjHTmjIgMtucA4z9pZ8hWhBcZ51lFoxnnWU2jGeTZQaCYDbaTQTAjaRKGZFLSZQjNWdC2DjowXnaHQjBmdUGjGjY5yY2Tc6Cg3RsaNjnJjZNzoKDdGxo2OcmPEWq1u3oeXERvJKAR+hoiqJEzLEZtUQQisT5LRpFUG/mVJNGEFka0mqyCy00QVRPaapILIQRNUEDlqcgoiJ01MQeSsSSmEnFtNSEFko8koiCyaiILIVpNQENlpAgoie00+QWQq+RgPZjD4Zt13mXs58UtLpCGVM9ZjZNo6pqV6ovO9qGtbBowKbRC0qNAtgmaM96fVL0iRZVqnafaDbK/p9oPsoGn3g+yo6feD7KRp+INs6neKTLGp3Ta25dhUQWo4tmiqaJBtNYU0yHaaUhpke00xDbKDppwG2VFTUIPspCmpQXbWFNUYm9pu4zhfUvttHOdLasON43xJ7bhxnC+pLTeO86V4TYENsoOmxAbZUVNkg+zEdYEE6AKZus2m7vXuprKv0L8byVfNtzKMP0/yQbLLub7YbEMtUnfbOp169Oezo5/rIKed4jdvbz8AJRwUew==) [After](https://fbe.teoxoy.com/?source=0eNqll9+OqyAQxt+Fa93IoFa83NfYbE5sO2lJFA3Q7TZN3/3g2W1rancdOFf+g983wHwjnNm6PeBglHasPjO16bVl9duZWbXTTTu+c6cBWc0MbpS/SZhuuvHZmUbboTcuXWPr2CVhSm/xk9X88p4w1E45hV+s7x6NtditW6V3adds9kpjCp439NY37fWo5bsDfykSdvKc4qXw1K3yyl/fs2/u6Y8+dGs0vk1yjatmyvQ63WFj0uMesfURxSoDQRkmytZ5vXRoG4dT1WPfb1Gnmz1a90QNrmqwrCYmWKUtGuff/oIUy8icHKm4Ynm2jC2Cp13cFpwQdfm44LNZ/2V6xFUofxTKZ0KrCfIh1efg/Ecwhxm5CiEXIWQZQi5DyDwLQa+C0DwEXQWhgZYXMiAvOM2Kd89wQhXL402zIuCL/zDNbSDyUaiaC5XxNVcSxrGajGMYL2G2rwirW8XYvqLkooyxPYUMWYztSWQe43oSGWJMTyKLMM8TkgLC7clvJbAkbCWm/kS9G5kHrRwtvbn8cb/0ZCgljXkrs9Wy6yHkV3knEwwPVQwZCLsUkFFkQi0XWRSZsgfkUWTCpkpAFDknkEVYDgPhDyzywBymxFlE5bBYdocoo8hAIMf5jhPIUb6bnw6ekGVgTcuW8yHPxgOncth55v00m7APNPZfn6IEmUvpL0KK0q9+2/ix+Navk9ZHrzEeV98vl7/4UeRL) [After2](https://fbe.teoxoy.com/?source=0eNqtmNuOmzAQht/F17DCBw7msq9RrVYksRJLYBA4TaMo776mu01oaLq/R70iB/PN2P7/GcsXtmmPZhit86y+MLvt3cTq7xc22b1r2vk3fx4Mq9lotjZ8SJhruvm7Hxs3Df3o041pPbsmzLqd+clqfn1NmHHeems+WJ9vNNNkuk1r3T7tmu3BOpOKwBv6KQzt3RwrvC74S56wM6vzlzxAdzYE/vg7+8Se39yx25gxhEp+p1WzYX5cE2o0DoQTi3B27F26N82Yng7GtPGRZcQ85WPgoW38H7O1bjKjD2PXM5TP4qhVHLUgPuzvmquecblYgfMYcB4BLmLARQS4jAGXEeAqBlxFgDUmB43LgWd0VSN+4vx/6JojMxEUZXNk2bmkaBtDK4q6MXRO0TeGLigKx9BlnMYhaVT0piEQkeuFyCcfesVa5ae+3xmXbg9m8v8KJ4AelWFLdGNKgMnhXO/+zwCugHK9MctHZLVGxrjxBq6AXFVcrhrINY9DcmSrCsr8uQCyLSOz5UC28d7jt1pUAPyl94zbz8yjsx7rMPxWmxRwRMsiFv5Oll8vvOQkMrClUpDIHCBLEjkDyIpCBtwocwq4AsAFBQzUOllSwAUArjB/6GfIdZeVOg6JdG6VRdoY2CxFM5v+ukAoktkE0EYVyWwCqM+KZDbkmKJIbkMOK4pkNwGUeFXGaXjN/IuGq/m2xHrTBeb9KiZhP8w4/XonL4RWWoeH1LIIWbVNmEsY/W0x+hRizHctr9frO0GRyGo=)
+- Basic Hill climbing
+  [Before](https://fbe.teoxoy.com/?source=0eNqtmt1u2kAUhN/F11B5z/5z2deooookq8QSGGQ7TaMo796lbVoUcD1z1CsI2N96nRnP2cO+Nre7p3Icun5qNq9Nd3fox2bz5bUZu4d+uzt9Nr0cS7NphnLX1Terpt/uT39Pw7Yfj4dhWt+W3dS8rZquvy/fm415u1k1pZ+6qSu/WL/P2I5j2d/uuv5hvd/ePXZ9WUvlHQ9jPfTQn8Y6nW4++VXzUt+ET75S77s68q/v29/cl6/90/62DPWY1ft1bepXDyfkU9+droYcVd5H9cuDytmgx9PL2WhdP5Zhqkddzkve5+WWh7BnyA83+h9g+xGcLsBOBZZlsFeBzTI4qMDtMjhqwHmZmzTctMzNGm5c5ppWAw4A2DBgOwc2ckkWhuwYMuU8z5Ap6wWGTHkvMmTKfIkhR+yhmeeY7hKZ9E99Azz2TT577nfDoV8/lO2wfn4sZQdGgJ0d7nI60mo0fkm+cvPFaESOoUWjcgxtNTLH0E6jcwztOaFD0gi00i1T38SPQj/uthNY5si7xh0wDyYqxc2Br911JizFE2TL2FICQ2ZcKZEhM6aUxJAtJoqMi8I6vbiRx7j1/0PdBplJ0MjbQPc9avSNoZNG4Bg6axQOoV2rkTiGNpzGEWk40dcqAojc2TORj1OtUBiV/11GAcsSp1tSZmASqjWltABZtagUA5BVq0oRgKxaV4oFyKqVpQBtDN9qVoCCuNIbTXmMoUVTHmNoqymPMbTTlMcY2mvKYwwduPJYgIerP/fg8+FwX/r13WMZr1ysy7MNoytqTtC12vl+3BUm4z3LNORCqyIjHTmjIgMtucA4z9pZ8hWhBcZ51lFoxnnWU2jGeTZQaCYDbaTQTAjaRKGZFLSZQjNWdC2DjowXnaHQjBmdUGjGjY5yY2Tc6Cg3RsaNjnJjZNzoKDdGxo2OcmPEWq1u3oeXERvJKAR+hoiqJEzLEZtUQQisT5LRpFUG/mVJNGEFka0mqyCy00QVRPaapILIQRNUEDlqcgoiJ01MQeSsSSmEnFtNSEFko8koiCyaiILIVpNQENlpAgoie00+QWQq+RgPZjD4Zt13mXs58UtLpCGVM9ZjZNo6pqV6ovO9qGtbBowKbRC0qNAtgmaM96fVL0iRZVqnafaDbK/p9oPsoGn3g+yo6feD7KRp+INs6neKTLGp3Ta25dhUQWo4tmiqaJBtNYU0yHaaUhpke00xDbKDppwG2VFTUIPspCmpQXbWFNUYm9pu4zhfUvttHOdLasON43xJ7bhxnC+pLTeO86V4TYENsoOmxAbZUVNkg+zEdYEE6AKZus2m7vXuprKv0L8byVfNtzKMP0/yQbLLub7YbEMtUnfbOp169Oezo5/rIKed4jdvbz8AJRwUew==)
+  [After](https://fbe.teoxoy.com/?source=0eNqll9+OqyAQxt+Fa93IoFa83NfYbE5sO2lJFA3Q7TZN3/3g2W1rancdOFf+g983wHwjnNm6PeBglHasPjO16bVl9duZWbXTTTu+c6cBWc0MbpS/SZhuuvHZmUbboTcuXWPr2CVhSm/xk9X88p4w1E45hV+s7x6NtditW6V3adds9kpjCp439NY37fWo5bsDfykSdvKc4qXw1K3yyl/fs2/u6Y8+dGs0vk1yjatmyvQ63WFj0uMesfURxSoDQRkmytZ5vXRoG4dT1WPfb1Gnmz1a90QNrmqwrCYmWKUtGuff/oIUy8icHKm4Ynm2jC2Cp13cFpwQdfm44LNZ/2V6xFUofxTKZ0KrCfIh1efg/Ecwhxm5CiEXIWQZQi5DyDwLQa+C0DwEXQWhgZYXMiAvOM2Kd89wQhXL402zIuCL/zDNbSDyUaiaC5XxNVcSxrGajGMYL2G2rwirW8XYvqLkooyxPYUMWYztSWQe43oSGWJMTyKLMM8TkgLC7clvJbAkbCWm/kS9G5kHrRwtvbn8cb/0ZCgljXkrs9Wy6yHkV3knEwwPVQwZCLsUkFFkQi0XWRSZsgfkUWTCpkpAFDknkEVYDgPhDyzywBymxFlE5bBYdocoo8hAIMf5jhPIUb6bnw6ekGVgTcuW8yHPxgOncth55v00m7APNPZfn6IEmUvpL0KK0q9+2/ix+Navk9ZHrzEeV98vl7/4UeRL)
+  [After2](https://fbe.teoxoy.com/?source=0eNqtmNuOmzAQht/F17DCBw7msq9RrVYksRJLYBA4TaMo776mu01oaLq/R70iB/PN2P7/GcsXtmmPZhit86y+MLvt3cTq7xc22b1r2vk3fx4Mq9lotjZ8SJhruvm7Hxs3Df3o041pPbsmzLqd+clqfn1NmHHeems+WJ9vNNNkuk1r3T7tmu3BOpOKwBv6KQzt3RwrvC74S56wM6vzlzxAdzYE/vg7+8Se39yx25gxhEp+p1WzYX5cE2o0DoQTi3B27F26N82Yng7GtPGRZcQ85WPgoW38H7O1bjKjD2PXM5TP4qhVHLUgPuzvmquecblYgfMYcB4BLmLARQS4jAGXEeAqBlxFgDUmB43LgWd0VSN+4vx/6JojMxEUZXNk2bmkaBtDK4q6MXRO0TeGLigKx9BlnMYhaVT0piEQkeuFyCcfesVa5ae+3xmXbg9m8v8KJ4AelWFLdGNKgMnhXO/+zwCugHK9MctHZLVGxrjxBq6AXFVcrhrINY9DcmSrCsr8uQCyLSOz5UC28d7jt1pUAPyl94zbz8yjsx7rMPxWmxRwRMsiFv5Oll8vvOQkMrClUpDIHCBLEjkDyIpCBtwocwq4AsAFBQzUOllSwAUArjB/6GfIdZeVOg6JdG6VRdoY2CxFM5v+ukAoktkE0EYVyWwCqM+KZDbkmKJIbkMOK4pkNwGUeFXGaXjN/IuGq/m2xHrTBeb9KiZhP8w4/XonL4RWWoeH1LIIWbVNmEsY/W0x+hRizHctr9frO0GRyGo=)
 - [More complex](https://fbe.teoxoy.com/?source=0eNqtnd1yGzcShd+F19bWAOgGZnS5r5FKbcky12GVTKkkebOplN99qU2ssUIy/s6hr+I48tc0g4Of7oPG75v3d5+3D4+7/fPm+vfN7vZ+/7S5/un3zdPu4/7m7uX3nn972G6uN4/b293hF+82+5tPL//+/Hizf3q4f3y+er+9e958ebfZ7T9s/7u5Ll9+frfZ7p93z7vtH6w//8TN09P20/u73f7j1aeb2192++1VPfAe7p8OP3q/f4n18sfLP/Ld5rfNdTv84kD9sDtE/uO/T39yf/vX/vOn99vHww+/+/q5rjfbu8PPPe5urz7t9i8xPjzu7u4On0uMX7/GX74fvh6Fv98fPsDt7vH28+75gtht/n7w9k3w3SHw1cftzePVr79st5f8rQNEjh8ZuX2NDALnN4Fv7x8eto9Xtzfv77YXRC0gbP9hYV+/5gRhx1+/5oe7m+dL/q4VBJ1/dFAylJcfHZSM4jL9oKghjOBSjsfSpWHJEC4VxP31/v7Ddn91+8v26fk4Xi5f41UQr+ncGoAbOrd1wE2diwZZ/4a72z9tH58Pv3286NWv3wFYdcr4hvmXZfhvyEefdj4mzxZ5APJikfv3yXWyyAnIxSIHIFeL3AC5WeQKyGGRCyCnRZ4AuSvkdpb8Mnv+FS2JMCS0pMKU0JIMu4Jukg6HhJaEOEtoSYmLhFak+EIU0OGgy/J9xbS0yGBtad0ig7WlDYsM1pY2W2SwtrTFIoO1JSaLDNaWKBYZrC1R0S5pZYLUQDRt59XIN2CtgQ3sa8NaA1sCcrfIYM8c1j60DUCenXX7mHxi6ozFWbcROidn3Wbo4qzbDF2ddZuhm7NuM3QwdS9noXHMTMZ8HW8VMLs13Cr5CoY13BB6toYbQi/WcCPoPlnDDaGLs01k6Oqsqgxt7UCPF8ITGVFrA0oWwm5tQMlC2L+V4r9vnp6vPh8KFo8fH+8P//xuALAe9nFBgADH2W5tRwNslrq1HQ2QCBzWdjTAGBzWdjTAGByWJAOMwdG0jW6AQ8pgS2Ft5+pax6vWkEQY58AnpqQhnQJTIUunwK6QJdkNhSzJbhbI88QGxcIHxVwYsp49pB2P3VlSWhUKEHOzyGDemcMig3lnTosM5p1Zkl07Sz410oYzVzD07EwWDL1YaLALWCaLDE7FS3FmuEKOU0t1pjiGbs4cx9ChTXIFHAIXeAgsQtpokQ6BRdgtL8MigxljmS0yEchikQep6E8WGpkFioUm5dypOujjA8MptFUODFKDKFM4STrITidtAtndyZtA9nASJ5A9O5kTyF6c1Aljl8nJnUC2lZchJ+JSrMogORKX0ix0I+iw0MR5U9JCJ0F3C018PZpZ5hVNVhvNLSO5hjS7zCuarDbVkmOS1aZaGZlESq9WTiaJ0quVJk2i9GrlSZMovVqJ0iRKr1apPonS39hmQAIsQQKsvDHMgMwEMgRKVpl6viJ74vNKVpl6vox8Cl0sdCNoK1fTKkFbyZpWCDqczMcx+tSc1Kw0KWRbiVLItlKlkG0lSyHbSpcytmabWTS2Iso2aWxmnVmpZCGH3plXuQRIrBTJPPOqlhjoW0hHLZDdHbVA9nDUAtmWEknFqUgmmhVN1kbJRLOiydoomWhWNFkb08qfBlkbJRPNiiZrY4YznwaalzKd+RSyuzOfQvbQ5lOUhstZm0/LBOZTyUmzFl7Qaat7RQzG9soYjO3VMRjbK2QwtqVEYoMtmqFmVu549W6hyem2DwtNTreai2YWqqzljY2GOoBmobhY3thp5AjkCphmq5nP3i049eGrg65khh2WOCsR0LC0WYmAhqXNSgQ0LG2iK5jD0mYlAhqWNitSjnV4rCQRPE8WmiSCZ0uN6BbpG++NOpWgY+QbD44cgWyOZ0ubxOFaZkubpGhfZkubpGpfZkubKCE6W9pEdfvZS+wQAS2WNlHd/o0fRx3e6NywXCJRdLr03DmoFLl4p0sioMXSJipFLpY2USlysbSJSpHLrDmhUMLujVHnb47CgrG4Sg6dpjiLq+TQaSmhlY1r6xJaEWAbEloRYJslNHPJtUUZGl0bbgVBhzPeCvsSZmfAQfbijDjGlgw5r0MOsosz5iC7aoMODZDStFFXB4GGM+rqQN9COqMOsrsz6iB7OKMOsmdn1EG2pMRFYktenJg0tqLE115SkK2sh1E1trIgRtPYii5D06XkxwlNl5IhJzRdSo1sQtOl1MkmNF1K/pzQdCkZdFLTpeTQSU2XkkUnNV1KHp3UdCmZdFLTpWTSSU2XkkknNV1KJp3UdCmZdFLTpWTSSU2XkklnZZMucmEkc9YIpJtc1EsigIxLjWZ9Paj5W1ho0v1N8u7korR/k6w7uQh9sqrk3FnRM0HPFnoQtCVO0iqrpqVN0iurSsadFU0aMSY7U65QosMU7XNJzpRp2ecSzatp2ecg27LPQbZlZE00nGcLjYbzYqHJcNZ8O/3sfYNTaMu2k2Rx0Vw7/ezdjlPoZqFRb9GwfKFkcXnj2aF1n372gtGpCP2SCKDaUbulTeIRrd3SZiABWdokHtE6LG2SKl4dljaJR7QOS5ukm1EdljYbEdCwtNmIcjTPzvlWfKfQ1lLZyHI2nN5U42yEkw2RZyPE+R7tJ7ZAkoWnTdKnlzw8rWhsqShSNbZUmmwauzllDMgOp4wB2emUMSC7O2UMyB5OGQOyZ6eMAdmLU8ZgbMm/E5oupYY6oelS6qgTmi4Xq0RCrqZWybSzosnWSjLtrGiytZJMO9EEh2GVTDvRhKupVWqxs6LJ1krqsbMW0UiD+MlwoK8RSKP4qVwSAZxN2mSJk2R52+SVL4OgLW2SV0PaZGmTZI7bZGmTZI7bZGmTZI7bZGkTvbAwWdpETyxIzp4VTd5YkIw9K5o8slAsNaJXFoqlRpI5bsVSI3lnoRVLjeShhSY5fF4dEKWiV1qG44CA7NlxQED24jggGFtz+MwauzgOCMiujgMCspvjgIDscBwQkJ2OAwKyu+OAgOzhOCAge3YcEJC9OA4Ixm6sP3KeV2ScgBbNS0pc+E3y9DSpbUaTPD0tNXY4SRjITicJA9ndScJA9nCSMJA9O0kYyF6cJAxjS56e1yQMZFubVsiuzk4Kspuzk4LscHZSkJ3OTgqyu7OTguxhscnhJiwLLCmDNsnME7NQBm1pbVtJGbRJZp5QLjM2qQtPzEIZtEldeGIWyqBNMvbELJRBm+TriVkog7a05EjKoC0tNZIyaEtLjSRz3tJSI8mct26pkWTOW7fUSDLnrVtqJJnz1i01ksx565YaUebccfXErGTOHVdPKF00Wre0iTLn3bssggTk3RUJsncY3l0RxvbuijC2d1eEsb27Iozt3RVhbO+uCGN7d0UY27srwtizlik5pp5IagzYWkB56LZpFh6lrXIzHTxkBTYNPI38vzMNPIztGXgY2zPwMLZn4GFsz8DD2J6Bh7E9Aw9imwYexnacAlULYdzaivNKOjEXLlayB356K9kD2c52VtPT4uxnF+nLH87uDX762dm9Qfbi7N4QO6QePdk0dnF2b5Bdnd0bZDdn9wbZ4ezeIDudm76Qbd2uhGxFl33S2Ioue9HYi8UG+ZSQzD0ruhB0sdATQVcHTfIpIZl7VvRM0GGhB0Gnhe4E3S10EvSw0EHQ7IDZpdRJFHbCjBCaRYXm5pE6foXm5ukau1r9Y0CLytDa9XSh8XJUa/NKGi+H1qynC00YwuzVEwQ9LHQStHF5a43QSYTlkghk0pa69qxo0Oo1miVO0iQ5mqXNRgTU2gVfeSM6emPykSOQ1aFZSiX5wmiWUkmv5GjjkrMxuQQUbb7kbAyuW4bWyUe61hVaJ5+isYt1Nmbsap2NGbtZZ2PGDutszNhpnY0Zu1tnY8YeWmUDiSbYbjaEpsmhGX2UpsmR1o6Woa01k6Gr4zNjaMtawNCWtaCQTUReYi0gzwhFXmItILdewrP9kCd/wrP9kCd/wrP9kLd+wrP9lEHQlu2nzARt2X7I+0Gh2X4W6Ygs+X7WCy+MndaFF8bu1oUXxh7WhRfGnq0LL4y9WBdeEFuz+2hpGs3uMzR2tSwiZPHR3D5DSQENqzSCUkDDWDLXCCQTNPolEUhW1unqs0Yga5DT1GeNQLI2w7rlhbI2kiFoPTyQMS8ZgvK8A/WUVCVH0FpXY2yrRSzKNs1xQX9blG2a85IIJNs0d60dKHGGx8zOmb0KDrqQ7EBdsliGZAfqksUyJDvQyiZbcamdz4om06DUzaeH8HhgSPafFU224pL7Z0WTqVVq5vOKRlOr1MxnRZMpSnL7rGgyN0lmnx7CS4SxWHIkLxHmZKmRZNdzstRIsus5WWokLxHmZKmRvESYk6VG8hJhTpYayROEOVlqjELQlhqjErSlRvKsYU6WGsmzhlksNZJnDbNYaiSNfrNYaiTPGqbm8FHaKqTm8KkSOi00mUM8h88x+tSnHpoN5xh6YruXqrmH9NnIYpnsUGOQlCw+vWrsYrHJrCQ5fFY0mZUkh8+KJrNStURIkudZLRGS5HlKDp8VTfQtOXx6FZLnKXXqWc+iZI8gNepZ0WSP0Cw5kgRgNuPyyBqBiLLVSyKA1EI2S5vkyJvN0iY58maztEmOvNksbZIjbzZLm+TIm83SZkMCsrRJjrwZljbJkTfDWinRkTcsQ3oDObmUDDzrpQWEDgtNFmHJvtMn5aAuuXdWNJlDwrsgQuYQqWXPiiZziOTkWbfaZA6RnDwrmswhkpNnRZM5JK1aR5BTQlqlDpQDSOs1PJQDSOs1PJQDSOu+FsoB5NDqJgFuyuTBtfPzu83uefvpAH1/93n78Ljbv3zU/2wfn/7/h7IfGtYvy+Efh1u0/fC57m4Of5vDT//zm5/+9RDkaXP9089fvvwPk1cG5w==)

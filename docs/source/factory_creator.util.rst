@@ -4,6 +4,14 @@ factory\_creator.util package
 Submodules
 ----------
 
+factory\_creator.util.factorio\_const module
+--------------------------------------------
+
+.. automodule:: factory_creator.util.factorio_const
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 factory\_creator.util.file\_util module
 ---------------------------------------
 
