@@ -18,7 +18,7 @@ class AStartNode:
     Represents heap node witch wraps information necessary for A* computation.
     """
 
-    def __init__(self, cord, depth, comp, orientation, streak, predecessor, path_set):
+    def __init__(self, cord, depth, comp, orientation, streak, predecessor, path_set, is_start = False):
         self.cord = cord
         self.depth = depth
         self.comp = comp
@@ -26,12 +26,22 @@ class AStartNode:
         self.streak = streak
         self.predecessor = predecessor
         self.path_set = path_set.add(cord)
+        self.is_start = is_start
 
     def is_underground_belt_end(self):
         if self.predecessor is None:
             return False
 
         return abs(self.cord[0] - self.predecessor.cord[0]) + abs(self.cord[1] - self.predecessor.cord[1]) > 1
+
+    def is_after_start(self):
+        if self.predecessor is None:
+            return False
+
+        return self.predecessor.is_start
+
+    def same_direction_is_needed(self):
+        return self.is_after_start() or self.is_underground_belt_end()
 
     def __lt__(self, other):
         if self.comp != other.comp:
@@ -459,7 +469,8 @@ class GraphToMatrix:
             None,
             0,
             None,
-            path_set = path_set) for from_cord in from_cords]
+            path_set = path_set,
+            is_start = True) for from_cord in from_cords]
 
         heapq.heapify(heap)
 
@@ -569,7 +580,7 @@ class GraphToMatrix:
         return min((sum(abs(x - y) for x, y in zip(from_cord, to_cord)) for to_cord in to_cords))
 
     @staticmethod
-    def get_moves(a_star_node, visited_matrix, multiplier = 1, was_visited = False, return_enumeration = False):
+    def get_moves(a_star_node: AStartNode, visited_matrix, multiplier = 1, was_visited = False, return_enumeration = False):
         """
         Iterator over the coordinates which can be achieved from the provided coordinate.
 
@@ -597,7 +608,7 @@ class GraphToMatrix:
 
             streak = 0 if a_star_node.orientation != enum_orientation else a_star_node.streak + 1
 
-            if (multiplier > 1 or a_star_node.is_underground_belt_end()) and enum_orientation != a_star_node.orientation:
+            if (multiplier > 1 or a_star_node.same_direction_is_needed()) and enum_orientation != a_star_node.orientation:
                 continue
 
             if ((was_visited and (new_cord, enum_orientation, streak) in visited_matrix)
