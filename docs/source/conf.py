@@ -17,7 +17,17 @@ author = 'Jakub Oliver Kubin'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'myst_parser']
+extensions = [
+    'sphinx.ext.autodoc', 
+    'sphinx.ext.napoleon', 
+    'myst_parser',
+    'sphinxcontrib.mermaid',
+    'sphinx_needs',
+    'sphinx_design'
+]
+
+myst_fence_as_directive = ['mermaid']
+myst_enable_extensions = ['colon_fence']
 
 templates_path = ['_templates']
 exclude_patterns = []

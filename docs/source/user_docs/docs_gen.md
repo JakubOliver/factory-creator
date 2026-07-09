@@ -19,5 +19,5 @@ generating it:
 ```bash
 cd docs
 sphinx-apidoc -f -o source ../src/factory_creator
-sphinx-build -E -a -b html source ../build/html
+sphinx-build -E -a -b html source build/html
 ```

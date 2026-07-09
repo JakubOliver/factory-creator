@@ -13,7 +13,7 @@ documentation for details.
 
 .. toctree::
    :maxdepth: 5
-   :caption: Contents:
+   :caption: Code:
    
    modules
    
@@ -23,3 +23,9 @@ documentation for details.
 
    user_docs/index
    user_docs/docs_gen
+
+.. toctree::
+   :maxdepth: 2
+   :caption: How it works:
+
+   info_docs/index
