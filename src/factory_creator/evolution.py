@@ -279,6 +279,7 @@ class Evolution:
         :return: Whether all expected connections exist in the provided grid.
         """
 
+        #TODO: Add connection checking that if we check for underground, then they are really underground
         for a, b, belt_id in connection_pair:
             if not grid.exists_path(a, b, belt_id):
                 return False

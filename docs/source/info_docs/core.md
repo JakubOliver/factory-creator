@@ -96,3 +96,40 @@ cestu použít jednoduchý backtracking, pomocí např. matice času navštíven
 přístup bohužel v rozšířeném stavovém prostoru není možný, proto je potřeba pro
 každý vrchol A\* si pamatovat jeho předka, což ale potom zjedodušuje konstrukci
 cesty.
+
+## Evoluční algoritmus
+
+## Hill climbing
+
+Hill climbing je jednoduchý evoluční algortmus, který v mé implementaci pracuje
+s populací o velikosti 1. V každé generaci posune každou pohyblivou budovu o 1
+políčko ve všechn 4 směrech znovu napojí na ostatní budovy a vyhodnotí fitness.
+Pokud je fitness lepší než fitness předchozí generace, tak se tato nová generace
+stává aktuální generací. Pokud ne, si ponecháme jedince z minulé generace.
+
+Tento process opakujeme dokud nenastane situace, kdy se fitness nezlepší po
+určitém počtu generací. Nebo dojde počet generací k nastavenému limitu.
+
+## Fitness funkce
+
+V aktuální implementaci se fitness skládá s z několika částí:
+
+Funkce, které se snaží minimalizovat:
+
+- Obsah blochy obdelníku, který obklopuje všechny budovy.
+- Počet využitých políček.
+
+Funkce, které se snaží o kompaktnost:
+
+- Součet vzdáleností budov od středu.
+
+Funkce, které se snaží o "estetiku":
+
+- Bonusové body, pokud se pásy napojují na střed továrny.
+
+Kontrolní funkce, které penalizují:
+
+- Kontrola, zda jsou budovy opravdu propojené.
+
+Právě tato část s evolučními algoritmy bude nejvíce rozvíjena existuje už
+několik nápadů, které jsou v současné době sepsány v poznámkách.
