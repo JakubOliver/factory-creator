@@ -42,18 +42,17 @@ class AStartNode:
     def same_direction_is_needed(self):
         return self.is_after_start() or self.is_underground_belt_end()
 
+    def reconstruct_path(self):
+        if self.predecessor is None:
+            return [self.cord]
+
+        return self.predecessor.reconstruct_path() + [self.cord]
+
     def __lt__(self, other):
         if self.comp != other.comp:
             return self.comp < other.comp
 
-        #if self.is_underground_belt_end() != other.is_underground_belt_end():
-        #    return not self.is_underground_belt_end()
-
-        #if self.streak != other.streak:
-        #    return self.streak > other.streak
-
         return self.streak > other.streak
-        return self.cord < other.cord
 
     def __str__(self):
         return f"Cord: {self.cord}, Depth: {self.depth}, Comp: {self.comp}, Orientation: {self.orientation}, Streak: {self.streak}"
@@ -460,7 +459,6 @@ class GraphToMatrix:
         visited_matrix = VisitedMatrix()
         for entry in heap:
             visited_matrix[(entry.cord, entry.orientation, entry.streak)] = 0
-            #visited_matrix[GraphToMatrix.get_a_star_visited_key(entry.cord, entry.orientation, entry.streak)] = 0
 
         active_node = None
         found = False
@@ -478,6 +476,12 @@ class GraphToMatrix:
             #  we give the points more or less points
             for multiplier in range(1, Grid.UNDERGROUND_MOVE_LENGTH):
                 if a_star_node.streak < GraphToMatrix.A_STAR_STREAK_THRESHOLD and multiplier > 1:
+                    break
+
+                # Consecutive underground sections may have adjacent output
+                # and input belts, but both endpoints cannot occupy the same
+                # tile. A unit move first creates the adjacent input position.
+                if a_star_node.is_underground_belt_end() and multiplier > 1:
                     break
 
                 for orientation, streak, new_cord in GraphToMatrix.get_moves(a_star_node, visited_matrix, multiplier=multiplier, return_enumeration=True):
@@ -502,7 +506,6 @@ class GraphToMatrix:
                             node
                         )
 
-                        #visited_matrix[GraphToMatrix.get_a_star_visited_key(new_cord, orientation, streak)] = a_star_node.depth + multiplier
                         visited_matrix[(new_cord, orientation, streak)] = a_star_node.depth + multiplier
 
                         if GraphToMatrix.ENABLE_UNFINISH_BELTS:
@@ -575,9 +578,6 @@ class GraphToMatrix:
             if (multiplier > 1 or a_star_node.same_direction_is_needed()) and enum_orientation != a_star_node.orientation:
                 continue
 
-            #visited_key = GraphToMatrix.get_a_star_visited_key(new_cord, enum_orientation, streak)
-            #if ((was_visited and visited_key in visited_matrix)
-            #        or (not was_visited and visited_key not in visited_matrix)):
             if ((was_visited and (new_cord, enum_orientation, streak) in visited_matrix)
                     or (not was_visited and (new_cord, enum_orientation, streak) not in visited_matrix)):
                 yield new_cord if not return_enumeration else (enum_orientation, streak, new_cord)
