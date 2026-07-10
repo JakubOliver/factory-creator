@@ -240,6 +240,12 @@ class Grid:
             table.add_row(row)
 
         return str(table)
+    
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Grid):
+            return False
+
+        return self.data == other.data and self.occupied == other.occupied
 
     def get_x_cord(self) -> Iterator[int]:
         """

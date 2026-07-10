@@ -229,6 +229,19 @@ class GridEntry:
 
         return self.get_id_text()
         return self.name[:2]
+    
+    def __eq__(self, other):
+        if not isinstance(other, GridEntry):
+            return False
+
+        return (
+            self.id.get_id() == other.id.get_id() and
+            self.name == other.name and
+            self.orientation == other.orientation and
+            self.entry_type == other.entry_type and
+            self.underground_belt_type == other.underground_belt_type and
+            self.surroundings == other.surroundings
+        )
 
     @staticmethod
     def extract_item_name_from_source(name: str) -> str:
