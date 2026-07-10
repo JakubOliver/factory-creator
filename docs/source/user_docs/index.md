@@ -14,14 +14,14 @@ or
 ./main.py
 ```
 
-Required modules can be imported by
+Install the runtime dependencies with:
 
 ```
-pip install -r requirements_in_construction.txt
+pip install -r requirements.txt
 ```
 
-- I was trying a lot of different libraries therefore in this **not final**
-  requirements is several imports that are not used.
+Development setup, including documentation generation and Graphviz
+installation, is described in [Development setup](dev_docs.md).
 
 ## Controls
 

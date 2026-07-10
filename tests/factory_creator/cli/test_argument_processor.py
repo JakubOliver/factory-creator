@@ -14,7 +14,7 @@ def test_process_arguments_parses_cli_options(monkeypatch):
     monkeypatch.setattr(
         "sys.argv",
         [
-            "prog",
+            "main.py",
             "-c",
             "--input",
             "recipes.json",

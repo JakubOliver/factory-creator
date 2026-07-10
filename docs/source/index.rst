@@ -22,6 +22,7 @@ documentation for details.
    :caption: User Documentation:
 
    user_docs/index
+   user_docs/dev_docs
    user_docs/docs_gen
 
 .. toctree::
