@@ -34,9 +34,9 @@ Grid není pouze matice viditelných entit, ale uchovává i informaci o prostor
 který je jednotlivými entitami obsazený. To je důležité hlavně u budov, protože
 jedna budova nezabírá jen jedno políčko, na kterém je ukotvená, ale i své okolní
 části. V gridu se proto rozlišují samotné prvky továrny a políčka, která jsou
-blokována jejich rozměrem. Díky tomu může algoritmus jednotně kontrolovat
-kolize při pokládání budov i pásů, aniž by musel při každém kroku znovu
-dopočítávat tvar všech objektů.
+blokována jejich rozměrem. Díky tomu může algoritmus jednotně kontrolovat kolize
+při pokládání budov i pásů, aniž by musel při každém kroku znovu dopočítávat
+tvar všech objektů.
 
 Další důležitou vlastností gridu je, že propojovací prvky nejsou navázané pouze
 na souřadnice, ale na identitu prvků, které propojují. To je užitečné hlavně
@@ -69,6 +69,10 @@ uspořádáná trojice (souřadnice, orientace, streak). Naivní implementace by
 násobně zvětšila stavový prostor, poněvadž by streak mohl nabývat libovolné
 hodnoty, ale my v omezeních potřebujeme streak pouze do hodnoty 2, tedy můžeme
 streak omezit konečnou hodnotou větší než tento treshold.
+
+- U přístupu s thresholdem se domnívám, že je možný a validní, bohužel při
+  prozatimní implementaci jsem narážel na různé problémy, takže zatím jsem
+  omezení na masteru nepřidal.
 
 Pro nalezené cesty mezi množina bodů se používá A\* algoritmus, který je
 rozšířen o výše zmíněné omezení. Jeho ohodnocení je poměrně přímočaré, cena
