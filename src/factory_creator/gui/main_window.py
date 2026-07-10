@@ -16,7 +16,6 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..export.factory_graph_renderer import FactoryGraphRenderer
 from ..factory_loader import FactoryLoader
 from ..util.file_util import FileUtil
 from .compute_recipe_worker import ComputeRecipeWorker
@@ -261,7 +260,7 @@ class MainWindow(QMainWindow):
                 self.resize(max(self.width(), 1300), max(self.height(), 760))
 
         if self.show_graph_after_compute:
-            FactoryGraphRenderer.show_graph(result.dependency_graph)
+            self._show_dependency_graph(result.dependency_graph)
 
     @Slot(str)
     def _append_worker_message(self, message: str) -> None:
@@ -281,6 +280,23 @@ class MainWindow(QMainWindow):
         self.factory_result_widget.set_controls_enabled(True)
         self.compute_thread = None
         self.compute_worker = None
+
+    def _show_dependency_graph(self, graph) -> None:
+        """
+        Render the dependency graph if the optional Graphviz renderer is available.
+
+        :param graph: Dependency graph to display.
+        """
+        try:
+            from ..export.factory_graph_renderer import FactoryGraphRenderer
+        except ImportError:
+            self._show_error(
+                "Graph rendering is unavailable. Install the optional graph rendering "
+                "dependencies and the Graphviz system package."
+            )
+            return
+
+        FactoryGraphRenderer.show_graph(graph)
 
     @staticmethod
     def create_factory_url_link(seed: str) -> str:

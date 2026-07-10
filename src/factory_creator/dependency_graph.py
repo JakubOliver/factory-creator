@@ -1,8 +1,6 @@
-#from graphviz import Digraph
 from collections import defaultdict
 
 from networkx import DiGraph
-from sphinx.ext.inheritance_diagram import get_graph_hash
 
 from .assembler import Assembler, AssemblingMachine3
 from .factory import Item
