@@ -46,23 +46,21 @@ class AStartNode:
         if self.comp != other.comp:
             return self.comp < other.comp
 
-        #if self.is_underground_belt_end() != other.is_underground_belt_end():
-        #    return not self.is_underground_belt_end()
-
-        #if self.streak != other.streak:
-        #    return self.streak > other.streak
+        if not self.is_underground_belt_end() and other.is_underground_belt_end():
+            return True
+        if self.is_underground_belt_end() and not other.is_underground_belt_end():
+            return False
 
         return self.streak > other.streak
-        return self.cord < other.cord
 
     def __str__(self):
         return f"Cord: {self.cord}, Depth: {self.depth}, Comp: {self.comp}, Orientation: {self.orientation}, Streak: {self.streak}"
 
 class VisitedMatrix:
     def __init__(self):
-        self.visited: dict[tuple[tuple, int, int], int] = {}
+        self.visited: dict[tuple[tuple, int | None, int, bool], int] = {}
 
-    def __setitem__(self, key: tuple[tuple, int, int], value: int):
+    def __setitem__(self, key: tuple[tuple, int | None, int, bool], value: int):
         self.visited[key] = value
 
     def __len__(self):
@@ -323,7 +321,7 @@ class GraphToMatrix:
                 distance = GraphToMatrix.distance_between_basis_vectors(a_star_node.cord, next_node.cord)
 
                 if underground_next:
-                    opposite_orientation = GraphToMatrix.get_enumeration_to_orientation(a_star_node.orientation)
+                    opposite_orientation = GraphToMatrix.get_orientation_in_opposite_direction(GraphToMatrix.get_enumeration_to_orientation(a_star_node.orientation)) # TODO: resolve that opposite is not really opposite in input also in output
 
                     grid.add_transportation(
                         cord=a_star_node.cord,
@@ -423,9 +421,9 @@ class GraphToMatrix:
         return active_cord, visited_matrix
 
     @staticmethod
-    def get_a_star_visited_key(cord, orientation, streak):
-        max_tracked_streak = GraphToMatrix.A_STAR_STREAK_THRESHOLD + 1
-        return (cord, orientation, min(streak, max_tracked_streak))
+    def get_a_star_visited_key(cord, orientation, streak, is_underground):
+        max_tracked_streak = GraphToMatrix.A_STAR_STREAK_THRESHOLD + 5
+        return (cord, orientation, min(streak, max_tracked_streak), is_underground)
 
     @staticmethod
     def a_star(from_cords, is_in_successor, to_cords, grid):
@@ -459,8 +457,13 @@ class GraphToMatrix:
 
         visited_matrix = VisitedMatrix()
         for entry in heap:
-            visited_matrix[(entry.cord, entry.orientation, entry.streak)] = 0
-            #visited_matrix[GraphToMatrix.get_a_star_visited_key(entry.cord, entry.orientation, entry.streak)] = 0
+            #visited_matrix[(entry.cord, entry.orientation, entry.streak)] = 0
+            visited_matrix[GraphToMatrix.get_a_star_visited_key(
+                entry.cord,
+                entry.orientation,
+                entry.streak,
+                entry.is_underground_belt_end()
+            )] = 0
 
         active_node = None
         found = False
@@ -502,8 +505,13 @@ class GraphToMatrix:
                             node
                         )
 
-                        #visited_matrix[GraphToMatrix.get_a_star_visited_key(new_cord, orientation, streak)] = a_star_node.depth + multiplier
-                        visited_matrix[(new_cord, orientation, streak)] = a_star_node.depth + multiplier
+                        visited_matrix[GraphToMatrix.get_a_star_visited_key(
+                            node.cord,
+                            node.orientation,
+                            node.streak,
+                            node.is_underground_belt_end()
+                        )] = a_star_node.depth + multiplier
+                        #visited_matrix[(new_cord, orientation, streak)] = a_star_node.depth + multiplier
 
                         if GraphToMatrix.ENABLE_UNFINISH_BELTS:
                             active_node = node
@@ -575,11 +583,16 @@ class GraphToMatrix:
             if (multiplier > 1 or a_star_node.same_direction_is_needed()) and enum_orientation != a_star_node.orientation:
                 continue
 
-            #visited_key = GraphToMatrix.get_a_star_visited_key(new_cord, enum_orientation, streak)
-            #if ((was_visited and visited_key in visited_matrix)
-            #        or (not was_visited and visited_key not in visited_matrix)):
-            if ((was_visited and (new_cord, enum_orientation, streak) in visited_matrix)
-                    or (not was_visited and (new_cord, enum_orientation, streak) not in visited_matrix)):
+            visited_key = GraphToMatrix.get_a_star_visited_key(
+                new_cord,
+                enum_orientation,
+                streak,
+                multiplier > 1
+            )
+            if ((was_visited and visited_key in visited_matrix)
+                    or (not was_visited and visited_key not in visited_matrix)):
+            #if ((was_visited and (new_cord, enum_orientation, streak) in visited_matrix)
+            #        or (not was_visited and (new_cord, enum_orientation, streak) not in visited_matrix)):
                 yield new_cord if not return_enumeration else (enum_orientation, streak, new_cord)
 
 
