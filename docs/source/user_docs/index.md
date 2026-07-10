@@ -62,6 +62,7 @@ Available CLI arguments:
 | `--iteration`  | `-t`  | Maximum number of evolution iterations.                                     | `10`     |
 | `--stagnation` | `-s`  | Stop evolution after this many generations without progress.                | `10`     |
 | `--no-browser` | `-n`  | In GUI mode, use external browser buttons instead of embedded browser tabs. | disabled |
+| `--show-graph`  | none  | Render the dependency graph if the optional Graphviz support is installed.  | disabled |
 
 ### GUI
 
@@ -83,7 +84,7 @@ The GUI contains these controls:
 | `Options`              | Expands or collapses additional graph and evolution settings.                                                     |
 | `Show amounts`         | Shows ingredient amounts on dependency graph edges.                                                               |
 | `Simplified structure` | Uses a simplified backend dependency graph. This changes the generated graph, grid, matrix, and evolution result. |
-| `Show graph`           | Opens the rendered dependency graph after computation.                                                            |
+| `Show graph (Graphviz)` | Opens the rendered dependency graph after computation if the optional Graphviz support is installed.             |
 | `Iterations`           | Maximum number of evolution iterations.                                                                           |
 | `Stagnation threshold` | Stops evolution after this many generations without improvement.                                                  |
 | Worker messages        | Displays progress and error messages from the computation.                                                        |

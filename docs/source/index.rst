@@ -19,7 +19,7 @@ documentation for details.
    
 .. toctree::
    :maxdepth: 2
-   :caption: User Documentation:
+   :caption: How to use:
 
    user_docs/index
    user_docs/dev_docs
