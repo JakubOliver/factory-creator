@@ -139,7 +139,7 @@ class GraphToMatrix:
                 report_method(f"padding, width_multiplier, depth_multiplier")
 
                 report_method(e)
-                raise e
+                #raise e
 
         return grid
 

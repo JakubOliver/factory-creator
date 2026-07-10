@@ -28,6 +28,21 @@ topologických uspořádání a jsou umísněni podle odhadů pocházejících z
 tree. Poté následuje druhá fáze, kdy se budovy propojí pomocí propojovacích
 pásů.
 
+## Reprezentace gridu
+
+Grid není pouze matice viditelných entit, ale uchovává i informaci o prostoru,
+který je jednotlivými entitami obsazený. To je důležité hlavně u budov, protože
+jedna budova nezabírá jen jedno políčko, na kterém je ukotvená, ale i své okolní
+části. V gridu se proto rozlišují samotné prvky továrny a políčka, která jsou
+blokována jejich rozměrem. Díky tomu může algoritmus jednotně kontrolovat
+kolize při pokládání budov i pásů, aniž by musel při každém kroku znovu
+dopočítávat tvar všech objektů.
+
+Další důležitou vlastností gridu je, že propojovací prvky nejsou navázané pouze
+na souřadnice, ale na identitu prvků, které propojují. To je užitečné hlavně
+později při evoluci, protože budova může změnit svou pozici, ale pořád je možné
+poznat, ke kterým ostatním budovám nebo zdrojům byla původně připojená.
+
 ## Propojování budov
 
 V druhé fázi se znovu prochází budovy v topologickém pořadí a pro každý aktuální
@@ -106,6 +121,13 @@ s populací o velikosti 1. V každé generaci posune každou pohyblivou budovu o
 políčko ve všechn 4 směrech znovu napojí na ostatní budovy a vyhodnotí fitness.
 Pokud je fitness lepší než fitness předchozí generace, tak se tato nová generace
 stává aktuální generací. Pokud ne, si ponecháme jedince z minulé generace.
+
+Při posunu jedné budovy se nejprve odstraní její původní propojovací pásy, ale
+zůstane zachována informace o tom, se kterými sousedními prvky byla propojena a
+v jakém směru dané propojení vedlo. Po vložení budovy na novou pozici se tato
+propojení znovu sestaví stejným algoritmem pro hledání cest jako při prvotní
+konstrukci gridu. Evoluce tedy nemění receptovou strukturu továrny, ale pouze
+hledá jiné geometrické rozmístění stejných prvků a jejich spojů.
 
 Tento process opakujeme dokud nenastane situace, kdy se fitness nezlepší po
 určitém počtu generací. Nebo dojde počet generací k nastavenému limitu.
