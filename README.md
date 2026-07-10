@@ -19,13 +19,6 @@ set:
 pip install -r requirements_dev.txt
 ```
 
-Note: the project also needs the Graphviz system package for graph layout
-rendering. On Debian/Ubuntu this can be installed with:
-
-```bash
-sudo apt install graphviz
-```
-
 ## Documentation
 
 Instruction how to generate documentation can be found in the
