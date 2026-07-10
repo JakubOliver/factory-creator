@@ -46,12 +46,13 @@ class AStartNode:
         if self.comp != other.comp:
             return self.comp < other.comp
 
-        if self.is_underground_belt_end() != other.is_underground_belt_end():
-            return not self.is_underground_belt_end()
+        #if self.is_underground_belt_end() != other.is_underground_belt_end():
+        #    return not self.is_underground_belt_end()
 
-        if self.streak != other.streak:
-            return self.streak > other.streak
+        #if self.streak != other.streak:
+        #    return self.streak > other.streak
 
+        return self.streak > other.streak
         return self.cord < other.cord
 
     def __str__(self):
@@ -458,7 +459,8 @@ class GraphToMatrix:
 
         visited_matrix = VisitedMatrix()
         for entry in heap:
-            visited_matrix[GraphToMatrix.get_a_star_visited_key(entry.cord, entry.orientation, entry.streak)] = 0
+            visited_matrix[(entry.cord, entry.orientation, entry.streak)] = 0
+            #visited_matrix[GraphToMatrix.get_a_star_visited_key(entry.cord, entry.orientation, entry.streak)] = 0
 
         active_node = None
         found = False
@@ -500,7 +502,8 @@ class GraphToMatrix:
                             node
                         )
 
-                        visited_matrix[GraphToMatrix.get_a_star_visited_key(new_cord, orientation, streak)] = a_star_node.depth + multiplier
+                        #visited_matrix[GraphToMatrix.get_a_star_visited_key(new_cord, orientation, streak)] = a_star_node.depth + multiplier
+                        visited_matrix[(new_cord, orientation, streak)] = a_star_node.depth + multiplier
 
                         if GraphToMatrix.ENABLE_UNFINISH_BELTS:
                             active_node = node
@@ -572,9 +575,11 @@ class GraphToMatrix:
             if (multiplier > 1 or a_star_node.same_direction_is_needed()) and enum_orientation != a_star_node.orientation:
                 continue
 
-            visited_key = GraphToMatrix.get_a_star_visited_key(new_cord, enum_orientation, streak)
-            if ((was_visited and visited_key in visited_matrix)
-                    or (not was_visited and visited_key not in visited_matrix)):
+            #visited_key = GraphToMatrix.get_a_star_visited_key(new_cord, enum_orientation, streak)
+            #if ((was_visited and visited_key in visited_matrix)
+            #        or (not was_visited and visited_key not in visited_matrix)):
+            if ((was_visited and (new_cord, enum_orientation, streak) in visited_matrix)
+                    or (not was_visited and (new_cord, enum_orientation, streak) not in visited_matrix)):
                 yield new_cord if not return_enumeration else (enum_orientation, streak, new_cord)
 
 
