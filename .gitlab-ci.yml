@@ -11,8 +11,7 @@ stages:
 pytest:
   stage: test
   script:
-    - python -m pytest --junitxml=report.xml -o junit_family=xunit1
-    - head -c 500 report.xml
+    - python -m pytest --junitxml=report.xml
   artifacts:
     when: always
     reports:
