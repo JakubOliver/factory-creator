@@ -212,7 +212,6 @@ class MainWindow(QMainWindow):
 
         self.type_input_compute_button.setEnabled(False)
         self.factory_result_widget.set_controls_enabled(False)
-        self.factory_result_widget.clear()
         self.show_graph_after_compute = self.options_widget.show_graph()
         self.worker_messages.clear()
 
