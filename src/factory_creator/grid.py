@@ -266,10 +266,10 @@ class Grid:
         return map(lambda x: x[1], self.occupied.union(self.data.keys()))
 
     def get_with(self):
-        return abs(max(self.get_x_cord()) - min(self.get_x_cord()))
+        return abs(max(self.get_x_cord()) - min(self.get_x_cord())) + 1
 
     def get_height(self):
-        return abs(max(self.get_y_cord()) - min(self.get_y_cord()))
+        return abs(max(self.get_y_cord()) - min(self.get_y_cord())) + 1
 
     def get_area(self) -> int:
         """
