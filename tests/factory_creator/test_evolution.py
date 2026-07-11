@@ -1,9 +1,7 @@
 import copy
 
 from factory_creator.evolution import Evolution
-from factory_creator.export.json_matrix_representation import BluePrintRepresentation, MatrixJsonConvertor
 from factory_creator.grid import Grid
-from factory_creator.gui.main_window import MainWindow
 from factory_creator.util.factorio_const import FactorioConst
 
 
@@ -140,8 +138,6 @@ def test_hill_climb_correct_climb_absolute_convergence():
         report_method=print,
     )
 
-    print(MainWindow.create_factory_url_link(BluePrintRepresentation.encode(MatrixJsonConvertor.encode(new_grid))))
-
     assert isinstance(new_grid, Grid)
     assert grid.get_area() != new_grid.get_area(), print(new_grid)
     assert grid.get_area() == 11, print(grid)
@@ -165,8 +161,6 @@ def test_hill_climb_correct_climb_absolute_convergence2():
         create_presentation=False,
         report_method=print,
     )
-
-    print(MainWindow.create_factory_url_link(BluePrintRepresentation.encode(MatrixJsonConvertor.encode(new_grid))))
 
     assert isinstance(new_grid, Grid)
     assert grid.get_area() != new_grid.get_area(), print(new_grid)
