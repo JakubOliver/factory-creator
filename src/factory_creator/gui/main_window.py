@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..factory_loader import FactoryLoader
+from ..export.url_creator import URLCreator
 from ..util.file_util import FileUtil
 from .compute_recipe_worker import ComputeRecipeWorker
 from .factory_result_widget import FactoryResultWidget
@@ -250,8 +251,8 @@ class MainWindow(QMainWindow):
 
         if result.factory_seed is not None:
             self.factory_result_widget.show_results(
-                MainWindow.create_factory_url_link(result.factory_seed),
-                MainWindow.create_factory_url_link(result.evolution_seed)
+                URLCreator.create_factory_url_link(result.factory_seed),
+                URLCreator.create_factory_url_link(result.evolution_seed)
             )
             self._append_worker_message("Factory results are ready.")
 
@@ -296,16 +297,6 @@ class MainWindow(QMainWindow):
             return
 
         FactoryGraphRenderer.show_graph(graph)
-
-    @staticmethod
-    def create_factory_url_link(seed: str) -> str:
-        """
-        Build a web editor URL for an encoded factory blueprint seed.
-
-        :param seed: Encoded blueprint seed.
-        :return: URL that opens the seed in the blueprint editor.
-        """
-        return f"https://fbe.teoxoy.com/?source={seed}"
 
     def _show_error(self, error_message: str) -> None:
         """
