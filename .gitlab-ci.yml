@@ -1,11 +1,22 @@
 image: python:3.14
 
+default:
+  before_script:
+    - python -m pip install -r requirements_dev.txt
+
 stages:
   - test
+  - deploy
 
 pytest:
   stage: test
-  before_script:
-    - python -m pip install -r requirements_dev.txt
   script:
     - python -m pytest
+
+pages:
+  stage: deploy
+  script:
+    - sphinx-build -b html docs/source public
+  pages: true
+  only:
+  - master

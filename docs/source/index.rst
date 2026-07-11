@@ -6,13 +6,13 @@
 Factory creator documentation
 =============================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+The project focuses on creating an AI-based production line generator inspired
+by Factorio. Given a target product and required output rate, the system would
+generate an optimized production layout or graph.
 
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 1
    :caption: Code:
    
    modules
