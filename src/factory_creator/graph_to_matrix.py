@@ -138,7 +138,7 @@ class GraphToMatrix:
 
                 report_method(f"padding, width_multiplier, depth_multiplier")
 
-                report_method(e)
+                report_method(str(e))
                 #raise e
 
         return grid
@@ -312,8 +312,10 @@ class GraphToMatrix:
         last_node = None
         underground_next = False
 
+        print(GridEntryTransportationId.create_belt_id(grid.data[from_cord].get_id_text(), grid.data[to_cord].get_id_text()))
         while not is_in_cords(a_star_node.cord):
             next_node = a_star_node.predecessor
+            print(a_star_node.cord)
 
             if not is_in_cords(a_star_node.cord) and not is_in_successor(a_star_node.cord):
                 if start_cord is None:
@@ -322,7 +324,7 @@ class GraphToMatrix:
                 distance = GraphToMatrix.distance_between_basis_vectors(a_star_node.cord, next_node.cord)
 
                 if underground_next:
-                    opposite_orientation = GraphToMatrix.get_enumeration_to_orientation(a_star_node.orientation)
+                    opposite_orientation = GraphToMatrix.get_orientation_in_opposite_direction(GraphToMatrix.get_enumeration_to_orientation(a_star_node.orientation)) # TODO: resolve that opposite is not really opposite in input also in output
 
                     grid.add_transportation(
                         cord=a_star_node.cord,
@@ -363,7 +365,7 @@ class GraphToMatrix:
 
         grid.transform_into_inserter(last_node.cord, from_cord, to_cord)
 
-        if start_cord != last_node:
+        if start_cord != last_node.cord:
             grid.transform_into_inserter(start_cord, from_cord, to_cord) 
 
         #TODO: when we have path length 2 we can not use anything else than big inserter
@@ -486,6 +488,11 @@ class GraphToMatrix:
 
                 for orientation, streak, new_cord in GraphToMatrix.get_moves(a_star_node, visited_matrix, multiplier=multiplier, return_enumeration=True):
                     if new_cord in a_star_node.path_set:
+                        continue
+
+                    # An underground belt cannot terminate inside the destination.
+                    # The final move into a factory or source must be a unit move.
+                    if multiplier > 1 and is_in_successor(new_cord):
                         continue
 
                     if new_cord in grid and not is_in_successor(new_cord):
