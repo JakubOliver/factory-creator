@@ -57,6 +57,13 @@ class ArgumentProcessor:
             default=False,
             help="use external browser links instead of embedded GUI browser"
         )
+        parser.add_argument(
+            "--show-graph",
+            required=False,
+            action="store_true",
+            default=False,
+            help="render the dependency graph with Graphviz when available"
+        )
 
         args = parser.parse_args()
 

@@ -213,6 +213,20 @@ def test_a_star_finds_simple_path_and_reports_unreachable_target():
     _assert_a_star_cannot_find_path(blocked, (0, 0), (0, 2))
 
 
+def test_a_star_cannot_jump_over_foreign_path_directly_into_target():
+    start = (0, 0)
+    target = (0, 20)
+    grid = _closed_one_tile_corridor(
+        length=target[1],
+        # The foreign path blocks every valid surface approach to the target.
+        # Before the regression fix, the second path incorrectly succeeded by
+        # jumping underground from tile 15 directly into the target at tile 20.
+        blocked_tiles=range(16, 20),
+    )
+
+    _assert_a_star_cannot_find_path(grid, start, target)
+
+
 @pytest.mark.parametrize(
     ("start", "target", "obstacles"),
     [

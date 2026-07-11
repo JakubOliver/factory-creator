@@ -20,8 +20,15 @@ Install the runtime dependencies with:
 pip install -r requirements.txt
 ```
 
-Development setup, including documentation generation and Graphviz
-installation, is described in [Development setup](dev_docs.md).
+Development setup, including documentation generation and Graphviz installation,
+is described in [Development setup](dev_docs.md).
+
+- Some GPUs are not compatible with PySide6 and WebGL redenring. In this case
+  can be the GUI mode be started with `--no-browser` flag to use external
+  browser buttons instead of embedded browser tabs. Or can be used this comamnd
+  `QTWEBENGINE_CHROMIUM_FLAGS="--enable-webgl --ignore-gpu-blocklist --enable-unsafe-swiftshader --use-angle=swiftshader" ./main.py`
+  which set WebGL computing with swiftshader which uses CPU for rendering
+  instead of GPU.
 
 ## Controls
 
@@ -62,6 +69,7 @@ Available CLI arguments:
 | `--iteration`  | `-t`  | Maximum number of evolution iterations.                                     | `10`     |
 | `--stagnation` | `-s`  | Stop evolution after this many generations without progress.                | `10`     |
 | `--no-browser` | `-n`  | In GUI mode, use external browser buttons instead of embedded browser tabs. | disabled |
+| `--show-graph` | none  | Render the dependency graph if the optional Graphviz support is installed.  | disabled |
 
 ### GUI
 
@@ -73,20 +81,20 @@ python3 main.py
 
 The GUI contains these controls:
 
-| Control                | Description                                                                                                       |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `Recipes path...`      | Text field for the path to the JSON recipe file.                                                                  |
-| `Browse...`            | Opens a file picker for selecting a JSON recipe file.                                                             |
-| `Import recipes`       | Validates the selected file and loads available recipe names into the recipe dropdown.                            |
-| `Recipe dropdown`      | Selects which recipe should be computed. It is shown after recipes are imported.                                  |
-| `Compute recipe`       | Starts the factory computation in a background thread.                                                            |
-| `Options`              | Expands or collapses additional graph and evolution settings.                                                     |
-| `Show amounts`         | Shows ingredient amounts on dependency graph edges.                                                               |
-| `Simplified structure` | Uses a simplified backend dependency graph. This changes the generated graph, grid, matrix, and evolution result. |
-| `Show graph`           | Opens the rendered dependency graph after computation.                                                            |
-| `Iterations`           | Maximum number of evolution iterations.                                                                           |
-| `Stagnation threshold` | Stops evolution after this many generations without improvement.                                                  |
-| Worker messages        | Displays progress and error messages from the computation.                                                        |
+| Control                 | Description                                                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Recipes path...`       | Text field for the path to the JSON recipe file.                                                                  |
+| `Browse...`             | Opens a file picker for selecting a JSON recipe file.                                                             |
+| `Import recipes`        | Validates the selected file and loads available recipe names into the recipe dropdown.                            |
+| `Recipe dropdown`       | Selects which recipe should be computed. It is shown after recipes are imported.                                  |
+| `Compute recipe`        | Starts the factory computation in a background thread.                                                            |
+| `Options`               | Expands or collapses additional graph and evolution settings.                                                     |
+| `Show amounts`          | Shows ingredient amounts on dependency graph edges.                                                               |
+| `Simplified structure`  | Uses a simplified backend dependency graph. This changes the generated graph, grid, matrix, and evolution result. |
+| `Show graph (Graphviz)` | Opens the rendered dependency graph after computation if the optional Graphviz support is installed.              |
+| `Iterations`            | Maximum number of evolution iterations.                                                                           |
+| `Stagnation threshold`  | Stops evolution after this many generations without improvement.                                                  |
+| `Worker messages`       | Displays progress and error messages from the computation.                                                        |
 
 When computation finishes, the result area shows the generated factory layouts.
 By default, they are loaded in two embedded tabs:

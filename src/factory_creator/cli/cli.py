@@ -19,3 +19,14 @@ class CLI:
 
         print(MainWindow.create_factory_url_link(result.factory_seed))
         print(MainWindow.create_factory_url_link(result.evolution_seed))
+
+        if args.show_graph:
+            try:
+                from src.factory_creator.export.factory_graph_renderer import FactoryGraphRenderer
+            except ImportError as exc:
+                raise RuntimeError(
+                    "Graphviz rendering is not available. Install the optional "
+                    "graph rendering dependencies and the Graphviz system package."
+                ) from exc
+
+            FactoryGraphRenderer.show_graph(result.dependency_graph)

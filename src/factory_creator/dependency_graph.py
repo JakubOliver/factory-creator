@@ -1,8 +1,7 @@
-#from graphviz import Digraph
+from __future__ import annotations
 from collections import defaultdict
 
 from networkx import DiGraph
-from sphinx.ext.inheritance_diagram import get_graph_hash
 
 from .assembler import Assembler, AssemblingMachine3
 from .factory import Item
@@ -83,6 +82,9 @@ class DependencyTreeNode:
 
         terminal_nodes = defaultdict(list)
 
+        # TODO: Generalize same-type node grouping beyond terminal resources. Intermediate
+        #  products such as iron-gear-wheel and copper-cable should be able to merge their
+        #  production onto a shared belt and redistribute it to multiple consumers.
         for node in graph.nodes:
             if graph.in_degree(node) == 0:
                 terminal_nodes[graph.nodes[node]["label"]].append(node)

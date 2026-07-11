@@ -371,6 +371,40 @@ generovat neplatné spojení.
 **Umístění:** `src/factory_creator/graph_to_matrix.py:369`
 :::
 
+:::{grid-item-card} Slučovat stejné typy mezivýrobků
+:class-card: sd-shadow-sm sd-border-warning
+:class-title: sd-text-warning
+
+{bdg-warning}`open` {bdg-secondary}`Dependency graph`
+
+Seskupování stejných typů uzlů se nyní vztahuje jen na terminální suroviny.
+Je potřeba podporovat také sloučení produkce mezivýrobků, například
+`iron-gear-wheel` a `copper-cable`, na společný pás a její následné rozdělení
+mezi více spotřebitelů.
+
+
++++
+**Vytvořeno:** 2026-07-11
+**Umístění:** `src/factory_creator/dependency_graph.py:83`
+:::
+
+:::{grid-item-card} Validovat párování podzemních pásů
+:class-card: sd-shadow-sm sd-border-warning
+:class-title: sd-text-warning
+
+{bdg-warning}`open` {bdg-secondary}`Routing`
+
+Po vytvoření layoutu je potřeba ověřit, že se každý endpoint podzemního pásu
+ve Factorio blueprintu spojí se zamýšleným protějškem. Kontrola má zahrnout
+kompatibilní směr, dvojici `input`/`output`, povolenou vzdálenost a případný
+bližší kompatibilní endpoint, který by spojení zachytil.
+
+
++++
+**Vytvořeno:** 2026-07-11
+**Umístění:** `src/factory_creator/graph_to_matrix.py:480`
+:::
+
 ::::
 
 ## Splněné tasky
