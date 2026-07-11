@@ -1,6 +1,9 @@
 import pytest
+import networkx
 from pyrsistent import pset
 
+from factory_creator.factory import Factory
+from factory_creator.dependency_graph import DependencyTreeNode
 from factory_creator.graph_to_matrix import AStartNode, GraphToMatrix, VisitedMatrix
 from factory_creator.grid import Grid
 from factory_creator.grid_entry import GridEntryTypes
@@ -168,6 +171,72 @@ def test_visited_matrix_tracks_a_star_keys():
     assert len(matrix) == 1
 
 
+def test_get_node_path_data_for_factory_node():
+    graph = networkx.DiGraph()
+    dependency_node = DependencyTreeNode(Factory("engine-unit", 0.5, 1, [], 3, 3), [], 0)
+    graph.add_node("factory", cord=(4, 5), ref=dependency_node)
+
+    cords, contains_cord, element_type = GraphToMatrix._get_node_path_data(graph, "factory")
+
+    assert cords == list(dependency_node.factory.get_cords((4, 5)))
+    assert all(contains_cord(cord) for cord in cords)
+    assert not contains_cord((0, 0))
+    assert element_type == "engine-unit"
+
+
+def test_get_node_path_data_for_source_node():
+    graph = networkx.DiGraph()
+    graph.add_node("iron-plate_source", cord=(4, 5))
+
+    cords, contains_cord, element_type = GraphToMatrix._get_node_path_data(
+        graph,
+        "iron-plate_source",
+    )
+
+    assert cords == [(4, 5)]
+    assert contains_cord((4, 5))
+    assert not contains_cord((4, 6))
+    assert element_type == "iron-plate_source"
+
+
+def test_graph_layout_uses_longest_path_to_root_for_layers():
+    graph = networkx.DiGraph(
+        [
+            ("direct-source", "root"),
+            ("deep-source", "intermediate"),
+            ("intermediate", "root"),
+        ]
+    )
+
+    layers = GraphToMatrix._get_critical_path_layers(graph)
+
+    assert layers == {
+        "root": 0,
+        "intermediate": 1,
+        "direct-source": 1,
+        "deep-source": 2,
+    }
+
+
+def test_graph_layout_centers_consumers_over_their_inputs():
+    graph = networkx.DiGraph(
+        [
+            ("left-source", "consumer"),
+            ("right-source", "consumer"),
+            ("consumer", "root"),
+        ]
+    )
+    layers = GraphToMatrix._get_critical_path_layers(graph)
+
+    positions = GraphToMatrix._get_vertical_positions(graph, layers)
+
+    assert positions["left-source"] < positions["right-source"]
+    assert positions["consumer"] == round(
+        (positions["left-source"] + positions["right-source"]) / 2
+    )
+    assert positions["root"] == positions["consumer"]
+
+
 def test_distance_and_orientation_helpers():
     assert GraphToMatrix.get_enumeration_to_orientation(3) == 12
     assert GraphToMatrix.get_orientation_in_opposite_direction(12) == 4
@@ -222,6 +291,46 @@ def test_a_star_finds_simple_path_and_reports_unreachable_target():
     blocked.add_source((1, 0), "block")
 
     _assert_a_star_cannot_find_path(blocked, (0, 0), (0, 2))
+
+
+def _assert_path_does_not_enter_target_from_underground_endpoint(start, target, obstacle):
+    grid = Grid()
+    grid.add_source(obstacle, "obstacle")
+
+    target_node, _ = GraphToMatrix.a_star(
+        [start],
+        lambda cord: cord == target,
+        [target],
+        grid,
+    )
+
+    assert target_node.cord == target
+    assert target_node.predecessor is not None
+    assert not target_node.predecessor.is_underground_belt_end()
+
+
+def test_a_star_does_not_enter_target_from_underground_endpoint_to_the_right():
+    _assert_path_does_not_enter_target_from_underground_endpoint(
+        start=(0, 0),
+        target=(0, 5),
+        obstacle=(0, 3),
+    )
+
+
+def test_a_star_does_not_enter_target_from_underground_endpoint_to_the_left():
+    _assert_path_does_not_enter_target_from_underground_endpoint(
+        start=(0, 5),
+        target=(0, 0),
+        obstacle=(0, 2),
+    )
+
+
+def test_a_star_does_not_enter_target_from_vertical_underground_endpoint():
+    _assert_path_does_not_enter_target_from_underground_endpoint(
+        start=(0, 0),
+        target=(5, 0),
+        obstacle=(3, 0),
+    )
 
 
 def test_a_star_cannot_jump_over_foreign_path_directly_into_target():
