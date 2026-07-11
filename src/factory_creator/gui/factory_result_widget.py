@@ -1,7 +1,8 @@
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
+    QApplication,
     QHBoxLayout,
     QMessageBox,
     QPushButton,
@@ -33,7 +34,16 @@ class FactoryResultWidget(QWidget):
         if self.use_embedded_browser:
             layout = QVBoxLayout(self)
 
+            self.copy_link_button = QPushButton("Copy URL")
+            self.copy_link_button.setFlat(True)
+            self.copy_link_button.setMaximumWidth(90)
+            self.copy_link_button.setToolTip("Copy the URL from the selected tab")
+            self.copy_link_button.clicked.connect(self._copy_selected_link)
+
             self.factory_browser_tabs = QTabWidget()
+            self.factory_browser_tabs.setCornerWidget(
+                self.copy_link_button, Qt.Corner.TopRightCorner
+            )
 
             self.factory_browser = QWebEngineView()
             self.evolved_factory_browser = QWebEngineView()
@@ -86,9 +96,26 @@ class FactoryResultWidget(QWidget):
 
         :param enabled: Whether result controls should accept user input.
         """
-        if not self.use_embedded_browser:
+        if self.use_embedded_browser:
+            self.copy_link_button.setEnabled(enabled)
+        else:
             self.factory_link_button.setEnabled(enabled)
             self.evolved_factory_link_button.setEnabled(enabled)
+
+    def _copy_selected_link(self) -> None:
+        """Copy the generated URL associated with the selected browser tab."""
+        if self.factory_browser_tabs.currentIndex() == 0:
+            link = self.factory_link
+            error_message = "Factory link is empty"
+        else:
+            link = self.evolved_factory_link
+            error_message = "Evolved factory link is empty"
+
+        if link is None:
+            QMessageBox.critical(self, "Error", error_message)
+            return
+
+        QApplication.clipboard().setText(link)
 
     def _open_factory_link(self) -> None:
         self._open_link(self.factory_link, "Factory link is empty")
