@@ -27,6 +27,11 @@ class Grid:
     # This is the number of tiles red fast underground belt can travel
     UNDERGROUND_MOVE_LENGTH = 6
 
+    INSERTER_COSTS = {
+        FactorioConst.INSERTER: 1,
+        FactorioConst.LONG_HANDED_INSERTER: 3,
+    }
+
     def __init__(self) -> None:
         """
         Creates an empty grid representation of the factory.
@@ -345,6 +350,13 @@ class Grid:
                 n += 1
 
         return n
+
+    def get_inserter_cost(self) -> int:
+        """Return the total fitness cost of all inserters in the grid."""
+        return sum(
+            Grid.INSERTER_COSTS.get(entry.name, 0)
+            for entry in self.data.values()
+        )
 
     def _erase_building(self, grid_entry: GridEntry) -> None:
         """

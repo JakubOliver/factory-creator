@@ -342,6 +342,23 @@ class GraphToMatrix:
 
             return
 
+        long_handed_connection = GraphToMatrix.get_long_handed_inserter_connection(
+            from_cords,
+            to_cords,
+            grid,
+            place_next_to_from=grid[from_cord].is_factory(),
+        )
+        if long_handed_connection is not None:
+            inserter_cord, orientation = long_handed_connection
+            grid.add_transportation(
+                cord=inserter_cord,
+                name=FactorioConst.LONG_HANDED_INSERTER,
+                orientation=orientation,
+                from_cord=from_cord,
+                to_cord=to_cord,
+            )
+            return
+
         if GraphToMatrix.USE_A_STAR:
             a_star_node, visited_matrix = GraphToMatrix.a_star(
                 from_cords,
@@ -467,6 +484,42 @@ class GraphToMatrix:
         )
 
         return Grid.GRID_MOVES.index((direction[0], direction[1]))
+
+    @staticmethod
+    def get_long_handed_inserter_connection(
+        from_cords,
+        to_cords,
+        grid,
+        place_next_to_from=False,
+    ):
+        for from_entry_cord in from_cords:
+            for to_entry_cord in to_cords:
+                dx = to_entry_cord[0] - from_entry_cord[0]
+                dy = to_entry_cord[1] - from_entry_cord[1]
+                if abs(dx) + abs(dy) != 3 or (dx != 0 and dy != 0):
+                    continue
+
+                direction = (dx // 3, dy // 3)
+                if place_next_to_from:
+                    inserter_cord = (
+                        from_entry_cord[0] + direction[0],
+                        from_entry_cord[1] + direction[1],
+                    )
+                else:
+                    inserter_cord = (
+                        to_entry_cord[0] - direction[0],
+                        to_entry_cord[1] - direction[1],
+                    )
+
+                if inserter_cord in grid:
+                    continue
+
+                orientation = GraphToMatrix.get_enumeration_to_orientation(
+                    Grid.GRID_MOVES.index(direction)
+                )
+                return inserter_cord, orientation
+
+        return None
 
     @staticmethod
     def bfs(from_cords, is_in_successor, grid):
