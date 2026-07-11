@@ -83,28 +83,12 @@ class Evolution:
                 report_method(f"----------- NEXT GENERATION ({active_iteration}) -------------")
                 report_method(f"Fitness: {fitness}")
 
-            overall_best_worlds = None
-            overall_best_world_fitness = fitness
-
-            c, n = 0, grid.get_number_of_factories()
-            for active_cord, grid_entry in grid.get_factories():
-                best_world = Evolution._hill_climbing_process_building(
-                    grid,
-                    active_cord,
-                    grid_entry,
+            overall_best_worlds, overall_best_world_fitness = \
+                Evolution.hill_climbing_move_around(
+                    grid, 
+                    overall_best_world_fitness=fitness, 
                     report_method=report_method
                 )
-
-                if best_world is not None:
-                    best_world_fitness = Evolution.fitness(best_world)
-                else:
-                    best_world_fitness = -float("inf")
-
-                if best_world_fitness > overall_best_world_fitness:
-                    overall_best_worlds = best_world
-
-                c += 1
-                report_method(f"  Processed: {c/n * 100:.1f}% ({grid_entry.name}: {best_world_fitness})")
 
             if overall_best_worlds is not None:
                 grid = overall_best_worlds
@@ -121,9 +105,42 @@ class Evolution:
             return presentation
 
         return grid
+    
+    @staticmethod
+    def hill_climbing_move_around(
+        grid: Grid,
+        overall_best_world_fitness: float = -float("inf"),
+        report_method = print
+    ) -> Grid | None:
+        overall_best_worlds = None
+
+        c, n = 0, grid.get_number_of_factories()
+        for active_cord, grid_entry in grid.get_factories():
+            best_world = Evolution._hill_climbing_move_around_process_building(
+                grid,
+                active_cord,
+                grid_entry,
+                report_method=report_method
+            )
+
+            if best_world is not None:
+                best_world_fitness = Evolution.fitness(best_world)
+            else:
+                best_world_fitness = -float("inf")
+
+            if best_world_fitness > overall_best_world_fitness:
+                overall_best_worlds = best_world
+
+            c += 1
+            report_method(f"  Processed: {c/n * 100:.1f}% ({grid_entry.name}: {best_world_fitness})")
+
+        if overall_best_worlds is None:
+            return grid, overall_best_world_fitness
+
+        return overall_best_worlds, overall_best_world_fitness
 
     @staticmethod
-    def _hill_climbing_process_building(
+    def _hill_climbing_move_around_process_building(
         grid: Grid,
         active_cord: tuple,
         grid_entry: GridEntry,
@@ -223,6 +240,7 @@ class Evolution:
 
                 if best_grid is None or new_fitness > best_world_fitness:
                     best_grid = new_grid
+                    best_world_fitness = new_fitness
             except Exception as e:
                 if Evolution.SHOW_REASONS_FOR_INDIVIDUAL_FAILURE:
                     report_method(f"  Individual failed because of \"{e}\"")

@@ -292,6 +292,25 @@ class GraphToMatrix:
         :param grid: Grid representation of the factory.
         """
 
+        if GraphToMatrix.are_neighbors_with_one_normal_space(from_cords, to_cords):
+            cord_in_between = GraphToMatrix.cord_in_between_two_neighbors_with_one_normal_space(from_cords, to_cords)
+
+            grid.add_transportation(
+                cord=cord_in_between,
+                name=FactorioConst.TRANSPORT_BELT,
+                orientation=GraphToMatrix.get_orientation_in_opposite_direction(
+                    GraphToMatrix.get_enumeration_to_orientation(
+                        GraphToMatrix.get_orientation_in_between_two_neighbors_with_one_normal_space(from_cords, to_cords)
+                    )
+                ),
+                from_cord=from_cord,
+                to_cord=to_cord
+            )
+
+            grid.transform_into_inserter(cord_in_between, from_cord, to_cord)
+
+            return
+
         if GraphToMatrix.USE_A_STAR:
             a_star_node, visited_matrix = GraphToMatrix.a_star(
                 from_cords,
@@ -312,10 +331,8 @@ class GraphToMatrix:
         last_node = None
         underground_next = False
 
-        print(GridEntryTransportationId.create_belt_id(grid.data[from_cord].get_id_text(), grid.data[to_cord].get_id_text()))
         while not is_in_cords(a_star_node.cord):
             next_node = a_star_node.predecessor
-            print(a_star_node.cord)
 
             if not is_in_cords(a_star_node.cord) and not is_in_successor(a_star_node.cord):
                 if start_cord is None:
@@ -380,6 +397,45 @@ class GraphToMatrix:
           V
         (Factory)
         """
+
+    @staticmethod
+    def are_neighbors_with_one_normal_space(from_cods, to_cords):
+        return \
+            GraphToMatrix.get_manhattan_metric_two_sets(from_cods, to_cords) == 2 and \
+            GraphToMatrix.smallest_vector_between_sets_is_canonical(from_cods, to_cords)
+    
+    @staticmethod
+    def smallest_vector_between_sets_is_canonical(from_cords, to_cords):
+        vector = min(
+            ((abs(fx - tx), abs(fy - ty)) for (fx, fy) in from_cords for (tx, ty) in to_cords), 
+            key=lambda v: v[0]**2 + v[1]**2
+        )
+
+        return vector[0] == 0 or vector[1] == 0
+    
+    @staticmethod
+    def get_vectors_with_smallest_manhattan_distance(from_cords, to_cords):
+        return min(
+            ((((fx, fy), (tx, ty))) for (fx, fy) in from_cords for (tx, ty) in to_cords),
+            key = lambda v: (v[0][0] - v[1][0])**2 + (v[0][1] - v[1][1])**2
+        )
+    
+    @staticmethod
+    def cord_in_between_two_neighbors_with_one_normal_space(from_cords, to_cords):
+        vector = GraphToMatrix.get_vectors_with_smallest_manhattan_distance(from_cords, to_cords)
+
+        return ((vector[0][0] + vector[1][0]) // 2, (vector[0][1] + vector[1][1]) // 2)
+    
+    @staticmethod
+    def get_orientation_in_between_two_neighbors_with_one_normal_space(from_cords, to_cords):
+        from_cord, to_cord = GraphToMatrix.get_vectors_with_smallest_manhattan_distance(from_cords, to_cords)
+
+        direction = (
+            (to_cord[0] - from_cord[0]) // 2,
+            (to_cord[1] - from_cord[1]) // 2,
+        )
+
+        return Grid.GRID_MOVES.index((direction[0], direction[1]))
 
     @staticmethod
     def bfs(from_cords, is_in_successor, grid):
@@ -539,14 +595,27 @@ class GraphToMatrix:
 
         return 0 if abs(cx - x) + abs(cy - y) == 1 else NOT_CENTER_PENALTY
 
+    def get_manhattan_metric_two_sets(from_cords, to_cords):
+        """
+        Returns the minimal manhattan distance between coordinates and the
+        coordinates of the final elements.
+
+        :param from_cord: Staring coordinates.
+        :param to_cords:  Ending coordinates.
+        :return: The minimal manhattan distance between coordinate and
+            the coordinates of the final elements.
+        """
+
+        return min(GraphToMatrix.get_manhattan_metric(from_cord, to_cords) for from_cord in from_cords)
+
     @staticmethod
     def get_manhattan_metric(from_cord, to_cords):
         """
         Returns the minimal manhattan distance between coordinate and the
         coordinates of the final elements.
 
-        :param from_cord: Staring coordinates.
-        :param to_cords:
+        :param from_cord: Staring coordinate.
+        :param to_cords: Ending coordinates.
         :return: The minimal manhattan distance between coordinate and
             the coordinates of the final elements.
         """
