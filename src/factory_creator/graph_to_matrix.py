@@ -312,10 +312,8 @@ class GraphToMatrix:
         last_node = None
         underground_next = False
 
-        print(GridEntryTransportationId.create_belt_id(grid.data[from_cord].get_id_text(), grid.data[to_cord].get_id_text()))
         while not is_in_cords(a_star_node.cord):
             next_node = a_star_node.predecessor
-            print(a_star_node.cord)
 
             if not is_in_cords(a_star_node.cord) and not is_in_successor(a_star_node.cord):
                 if start_cord is None:
