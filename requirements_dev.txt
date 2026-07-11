@@ -1,4 +1,4 @@
--r requirements.txt
+-r requirements_with_graph.txt
 
 # Testing
 pytest==9.0.3
