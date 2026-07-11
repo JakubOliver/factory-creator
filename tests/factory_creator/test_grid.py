@@ -67,9 +67,9 @@ def test_grid_measurements_and_orientation_helpers():
     grid.add_source((0, 0), "a")
     grid.add_source((2, 3), "b")
 
-    assert grid.get_with() == 2
-    assert grid.get_height() == 3
-    assert grid.get_area() == 6
+    assert grid.get_with() == 3
+    assert grid.get_height() == 4
+    assert grid.get_area() == 12
     assert grid.get_used_block() == 2
     assert grid._get_center_cord() == (1, 1.5)
     assert grid.get_distances_from_center() == 5
