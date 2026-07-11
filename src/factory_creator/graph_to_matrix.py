@@ -136,7 +136,7 @@ class GraphToMatrix:
                 width_multiplier *= 2
                 depth_multiplier *= 2
 
-                report_method(f"padding, width_multiplier, depth_multiplier")
+                report_method(f"padding: {padding}, width_multiplier: {width_multiplier}, depth_multiplier: {depth_multiplier}")
 
                 report_method(str(e))
                 #raise e
@@ -156,7 +156,6 @@ class GraphToMatrix:
     ) -> Grid:
         matrix_width = width_multiplier * max_width
         matrix_depth = depth_multiplier * max_depth + 10
-
         grid = Grid()
 
         # TODO: maybe we want nondeterministic BFS, so we get different planar graphs, therefore
@@ -165,109 +164,116 @@ class GraphToMatrix:
         # TODO: consider using custom BFS that would non-deterministically assign the depth to the node,
         # if there is space of change
 
-        root_cord = (10, matrix_width // 2)
-
-        grid.add_factory(
-            root_cord,
-            str(root),
-            [sur for sur in root.factory.get_cords(root_cord) if sur != root_cord]
-        )
-
-        graph.nodes[DependencyTreeNode.get_root_identifier()]["cord"] = root_cord
-
         # TODO: maybe makes more sense to compute the layers only based on the graph with the inbuild networkx function
         # best thing would be to use networkx.brf_layers but this methods (as far a know) does not provided the reverse option
 
-        active_layer = {}
+        GraphToMatrix._place_graph_nodes(
+            graph, root, grid, padding, width_multiplier, matrix_width,
+            depth_multiplier, matrix_depth, report_method,
+        )
+        GraphToMatrix._connect_graph_nodes(graph, grid, report_method)
 
-        # TODO: rewrite to more prettier way
+        return grid
 
-        number_of_sources = GraphToMatrix.get_number_of_sources(graph) + 1
-        number_of_sources_placed = 1
+    @staticmethod
+    def _place_graph_nodes(
+        graph, root, grid, padding, width_multiplier, matrix_width,
+        depth_multiplier, matrix_depth, report_method,
+    ):
+        root_cord = (10, matrix_width // 2)
+        grid.add_factory(
+            root_cord,
+            str(root),
+            [cord for cord in root.factory.get_cords(root_cord) if cord != root_cord],
+        )
+        graph.nodes[DependencyTreeNode.get_root_identifier()]["cord"] = root_cord
 
-        for from_node in reversed(list(networkx.topological_sort(graph))):
+        active_layers = {}
+        source_count = GraphToMatrix.get_number_of_sources(graph) + 1
+        placed_source_count = 1
 
-
-            # Filter out the sink node, because we are define it above.
-            if graph.out_degree(from_node) == 0:
+        for node in reversed(list(networkx.topological_sort(graph))):
+            if graph.out_degree(node) == 0:
                 continue
 
-            if "ref" in graph.nodes[from_node]:
-                dependency_node = graph.nodes[from_node]["ref"]
-                node_layer = dependency_node.get_layer()
-
-                if node_layer not in active_layer:
-                    active_layer[node_layer] = padding + math.floor(0.1 * matrix_width)
-
-                cord = (node_layer * depth_multiplier + 10,
-                        active_layer[node_layer] + dependency_node.get_approx_width_of_tree() // 2)
-
-                active_layer[node_layer] += dependency_node.get_approx_width_of_tree() * width_multiplier
-
-                grid.add_factory(
-                    cord,
-                    str(dependency_node),
-                    [sur for sur in dependency_node.factory.get_cords(cord) if sur != cord]
+            if "ref" in graph.nodes[node]:
+                cord, label = GraphToMatrix._place_factory_node(
+                    graph.nodes[node]["ref"], grid, active_layers, padding,
+                    width_multiplier, matrix_width, depth_multiplier,
                 )
-
-                report_building_name = str(dependency_node)
             else:
-                source_layer = matrix_depth - 1
-                offset_in_layer = math.floor(number_of_sources_placed / number_of_sources * matrix_width)
+                offset = math.floor(placed_source_count / source_count * matrix_width)
+                cord, label = (matrix_depth - 1, offset), node
+                placed_source_count += 1
+                grid.add_source(cord, node)
 
-                number_of_sources_placed += 1
+            graph.nodes[node]["cord"] = cord
+            report_method(f"Building source: {label}")
 
-                cord = (source_layer, offset_in_layer)
+    @staticmethod
+    def _place_factory_node(
+        dependency_node, grid, active_layers, padding,
+        width_multiplier, matrix_width, depth_multiplier,
+    ):
+        layer = dependency_node.get_layer()
+        active_layers.setdefault(layer, padding + math.floor(0.1 * matrix_width))
 
-                grid.add_source(cord, from_node)
+        factory_width = dependency_node.get_approx_width_of_tree()
+        cord = (
+            layer * depth_multiplier + 10,
+            active_layers[layer] + factory_width // 2,
+        )
+        active_layers[layer] += factory_width * width_multiplier
+        grid.add_factory(
+            cord,
+            str(dependency_node),
+            [occupied for occupied in dependency_node.factory.get_cords(cord) if occupied != cord],
+        )
+        return cord, str(dependency_node)
 
-                report_building_name = from_node
-
-            report_method(f"Building source: {report_building_name}")
-
-            graph.nodes[from_node]["cord"] = cord
-
+    @staticmethod
+    def _connect_graph_nodes(graph, grid, report_method):
         for from_node in reversed(list(networkx.topological_sort(graph))):
             cord = graph.nodes[from_node]["cord"]
-
-            # TODO: extract into one function
-            if "ref" in graph.nodes[from_node]:
-                dependency_node = graph.nodes[from_node]["ref"]
-                from_cords = [c for c in dependency_node.factory.get_cords(cord)]
-                is_in_cords = dependency_node.factory.get_cords_lambda(cord)
-
-                element_type = str(dependency_node)
-            else:
-                from_cords = [cord]
-                is_in_cords = lambda new_cord: new_cord == cord
-
-                element_type = from_node
+            from_cords, is_in_cords, element_type = GraphToMatrix._get_node_path_data(
+                graph,
+                from_node,
+            )
 
             for successor in graph.successors(from_node):
-                report_method(f"Building path: {element_type}, {from_node}, {cord}, {successor}, {graph.nodes[successor]["cord"]}")
-
-                if "ref" in graph.nodes[successor]:
-                    is_in_successor = graph.nodes[successor]["ref"].factory.get_cords_lambda(
-                        graph.nodes[successor]["cord"])
-
-                    to_cords = [c for c in
-                                graph.nodes[successor]["ref"].factory.get_cords(graph.nodes[successor]["cord"])]
-                else:
-                    is_in_successor = lambda new_cord: new_cord == graph.nodes[successor]["cord"]
-
-                    to_cords = [graph.nodes[successor]["cord"]]
+                successor_cord = graph.nodes[successor]["cord"]
+                to_cords, is_in_successor, _ = GraphToMatrix._get_node_path_data(
+                    graph, successor,
+                )
+                report_method(
+                    f"Building path: {element_type}, {from_node}, {cord}, "
+                    f"{successor}, {successor_cord}"
+                )
 
                 GraphToMatrix.find_path(
                     cord,
                     from_cords,
                     is_in_cords,
-                    graph.nodes[successor]["cord"],
+                    successor_cord,
                     to_cords,
                     is_in_successor,
                     grid,
                 )
 
-        return grid
+    @staticmethod
+    def _get_node_path_data(graph: DiGraph, node):
+        """Return coordinates, membership predicate, and label used to route from a node."""
+        cord = graph.nodes[node]["cord"]
+
+        if "ref" not in graph.nodes[node]:
+            return [cord], lambda new_cord: new_cord == cord, node
+
+        dependency_node = graph.nodes[node]["ref"]
+        return (
+            list(dependency_node.factory.get_cords(cord)),
+            dependency_node.factory.get_cords_lambda(cord),
+            str(dependency_node),
+        )
 
     @staticmethod
     def find_path(
