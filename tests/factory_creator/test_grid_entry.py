@@ -4,6 +4,7 @@ from factory_creator.grid_entry import (
     GridEntryTransportationId,
     GridEntryTypes,
 )
+from factory_creator.util.factorio_const import FactorioConst
 
 
 def test_movable_id_is_textual_and_not_connected():
@@ -41,6 +42,20 @@ def test_grid_entry_type_helpers_and_detailed_names():
     assert belt.is_transportation()
     assert not belt.is_movable()
     assert belt.get_detailed_name() == "transport-belt"
+
+
+def test_is_inserter_recognizes_normal_and_long_handed_types():
+    entry_id = GridEntryTransportationId(
+        GridEntryMovableId(1), GridEntryMovableId(2)
+    )
+
+    normal = GridEntry(entry_id, FactorioConst.INSERTER)
+    long_handed = GridEntry(entry_id, FactorioConst.LONG_HANDED_INSERTER)
+    belt = GridEntry(entry_id, FactorioConst.TRANSPORT_BELT)
+
+    assert normal.is_inserter()
+    assert long_handed.is_inserter()
+    assert not belt.is_inserter()
 
 
 def test_grid_entry_tracks_surroundings_and_source_item_names():
