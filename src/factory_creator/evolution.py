@@ -1,5 +1,6 @@
 import copy
 import itertools
+import traceback
 from collections.abc import Callable, Iterator
 
 from networkx.algorithms.reciprocity import overall_reciprocity
@@ -10,6 +11,8 @@ from .grid import *
 
 class Evolution:
     GENERATION_PRINT = True
+    # TODO: Add a GUI option for showing only evolution progress or progress
+    # together with individual failure details and tracebacks.
     SHOW_REASONS_FOR_INDIVIDUAL_FAILURE = True
 
     @staticmethod
@@ -244,6 +247,7 @@ class Evolution:
             except Exception as e:
                 if Evolution.SHOW_REASONS_FOR_INDIVIDUAL_FAILURE:
                     report_method(f"  Individual failed because of \"{e}\"")
+                    #report_method(traceback.format_exc().rstrip())
 
         return best_grid
 

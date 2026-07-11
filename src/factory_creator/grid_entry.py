@@ -3,6 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import IntEnum
 
+from .util.factorio_const import FactorioConst
+
 
 class GridEntryTypes(IntEnum):
     Factory = 0
@@ -168,6 +170,13 @@ class GridEntry:
 
     def is_transportation(self) -> bool:
         return self.entry_type == GridEntryTypes.Transportation
+
+    def is_inserter(self) -> bool:
+        """Return whether the entry is any supported inserter type."""
+        return self.name in (
+            FactorioConst.INSERTER,
+            FactorioConst.LONG_HANDED_INSERTER,
+        )
 
     def is_movable(self) -> bool:
         """

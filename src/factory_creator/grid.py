@@ -484,6 +484,24 @@ class Grid:
         :return: Whether a path with the provided transportation id exists.
         """
 
+        # Inserters cannot hand items directly to another inserter in Factorio.
+        # The old graph-only check treated any adjacent transportation entries
+        # as connected, which made layouts containing an inserter chain appear
+        # valid even though they cannot transport material in the game.
+        inserter_cords = {
+            cord
+            for cord, entry in self.data.items()
+            if entry.is_transportation()
+            and entry.get_id_text() == id
+            and entry.is_inserter()
+        }
+        if any(
+            (x + dx, y + dy) in inserter_cords
+            for x, y in inserter_cords
+            for dx, dy in Grid.GRID_MOVES
+        ):
+            return False
+
         queue = deque((x, y, 0) for x, y in a)
         visited = set()
 
