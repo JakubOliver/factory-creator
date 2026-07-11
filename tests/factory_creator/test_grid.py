@@ -45,6 +45,26 @@ def test_add_transportation_uses_movable_ids_and_transform_to_inserter():
     assert grid[(0, 1)].orientation == 8
 
 
+def test_underground_belt_endpoint_cannot_be_transformed_to_inserter():
+    grid = Grid()
+    grid.add_source((0, 0), "source")
+    grid.add_source((0, 2), "target")
+    grid.add_transportation(
+        (0, 1),
+        FactorioConst.FAST_UNDERGROUND_BELT,
+        0,
+        (0, 0),
+        (0, 2),
+        underground_belt_type=FactorioConst.UNDERGROUND_BELT_OUTPUT,
+    )
+
+    with pytest.raises(ValueError, match="cannot be transformed into an inserter"):
+        grid.transform_into_inserter((0, 1), (0, 0), (0, 2))
+
+    assert grid[(0, 1)].name == FactorioConst.FAST_UNDERGROUND_BELT
+    assert grid[(0, 1)].underground_belt_type == FactorioConst.UNDERGROUND_BELT_OUTPUT
+
+
 def test_erase_factory_removes_surroundings_and_connected_belts():
     grid = Grid()
     grid.add_factory((0, 0), "engine-unit", [(1, 0)])

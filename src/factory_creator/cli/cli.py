@@ -1,6 +1,6 @@
 from src.factory_creator.factory_loader import FactoryLoader
 from src.factory_creator.factory_processor import FactoryProcessor
-from src.factory_creator.gui.main_window import MainWindow
+from src.factory_creator.export.url_creator import URLCreator
 
 
 class CLI:
@@ -17,8 +17,8 @@ class CLI:
             create_presentation=False
         )
 
-        print(MainWindow.create_factory_url_link(result.factory_seed))
-        print(MainWindow.create_factory_url_link(result.evolution_seed))
+        print(URLCreator.create_factory_url_link(result.factory_seed))
+        print(URLCreator.create_factory_url_link(result.evolution_seed))
 
         if args.show_graph:
             try:

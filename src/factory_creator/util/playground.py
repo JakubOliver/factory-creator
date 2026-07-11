@@ -9,12 +9,8 @@ if __name__ == "__main__":
     sys.path.insert(0, str(project_root))
 
     from src.factory_creator.evolution import Evolution
-    from src.factory_creator.export.json_matrix_representation import (
-        BluePrintRepresentation,
-        MatrixJsonConvertor,
-    )
+    from src.factory_creator.export.url_creator import URLCreator
     from src.factory_creator.grid import Grid
-    from src.factory_creator.gui.main_window import MainWindow
     from src.factory_creator.util.factorio_const import FactorioConst
 
     def create_grid() -> Grid:
@@ -42,9 +38,7 @@ if __name__ == "__main__":
     evolved_grid = Evolution.evol(grid)
 
     Path("output").mkdir(parents=True, exist_ok=True)
-    blueprint_json = MatrixJsonConvertor.encode(evolved_grid)
-    blueprint = BluePrintRepresentation.encode(blueprint_json)
-    url = MainWindow.create_factory_url_link(blueprint)
+    url = URLCreator.create_factory_url_from_grid(evolved_grid)
 
     print(evolved_grid)
     print(url)

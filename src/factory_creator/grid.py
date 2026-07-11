@@ -138,6 +138,11 @@ class Grid:
 
         self.try_transportation(cord, from_cord, to_cord)
 
+        if self.data[cord].underground_belt_type is not None:
+            raise ValueError(
+                f"Underground belt endpoint at {cord} cannot be transformed into an inserter."
+            )
+
         self.data[cord].name = FactorioConst.INSERTER
         self.data[cord].orientation = (self.data[cord].orientation + 8) % 16
 
