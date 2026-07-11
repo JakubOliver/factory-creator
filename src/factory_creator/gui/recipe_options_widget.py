@@ -16,7 +16,7 @@ class RecipeOptionsWidget(QWidget):
     Collapsible widget containing graph display and evolution algorithm options.
     """
 
-    MIN_ITERATIONS = 1
+    MIN_ITERATIONS = 0
     MAX_ITERATIONS = 1_000_000
     DEFAULT_ITERATIONS = 10
 
