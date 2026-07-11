@@ -148,3 +148,29 @@ def test_hill_climb_correct_climb_absolute_convergence():
     assert new_grid.get_area() == 3, print(new_grid)
     assert grid.get_number_of_factories() == 2
     assert new_grid.get_number_of_factories() == 2
+
+def test_hill_climb_correct_climb_absolute_convergence2():          
+    # 1
+    # XXXXXXXXXX2 -> 1X2 or rotation
+    grid = Grid()
+    grid.add_source((0, 1), "engine-unit_source")
+    grid.add_source((10, 0), "engine-unit_source")
+    for x in range(10):
+        grid.add_transportation((x, 0), FactorioConst.TRANSPORT_BELT, 0, (0, 1), (10, 0))
+
+    new_grid = Evolution.hill_climb(
+        copy.deepcopy(grid),
+        iteration=100,
+        stagnation_break=10,
+        create_presentation=False,
+        report_method=print,
+    )
+
+    print(MainWindow.create_factory_url_link(BluePrintRepresentation.encode(MatrixJsonConvertor.encode(new_grid))))
+
+    assert isinstance(new_grid, Grid)
+    assert grid.get_area() != new_grid.get_area(), print(new_grid)
+    assert grid.get_area() == 22, print(grid)
+    assert new_grid.get_area() == 3, print(new_grid)
+    assert grid.get_number_of_factories() == 2
+    assert new_grid.get_number_of_factories() == 2
