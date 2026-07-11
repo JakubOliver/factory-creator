@@ -555,7 +555,17 @@ class GraphToMatrix:
         while not found and len(heap) != 0 and len(visited_matrix) <= 1_000_000:
             a_star_node = heapq.heappop(heap)
 
-            if is_in_successor(a_star_node.cord) and a_star_node.streak > GraphToMatrix.A_STAR_STREAK_THRESHOLD:
+            # Solves the problem that we at the place when we change to inserter was underground belt end,
+            # so now the connection does not exists
+            predecessor_can_be_inserter = (
+                a_star_node.predecessor is not None
+                and not a_star_node.predecessor.is_underground_belt_end()
+            )
+            if (
+                is_in_successor(a_star_node.cord)
+                and a_star_node.streak > GraphToMatrix.A_STAR_STREAK_THRESHOLD
+                and predecessor_can_be_inserter
+            ):
                 active_node = a_star_node
 
                 break
