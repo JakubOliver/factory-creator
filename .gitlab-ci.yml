@@ -20,9 +20,11 @@ pytest:
 pages:
   stage: deploy
   rules:
-    - when: never # Cannot find option for pages in gitlab, therefore no use of this stage
+    # Cannot find option for pages in gitlab, therefore no use of this stage
+    # When find usage uncomment only (and remove rules, because cannot be at the same time)
+    - when: never 
   script:
     - sphinx-build -b html docs/source public
   pages: true
-  only:
-  - master
+  #only:
+  #  - master
