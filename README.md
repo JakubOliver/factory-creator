@@ -12,6 +12,12 @@ Install the runtime dependencies:
 pip install -r requirements.txt
 ```
 
+or install with optional graph rendering:
+
+```bash
+pip install -r requirements_with_graph.txt
+```
+
 For development, testing, and documentation generation, install the extended
 set:
 

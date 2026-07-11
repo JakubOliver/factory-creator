@@ -1,0 +1,5 @@
+-r requirements.txt
+
+# Optional graph rendering
+matplotlib==3.10.8
+pydot==4.0.1
