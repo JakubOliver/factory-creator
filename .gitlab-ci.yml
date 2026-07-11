@@ -11,10 +11,16 @@ stages:
 pytest:
   stage: test
   script:
-    - python -m pytest
+    - python -m pytest --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
 
 pages:
   stage: deploy
+  rules:
+    - when: never # Cannot find option for pages in gitlab, therefore no use of this stage
   script:
     - sphinx-build -b html docs/source public
   pages: true
