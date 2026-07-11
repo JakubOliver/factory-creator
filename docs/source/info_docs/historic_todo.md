@@ -1,5 +1,22 @@
 # TODO history
 
+::::{dropdown} Odmítnout řetězce sousedních inserterů
+:color: success
+:icon: check-circle
+
+{bdg-success}`done` {bdg-secondary}`Grid, Routing, Tests`
+
+Kontrola spojení považovala sousední insertery za souvislou transportní cestu.
+Ve Factorio si ale dva insertery nemohou předat materiál přímo mezi sebou, takže
+takový layout nesmí projít validací.
+
+
+**Vytvořeno:** 2026-07-11
+**Vyřešeno:** 2026-07-11
+**Historické soubory:** `src/factory_creator/grid.py`,
+`tests/factory_creator/test_grid.py`
+::::
+
 ## Aktuální tasky
 
 ::::{grid} 1 1 2 2

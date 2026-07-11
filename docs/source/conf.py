@@ -23,11 +23,15 @@ extensions = [
     'myst_parser',
     'sphinxcontrib.mermaid',
     'sphinx_needs',
-    'sphinx_design'
+    'sphinx_design',
+    'sphinx.ext.mathjax'
 ]
 
 myst_fence_as_directive = ['mermaid']
-myst_enable_extensions = ['colon_fence']
+myst_enable_extensions = [
+    'colon_fence',
+    'dollarmath'
+]
 
 templates_path = ['_templates']
 exclude_patterns = []

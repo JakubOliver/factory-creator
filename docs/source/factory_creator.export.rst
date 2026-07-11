@@ -20,6 +20,14 @@ factory\_creator.export.json\_matrix\_representation module
    :show-inheritance:
    :undoc-members:
 
+factory\_creator.export.url\_creator module
+-------------------------------------------
+
+.. automodule:: factory_creator.export.url_creator
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Module contents
 ---------------
 

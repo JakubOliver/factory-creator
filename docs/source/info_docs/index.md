@@ -9,6 +9,7 @@ user_interface
 loader
 core
 output
+gallery
 historic_todo
 ```
 
