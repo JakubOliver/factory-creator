@@ -293,7 +293,6 @@ class GraphToMatrix:
         """
 
         if GraphToMatrix.are_neighbors_with_one_normal_space(from_cords, to_cords):
-            print("ano")
             cord_in_between = GraphToMatrix.cord_in_between_two_neighbors_with_one_normal_space(from_cords, to_cords)
 
             grid.add_transportation(
