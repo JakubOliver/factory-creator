@@ -89,6 +89,17 @@ def _square_perimeter(radius):
     )
 
 
+def _filled_square_without(radius, excluded_points=()):
+    """Return all coordinates in a centered filled square except exclusions."""
+    excluded_points = set(excluded_points)
+    return {
+        (x, y)
+        for x in range(-radius, radius + 1)
+        for y in range(-radius, radius + 1)
+        if (x, y) not in excluded_points
+    }
+
+
 def _assert_underground_belt_is_used(grid, minimum_pairs=1):
     underground_belts = [
         entry
@@ -680,3 +691,21 @@ def test_get_number_of_sources_reads_graph_labels():
     graph.add_node("b", label="gear")
 
     assert GraphToMatrix.get_number_of_sources(graph) == 1
+
+def test_l_connection_straight_to_entity():
+    # ###
+    # #2#########################
+    # #                        1#
+    # ###########################
+
+    grid = Grid()
+    grid.add_source((0, 1), "a")
+    grid.add_source((25, 0), "b")
+
+    without = {(0, 1), (25, 0)} | {(x, 0) for x in range(25)}
+    cube_size = 30
+
+    for cord in _filled_square_without(cube_size - 1, without):
+        grid.add_source(cord, "c")
+
+    _assert_a_star_cannot_find_path(grid, (0, 1), (25, 0))
