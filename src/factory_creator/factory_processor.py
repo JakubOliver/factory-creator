@@ -43,7 +43,7 @@ class FactoryProcessor:
             json_obj = MatrixJsonConvertor.encode(matrix)
             factory_seed = BluePrintRepresentation.encode(json_obj)
 
-            after_evolution = Evolution.evol(
+            after_evolution = Evolution.evolve(
                 matrix,
                 iteration=evolution_iteration,
                 stagnation_break=evolution_stagnation,
