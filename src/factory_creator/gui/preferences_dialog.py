@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
@@ -19,6 +20,7 @@ class PreferencesDialog(QDialog):
         output_level: OutputLevel,
         factory_url: str = URLCreator.BASE_URL,
         parent=None,
+        evolution_caching: bool = True,
     ):
         super().__init__(parent)
         self.setWindowTitle("Preferences")
@@ -54,6 +56,13 @@ class PreferencesDialog(QDialog):
         self.factory_url_input.setPlaceholderText(URLCreator.BASE_URL)
         layout.addWidget(self.factory_url_input)
 
+        self.evolution_caching_checkbox = QCheckBox("Cache evolution fitness results")
+        self.evolution_caching_checkbox.setChecked(evolution_caching)
+        self.evolution_caching_checkbox.setToolTip(
+            "Reuse fitness results for layouts already evaluated during an evolution run."
+        )
+        layout.addWidget(self.evolution_caching_checkbox)
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
@@ -67,6 +76,9 @@ class PreferencesDialog(QDialog):
     def factory_url(self):
         url = self.factory_url_input.text().strip()
         return url or URLCreator.BASE_URL
+
+    def evolution_caching(self) -> bool:
+        return self.evolution_caching_checkbox.isChecked()
 
     def _update_selected_level(self, value):
         level = OutputLevel(value)

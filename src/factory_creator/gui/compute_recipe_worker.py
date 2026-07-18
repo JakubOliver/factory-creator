@@ -24,6 +24,7 @@ class ComputeRecipeWorker(QObject):
         evolution_iterations: int,
         evolution_stagnation: int,
         output_level: OutputLevel = OutputLevel.MEDIUM,
+        evolution_caching: bool = True,
     ) -> None:
         """
         Store the recipe path, selected recipe, graph options, and evolution limits.
@@ -43,6 +44,7 @@ class ComputeRecipeWorker(QObject):
         self.evolution_iterations = evolution_iterations
         self.evolution_stagnation = evolution_stagnation
         self.output_level = output_level
+        self.evolution_caching = evolution_caching
 
     @Slot()
     def run(self) -> None:
@@ -62,6 +64,7 @@ class ComputeRecipeWorker(QObject):
                 evolution_stagnation=self.evolution_stagnation,
                 report_method=self.message.emit,
                 output_level=self.output_level,
+                evolution_caching=self.evolution_caching,
             ))
             self.message.emit("Factory computation finished.")
         except Exception as e:

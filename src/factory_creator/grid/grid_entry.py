@@ -229,6 +229,26 @@ class GridEntry:
         else:
             return self.name
 
+    def state_key(self) -> tuple:
+        return (
+            type(self.id).__qualname__,
+            self.get_id_text(),
+            self.name,
+            self.orientation,
+            self.entry_type,
+            self.underground_belt_type,
+            frozenset(self.surroundings),
+        )
+
+    def get_snapshot(self) -> tuple:
+        return self.state_key()
+
+    def state_key_memory(self) -> int:
+        return hash(self.state_key())
+
+    def get_snapshot_memory(self) -> int:
+        return self.state_key_memory()
+
     def __str__(self) -> str:
         """
         Returns textual representation of the grid entry.

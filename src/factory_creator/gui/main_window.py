@@ -28,6 +28,7 @@ from .recipe_options_widget import RecipeOptionsWidget
 
 
 # TODO: Make the GUI more responsive, when making bigger the usefull width is not resizable. 
+# TODO: make preferences menu more stuctured into separate sections, in the future there will be more thins, so it makes sense to have for example separate section for evolution settings etc.
 
 class MainWindow(QMainWindow):
     """
@@ -38,6 +39,7 @@ class MainWindow(QMainWindow):
     COMBOBOX_ITEMS = 8
     OUTPUT_LEVEL_SETTING = "output/level"
     FACTORY_URL_SETTING = "factory/url"
+    EVOLUTION_CACHING_SETTING = "evolution/caching_enabled"
 
     @staticmethod
     def _normalize_input_path(path: str) -> str:
@@ -65,6 +67,11 @@ class MainWindow(QMainWindow):
             self.FACTORY_URL_SETTING,
             URLCreator.BASE_URL,
             type=str,
+        )
+        self.evolution_caching = self.settings.value(
+            self.EVOLUTION_CACHING_SETTING,
+            True,
+            type=bool,
         )
 
         self._setup_ui()
@@ -118,17 +125,27 @@ class MainWindow(QMainWindow):
             self.output_level,
             self.factory_url,
             self,
+            self.evolution_caching,
         )
+
         if dialog.exec() == QDialog.Accepted:
             self.output_level = dialog.output_level()
             self.factory_url = dialog.factory_url()
+            self.evolution_caching = dialog.evolution_caching()
+
             self.settings.setValue(
                 self.OUTPUT_LEVEL_SETTING,
                 self.output_level.name,
             )
+
             self.settings.setValue(
                 self.FACTORY_URL_SETTING,
                 self.factory_url,
+            )
+
+            self.settings.setValue(
+                self.EVOLUTION_CACHING_SETTING,
+                self.evolution_caching,
             )
 
     def _setup_file_layout(self) -> None:
@@ -280,7 +297,9 @@ class MainWindow(QMainWindow):
             self.options_widget.evolution_iterations(),
             self.options_widget.evolution_stagnation(),
             self.output_level,
+            self.evolution_caching,
         )
+
         self.compute_worker.moveToThread(self.compute_thread)
 
         self.compute_thread.started.connect(self.compute_worker.run)

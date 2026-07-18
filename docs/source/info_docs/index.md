@@ -11,6 +11,7 @@ core
 output
 gallery
 historic_todo
+optimalization
 ```
 
 Projekt můžeme rozdělit do 4 hlavních částí, které jsou zobrazeny na
