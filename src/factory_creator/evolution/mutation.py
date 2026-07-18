@@ -3,11 +3,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 
-from .factory import FactoryUtil
+from ..factory.factory import FactoryUtil
 from .fitness import ConnectionPair
-from .graph_to_matrix import GraphToMatrix
-from .grid import Grid
-from .grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
+from ..graph_processing.graph_to_matrix import GraphToMatrix
+from ..grid.grid import Grid
+from ..grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
 
 
 @dataclass(frozen=True)

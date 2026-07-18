@@ -1,9 +1,9 @@
 from collections.abc import Callable
 
-from .evolution_mutation import MoveBuildingMutation
 from .fitness import Fitness
-from .grid import Grid
 from .hill_climbing import HillClimbing
+from .mutation import MoveBuildingMutation
+from ..grid.grid import Grid
 
 
 class Evolution:

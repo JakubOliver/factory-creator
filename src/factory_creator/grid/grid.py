@@ -5,7 +5,7 @@ from networkx import DiGraph
 from collections import deque
 
 from .grid_entry import *
-from .util.factorio_const import FactorioConst
+from ..util.factorio_const import FactorioConst
 
 
 #TODO: maybe add mapping id to object

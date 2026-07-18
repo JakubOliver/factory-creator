@@ -8,9 +8,9 @@ import heapq
 from networkx import DiGraph
 from pyrsistent import pset
 
-from .dependency_graph import DependencyTreeNode
-from .grid import *
-from .util.factorio_const import FactorioConst
+from ..factory.dependency_graph import DependencyTreeNode
+from ..grid.grid import *
+from ..util.factorio_const import FactorioConst
 
 class AStartNode:
     """

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..factory_loader import FactoryLoader
+from ..loading import FactoryLoader
 from ..export.url_creator import URLCreator
 from ..util.file_util import FileUtil
 from .compute_recipe_worker import ComputeRecipeWorker

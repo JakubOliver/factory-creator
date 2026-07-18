@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from .grid import Grid
+from ..grid.grid import Grid
 
 
 ConnectionPair = tuple[list[tuple], list[tuple], str]

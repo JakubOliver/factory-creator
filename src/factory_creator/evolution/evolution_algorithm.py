@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 
-from .evolution_mutation import Mutation
+from .mutation import Mutation
 from .fitness import Fitness
-from .grid import Grid
+from ..grid.grid import Grid
 
 
 class EvolutionAlgorithm(ABC):

@@ -1,6 +1,6 @@
-from src.factory_creator.factory_loader import FactoryLoader
-from src.factory_creator.factory_processor import FactoryProcessor
-from src.factory_creator.export.url_creator import URLCreator
+from ..loading import FactoryLoader
+from ..factory_processor import FactoryProcessor
+from ..export.url_creator import URLCreator
 
 
 class CLI:
@@ -22,7 +22,7 @@ class CLI:
 
         if args.show_graph:
             try:
-                from src.factory_creator.export.factory_graph_renderer import FactoryGraphRenderer
+                from ..export.factory_graph_renderer import FactoryGraphRenderer
             except ImportError as exc:
                 raise RuntimeError(
                     "Graphviz rendering is not available. Install the optional "

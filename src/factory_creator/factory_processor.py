@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from .evolution import Evolution
-from .factory_loader import FactoryLoader
-from .graph_to_matrix import GraphToMatrix
-from src.factory_creator.export.json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
+from .graph_processing import GraphToMatrix
+from .loading import FactoryLoader
+from .export.json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
 
 
 @dataclass

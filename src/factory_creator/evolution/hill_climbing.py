@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from .evolution_algorithm import EvolutionAlgorithm
-from .grid import Grid
+from ..grid.grid import Grid
 
 
 class HillClimbing(EvolutionAlgorithm):
