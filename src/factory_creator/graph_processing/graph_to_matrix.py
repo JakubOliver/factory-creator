@@ -180,11 +180,22 @@ class GraphToMatrix:
         width_multiplier, 
         depth_multiplier, 
         report_method,
+        topological_ordering = None
     ):
-        layers = GraphToMatrix._get_critical_path_layers(graph)
-        vertical_positions = GraphToMatrix._get_vertical_positions(graph, layers)
+        if topological_ordering is None:
+            topological_ordering = list(networkx.topological_sort(graph))
 
-        for node in networkx.topological_sort(graph):
+        layers = GraphToMatrix._get_critical_path_layers(
+            graph, 
+            topological_ordering
+        )
+        vertical_positions = GraphToMatrix._get_vertical_positions(
+            graph, 
+            layers, 
+            topological_ordering
+        )
+
+        for node in topological_ordering:
             cord = (
                 padding + layers[node] * depth_multiplier,
                 padding + vertical_positions[node] * width_multiplier,
@@ -194,10 +205,13 @@ class GraphToMatrix:
             report_method(f"Building node: {label}")
 
     @staticmethod
-    def _get_critical_path_layers(graph: DiGraph) -> dict:
+    def _get_critical_path_layers(
+        graph: DiGraph,
+        topological_ordering: list
+    ) -> dict:
         layers = {node: 0 for node in graph.nodes}
 
-        for node in reversed(list(networkx.topological_sort(graph))):
+        for node in reversed(topological_ordering):
             for predecessor in graph.predecessors(node):
                 layers[predecessor] = max(layers[predecessor], layers[node] + 1)
 
@@ -209,12 +223,13 @@ class GraphToMatrix:
     @staticmethod
     def _get_vertical_positions(
         graph: DiGraph, 
-        layers: dict
+        layers: dict,
+        topological_ordering: list
     ) -> dict:
         positions = {}
         next_source_position = 0
 
-        for node in networkx.topological_sort(graph):
+        for node in topological_ordering:
             predecessors = list(graph.predecessors(node))
             if predecessors:
                 positions[node] = round(
@@ -257,8 +272,13 @@ class GraphToMatrix:
         return str(dependency_node)
 
     @staticmethod
-    def _connect_graph_nodes(graph, grid, report_method):
-        for from_node in reversed(list(networkx.topological_sort(graph))):
+    def _connect_graph_nodes(
+        graph, 
+        grid, 
+        report_method,
+        topological_ordering = networkx.topological_sort
+    ):
+        for from_node in reversed(list(topological_ordering(graph))):
             cord = graph.nodes[from_node]["cord"]
             from_cords, is_in_cords, element_type = GraphToMatrix._get_node_path_data(
                 graph,

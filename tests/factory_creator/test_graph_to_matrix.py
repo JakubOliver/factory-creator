@@ -247,7 +247,10 @@ def test_graph_layout_uses_longest_path_to_root_for_layers():
         ]
     )
 
-    layers = GraphToMatrix._get_critical_path_layers(graph)
+    layers = GraphToMatrix._get_critical_path_layers(
+        graph,
+        list(networkx.topological_sort(graph))
+    )
 
     assert layers == {
         "root": 0,
@@ -265,9 +268,19 @@ def test_graph_layout_centers_consumers_over_their_inputs():
             ("consumer", "root"),
         ]
     )
-    layers = GraphToMatrix._get_critical_path_layers(graph)
 
-    positions = GraphToMatrix._get_vertical_positions(graph, layers)
+    topological_ordering = list(networkx.topological_sort(graph))
+
+    layers = GraphToMatrix._get_critical_path_layers(
+        graph,
+        topological_ordering
+    )
+
+    positions = GraphToMatrix._get_vertical_positions(
+        graph, 
+        layers,
+        topological_ordering
+    )
 
     assert positions["left-source"] < positions["right-source"]
     assert positions["consumer"] == round(
