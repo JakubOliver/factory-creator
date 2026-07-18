@@ -37,7 +37,6 @@ class FactoryProcessor:
 
             matrix = GraphToMatrix.convert_via_heuristics(
                 graph,
-                root,
                 report_method=report_method
             )
             json_obj = MatrixJsonConvertor.encode(matrix)

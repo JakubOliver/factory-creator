@@ -8,7 +8,6 @@ import heapq
 from networkx import DiGraph
 from pyrsistent import pset
 
-from ..factory.dependency_graph import DependencyTreeNode
 from ..grid.grid import *
 from ..util.factorio_const import FactorioConst
 
@@ -93,8 +92,7 @@ class GraphToMatrix:
 
     @staticmethod
     def convert_via_heuristics(
-        graph: DiGraph, 
-        root: DependencyTreeNode,
+        graph: DiGraph,
         report_method: callable = print
     ) -> Grid:
         """
@@ -102,7 +100,6 @@ class GraphToMatrix:
         and general graph algorithms.
 
         :param graph: Graph of the factory that will be transformed.
-        :param root: Root the recipe dependency tree.
         :return: Grid representation of the factory.
         """
 

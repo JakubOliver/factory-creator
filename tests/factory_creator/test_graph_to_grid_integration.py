@@ -95,7 +95,6 @@ def test_networkx_graph_is_converted_to_connected_grid(edges, factory_names):
 
     grid = GraphToMatrix.convert_via_heuristics(
         graph,
-        factory_nodes[DependencyTreeNode.get_root_identifier()],
         report_method=lambda _: None,
     )
 
@@ -128,7 +127,6 @@ def test_grid_created_from_graph_can_run_one_evolution_step(edges, factory_names
     graph = _make_graph(edges, factory_nodes)
     grid = GraphToMatrix.convert_via_heuristics(
         graph,
-        factory_nodes[DependencyTreeNode.get_root_identifier()],
         report_method=lambda _: None,
     )
 
