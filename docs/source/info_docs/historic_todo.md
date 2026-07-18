@@ -22,6 +22,23 @@ takový layout nesmí projít validací.
 ::::{grid} 1 1 2 2
 :gutter: 2
 
+:::{grid-item-card} Cachovat opakované výsledky fitness během evoluce
+:class-card: sd-shadow-sm sd-border-warning
+:class-title: sd-text-warning
+
+{bdg-warning}`open` {bdg-secondary}`Evolution, Fitness, Performance`
+
+Hill climbing nyní znovu počítá fitness stejného layoutu v každé generaci
+a také při opakovaném vygenerování stejného kandidáta. Přidat volitelnou cache
+platnou po dobu jednoho běhu evoluce. Klíč musí zahrnout layout i kontrolovaná
+spojení, aby se nezaměnily odlišné validační požadavky.
+
+
++++
+**Vytvořeno:** 2026-07-18
+**Umístění:** `src/factory_creator/evolution/evolution.py`
+:::
+
 :::{grid-item-card} Přidat přepínač podrobnosti výpisu evoluce
 :class-card: sd-shadow-sm sd-border-warning
 :class-title: sd-text-warning
