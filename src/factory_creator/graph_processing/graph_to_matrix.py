@@ -95,6 +95,7 @@ class GraphToMatrix:
     DEFAULT_WIDTH_MULTIPLIER = 10
     DEFAULT_DEPTH_MULTIPLIER = 10
     DEFAULT_PADDING = 1
+    MAX_GRID_RESIZES = 5
 
     @staticmethod
     def convert_via_heuristics(
@@ -116,12 +117,10 @@ class GraphToMatrix:
         width_multiplier = GraphToMatrix.DEFAULT_WIDTH_MULTIPLIER
         depth_multiplier = GraphToMatrix.DEFAULT_DEPTH_MULTIPLIER
 
-        grid = None
-
-        successful = False
-        while not successful:
+        resize_count = 0
+        while True:
             try:
-                grid =  GraphToMatrix._compute_grid(
+                grid = GraphToMatrix._compute_grid(
                     graph,
                     padding = padding,
                     width_multiplier = width_multiplier,
@@ -131,20 +130,29 @@ class GraphToMatrix:
                     place_node_method=place_node_method,
                 )
 
-                successful = True
+                return grid
             except InvalidTopologicalOrderingError:
                 raise
             except Exception as e:
+                if resize_count >= GraphToMatrix.MAX_GRID_RESIZES:
+                    report_method(
+                        f"Grid conversion failed after {resize_count} resizes: {e}"
+                    )
+                    raise
+
+                resize_count += 1
                 padding *= 2
                 width_multiplier *= 2
                 depth_multiplier *= 2
 
-                report_method(f"padding: {padding}, width_multiplier: {width_multiplier}, depth_multiplier: {depth_multiplier}")
+                report_method(
+                    f"Grid conversion failed; resize {resize_count}/"
+                    f"{GraphToMatrix.MAX_GRID_RESIZES}: padding: {padding}, "
+                    f"width_multiplier: {width_multiplier}, "
+                    f"depth_multiplier: {depth_multiplier}"
+                )
 
                 report_method(str(e))
-                #raise e
-
-        return grid
 
     @staticmethod
     def _normalize_topological_ordering(
