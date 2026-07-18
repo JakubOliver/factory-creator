@@ -2,6 +2,7 @@ import copy
 
 from factory_creator.evolution import Evolution
 from factory_creator.evolution.move_building_mutation import MoveBuildingMutation
+from factory_creator.evolution.move_subgraph_mutation import MoveSubgraphMutation
 from factory_creator.evolution.mutation import MutationCandidate
 from factory_creator.evolution.fitness import Fitness
 from factory_creator.grid import Grid
@@ -147,6 +148,43 @@ def test_supervisor_selects_best_candidate():
     )
 
     assert selected is better
+
+
+def test_move_subgraph_mutation_rebuilds_grid_and_connections():
+    grid = Grid()
+    grid.add_source((0, 0), "source")
+    grid.add_source((3, 0), "target")
+    grid.add_transportation(
+        (1, 0),
+        FactorioConst.TRANSPORT_BELT,
+        4,
+        (0, 0),
+        (3, 0),
+    )
+    grid.add_transportation(
+        (2, 0),
+        FactorioConst.TRANSPORT_BELT,
+        4,
+        (0, 0),
+        (3, 0),
+    )
+
+    candidates = list(
+        MoveSubgraphMutation(show_failure_reasons=False).generate(
+            grid,
+            report_method=lambda _: None,
+        )
+    )
+
+    assert len(candidates) == MoveSubgraphMutation.HOW_MANY_GENERATE_IN_ONE_GENERATION
+    assert all(isinstance(candidate, MutationCandidate) for candidate in candidates)
+    assert all(
+        Fitness().evaluate(
+            candidate.grid,
+            connection_pair=candidate.connection_pairs,
+        ) > -float("inf")
+        for candidate in candidates
+    )
 
 
 def test_hill_climb_can_return_presentation():
