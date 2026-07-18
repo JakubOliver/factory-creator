@@ -51,7 +51,8 @@ class MatrixJsonConvertor:
             if entry.name in [
                 FactorioConst.TRANSPORT_BELT,
                 FactorioConst.FAST_UNDERGROUND_BELT,
-                FactorioConst.INSERTER
+                FactorioConst.INSERTER,
+                FactorioConst.LONG_HANDED_INSERTER,
             ]:
                 entity = MatrixJsonConvertor._get_entity(
                     entry.name,

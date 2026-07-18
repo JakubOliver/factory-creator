@@ -4,6 +4,7 @@ class FactorioConst:
     UNDERGROUND_BELT_INPUT = "input"
     UNDERGROUND_BELT_OUTPUT = "output"
     INSERTER = "inserter"
+    LONG_HANDED_INSERTER = "long-handed-inserter"
     WOODEN_CHEST = "wooden-chest"
     ASSEMBLING_MACHINE_2 = "assembling-machine-2"
     BLUEPRINT = "blueprint"

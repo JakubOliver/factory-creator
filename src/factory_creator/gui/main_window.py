@@ -32,6 +32,11 @@ class MainWindow(QMainWindow):
     """
     COMBOBOX_ITEMS = 8
 
+    @staticmethod
+    def _normalize_input_path(path: str) -> str:
+        """Remove accidental whitespace surrounding a path entered in the GUI."""
+        return path.strip()
+
     def __init__(self, use_embedded_browser: bool = True) -> None:
         """
         Initialize the main window and choose embedded or external result display mode.
@@ -192,7 +197,7 @@ class MainWindow(QMainWindow):
         """
         Validate the selected file and load available recipe names into the dropdown.
         """
-        path = self.input_path.text()
+        path = self._normalize_input_path(self.input_path.text())
 
         try:
             FileUtil.validate_json_file(path)
@@ -208,7 +213,7 @@ class MainWindow(QMainWindow):
         """
         Start recipe computation in a background thread using the current options.
         """
-        path = self.input_path.text()
+        path = self._normalize_input_path(self.input_path.text())
         recipe_type = self.type_input.currentText()
 
         self.type_input_compute_button.setEnabled(False)

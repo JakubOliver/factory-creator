@@ -27,6 +27,11 @@ class Grid:
     # This is the number of tiles red fast underground belt can travel
     UNDERGROUND_MOVE_LENGTH = 6
 
+    INSERTER_COSTS = {
+        FactorioConst.INSERTER: 1,
+        FactorioConst.LONG_HANDED_INSERTER: 3,
+    }
+
     def __init__(self) -> None:
         """
         Creates an empty grid representation of the factory.
@@ -346,6 +351,13 @@ class Grid:
 
         return n
 
+    def get_inserter_cost(self) -> int:
+        """Return the total fitness cost of all inserters in the grid."""
+        return sum(
+            Grid.INSERTER_COSTS.get(entry.name, 0)
+            for entry in self.data.values()
+        )
+
     def _erase_building(self, grid_entry: GridEntry) -> None:
         """
         Removes occupied surroundings of the provided building from the grid.
@@ -483,6 +495,24 @@ class Grid:
         :param id: Identifier of the transportation elements forming the path.
         :return: Whether a path with the provided transportation id exists.
         """
+
+        # Inserters cannot hand items directly to another inserter in Factorio.
+        # The old graph-only check treated any adjacent transportation entries
+        # as connected, which made layouts containing an inserter chain appear
+        # valid even though they cannot transport material in the game.
+        inserter_cords = {
+            cord
+            for cord, entry in self.data.items()
+            if entry.is_transportation()
+            and entry.get_id_text() == id
+            and entry.is_inserter()
+        }
+        if any(
+            (x + dx, y + dy) in inserter_cords
+            for x, y in inserter_cords
+            for dx, dy in Grid.GRID_MOVES
+        ):
+            return False
 
         queue = deque((x, y, 0) for x, y in a)
         visited = set()
