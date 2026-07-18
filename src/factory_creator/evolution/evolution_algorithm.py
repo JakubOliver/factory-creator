@@ -14,10 +14,12 @@ class EvolutionAlgorithm(ABC):
         mutations: Sequence[Mutation],
         fitness: Fitness,
         generation_print: bool = True,
+        caching_enabled: bool = True,
     ) -> None:
         self.mutations = mutations
         self.fitness = fitness
         self.generation_print = generation_print
+        self.caching_enabled = caching_enabled
         self._fitness_cache: dict[Hashable, int | float] = {}
 
     def _reset_fitness_cache(self) -> None:
@@ -29,7 +31,7 @@ class EvolutionAlgorithm(ABC):
         cache_key: Hashable | None = None,
         connection_pair: Sequence[ConnectionPair] = (),
     ) -> int | float:
-        if cache_key is None:
+        if not self.caching_enabled or cache_key is None:
             return self.fitness.evaluate(
                 grid,
                 connection_pair=connection_pair,

@@ -26,6 +26,7 @@ class FactoryProcessor:
         create_presentation=False,
         report_method=print,
         output_level: OutputLevel = OutputLevel.MEDIUM,
+        evolution_caching = True,
     ) -> FactoryProcessingResult | None:
         reporter = OutputReporter(report_method, output_level)
         factories = FactoryLoader.load(path)
@@ -53,6 +54,7 @@ class FactoryProcessor:
                 create_presentation=create_presentation,
                 report_method=report_method,
                 output_level=output_level,
+                caching_enabled=evolution_caching,
             )
 
             if create_presentation:
