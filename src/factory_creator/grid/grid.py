@@ -512,15 +512,41 @@ class Grid:
 
     def _is_pointing_to_center(self, cord):
         x, y = cord
+        entry = self.data[cord]
+
+        if not entry.is_inserter():
+            return False
+        
+        target_id = entry.id.to_id.get_id()
+
+        target = next(
+            (
+                (target_cord, target_entry)
+                for target_cord, target_entry in self.get_factories()
+                if target_entry.get_id() == target_id
+                and target_entry.entry_type == GridEntryTypes.Factory
+            ),
+            None,
+        )
+
+        if target is None:
+            return False
+        
+        target_cord, target_entry = target
+        target_footprint = {target_cord, *target_entry.surroundings}
 
         fdx, fdy = Grid.orientation_to_vector(self.data[cord].orientation)
         rdx, rdy = self.orientation_to_vector((self.data[cord].orientation + 4) % 16)
         ldx, ldy = Grid.orientation_to_vector((self.data[cord].orientation - 4) % 16)
 
-        borders = [(x + fdx, y + fdy), (x + rdx + fdx, y + rdy + fdy), (x + ldx + fdx, y + ldy + fdy)]
+        front_three = {
+            (x + fdx, y + fdy),
+            (x + fdx + rdx, y + fdy + rdy),
+            (x + fdx + ldx, y + fdy + ldy),
+        }
 
-        return all(map(lambda b: self.__contains__(b), borders))
-
+        return front_three <= target_footprint # Operator <= checks if is a subset
+    
     def get_number_of_pointing_to_center(self) -> int:
         n = 0
 
