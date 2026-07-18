@@ -5,7 +5,7 @@ from ..grid.grid import Grid
 
 ConnectionPair = tuple[list[tuple], list[tuple], str]
 
-
+# TODO: Error when sometimes the factory does not become more compact, because it would change center and the distance of center in fitness makes "better" factory "worse" (same problem sometimes occures with poiting to center)
 class Fitness:
     """Evaluates factory layouts independently of the evolution strategy."""
 

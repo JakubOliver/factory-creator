@@ -120,6 +120,85 @@ def test_hill_climbing_passes_grid_to_each_mutation():
     assert received_grids == [grid, grid]
 
 
+def test_fitness_cache_reuses_result_for_same_key():
+    grid = Grid()
+    evaluated_grids = []
+    fitness = 41
+
+    class CountingFitness:
+        def evaluate(self, evaluated_grid, **_):
+            nonlocal fitness
+            evaluated_grids.append(evaluated_grid)
+            fitness += 1
+            return fitness
+
+    supervisor = HillClimbing([], CountingFitness(), generation_print=False)
+
+    first_result = supervisor._evaluate_fitness(grid, cache_key="same-layout")
+    second_result = supervisor._evaluate_fitness(grid, cache_key="same-layout")
+
+    assert first_result == second_result == 42
+    assert evaluated_grids == [grid]
+
+
+def test_fitness_cache_can_be_disabled():
+    grid = Grid()
+    evaluation_count = 0
+
+    class CountingFitness:
+        def evaluate(self, evaluated_grid, **kwargs):
+            nonlocal evaluation_count
+            evaluation_count += 1
+            return evaluation_count
+
+    supervisor = HillClimbing(
+        [],
+        CountingFitness(),
+        generation_print=False,
+        caching_enabled=False,
+    )
+
+    assert supervisor._evaluate_fitness(grid, cache_key="same-layout") == 1
+    assert supervisor._evaluate_fitness(grid, cache_key="same-layout") == 2
+    assert evaluation_count == 2
+
+
+def test_fitness_without_cache_key_is_not_cached():
+    grid = Grid()
+    evaluation_count = 0
+
+    class CountingFitness:
+        def evaluate(self, evaluated_grid, **_):
+            nonlocal evaluation_count
+            evaluation_count += 1
+            return evaluation_count
+
+    supervisor = HillClimbing([], CountingFitness(), generation_print=False)
+
+    assert supervisor._evaluate_fitness(grid) == 1
+    assert supervisor._evaluate_fitness(grid) == 2
+    assert evaluation_count == 2
+
+
+def test_fitness_cache_is_reset_between_evolve_runs():
+    grid = Grid()
+    evaluation_count = 0
+
+    class CountingFitness:
+        def evaluate(self, evaluated_grid, **_):
+            nonlocal evaluation_count
+            evaluation_count += 1
+            return evaluation_count
+
+    supervisor = HillClimbing([], CountingFitness(), generation_print=False)
+
+    supervisor.evolve(grid, iteration=2, stagnation_break=2)
+    assert evaluation_count == 1
+
+    supervisor.evolve(grid, iteration=1, stagnation_break=1)
+    assert evaluation_count == 2
+
+
 def test_supervisor_selects_best_candidate():
     original = Grid()
     original.add_source((0, 0), "original")
