@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from .fitness import Fitness
 from .hill_climbing import HillClimbing
-from .move_building_mutation import MoveBuildingMutation
+from .mutations import *
 from ..grid.grid import Grid
 
 
@@ -20,7 +20,9 @@ class Evolution:
         # TODO: Add optional per-run fitness caching to avoid evaluating the same layout repeatedly.
         # TODO: As its is currently implemented, the computation can be parallelized by running multipler hill climbs or mayber better parts of hill climbs in different threads and then combining the results.
         algorithm = HillClimbing(
-            mutations=[MoveBuildingMutation(show_failure_reasons=True)],
+            mutations=[
+                MoveBuildingMutation(show_failure_reasons=True)
+            ],
             fitness=Fitness(),
             generation_print=True,
         )

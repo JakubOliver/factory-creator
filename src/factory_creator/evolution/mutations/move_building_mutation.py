@@ -1,12 +1,12 @@
 import copy
 from collections.abc import Callable, Iterator
 
-from .fitness import ConnectionPair
-from .mutation import Mutation, MutationCandidate
-from ..factory.factory import FactoryUtil
-from ..graph_processing.graph_to_matrix import GraphToMatrix
-from ..grid.grid import Grid
-from ..grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
+from ..fitness import ConnectionPair
+from ..mutation import Mutation, MutationCandidate
+from ...factory.factory import FactoryUtil
+from ...graph_processing.graph_to_matrix import GraphToMatrix
+from ...grid.grid import Grid
+from ...grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
 
 
 class MoveBuildingMutation(Mutation):

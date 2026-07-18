@@ -1,11 +1,11 @@
 from collections.abc import Callable, Iterator
 
-from .fitness import ConnectionPair
-from .mutation import Mutation, MutationCandidate
-from ..graph_processing.graph_to_matrix import GraphToMatrix
-from ..grid.grid import Grid
-from ..grid.grid_entry import GridEntryTransportationId
-from ..graph_processing import TopologicalSortGenerator
+from ..fitness import ConnectionPair
+from ..mutation import Mutation, MutationCandidate
+from ...graph_processing.graph_to_matrix import GraphToMatrix
+from ...grid.grid import Grid
+from ...grid.grid_entry import GridEntryTransportationId
+from ...graph_processing import TopologicalSortGenerator
 
 class MoveSubgraphMutation(Mutation):
     HOW_MANY_GENERATE_IN_ONE_GENERATION = 4
