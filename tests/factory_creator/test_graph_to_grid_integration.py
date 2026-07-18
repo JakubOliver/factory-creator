@@ -6,6 +6,7 @@ import pytest
 from factory_creator.dependency_graph import DependencyTreeNode
 from factory_creator.evolution import Evolution
 from factory_creator.factory import Factory
+from factory_creator.fitness import Fitness
 from factory_creator.graph_to_matrix import GraphToMatrix
 from factory_creator.grid import Grid
 from factory_creator.grid_entry import GridEntryTransportationId
@@ -132,7 +133,7 @@ def test_grid_created_from_graph_can_run_one_evolution_step(edges, factory_names
         report_method=lambda _: None,
     )
 
-    evolved_grid = Evolution.evol(
+    evolved_grid = Evolution.evolve(
         grid,
         iteration=1,
         stagnation_break=1,
@@ -141,4 +142,4 @@ def test_grid_created_from_graph_can_run_one_evolution_step(edges, factory_names
 
     assert isinstance(evolved_grid, Grid)
     assert evolved_grid.get_number_of_factories() == len(graph.nodes)
-    assert math.isfinite(Evolution.fitness(evolved_grid, test_connection=False))
+    assert math.isfinite(Fitness().evaluate(evolved_grid, test_connection=False))
