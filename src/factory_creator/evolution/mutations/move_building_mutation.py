@@ -8,7 +8,7 @@ from ...graph_processing.graph_to_matrix import GraphToMatrix
 from ...grid.grid import Grid
 from ...grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
 
-
+# TODO: computing all moves is too expensive maybe choose only some random fraction or use some heuristic to choose whether to try this move or not
 class MoveBuildingMutation(Mutation):
     """Moves each movable entry by one tile and reconnects its incident edges."""
 

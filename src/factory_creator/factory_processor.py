@@ -13,7 +13,7 @@ class FactoryProcessingResult:
     evolution_seed: str
     dependency_graph: object
 
-
+# TODO: the amount of parameters in this method is too high, maybe use a dataclass for configuration
 class FactoryProcessor:
     @staticmethod
     def process_factory(

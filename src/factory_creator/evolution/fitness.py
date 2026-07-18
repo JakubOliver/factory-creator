@@ -20,7 +20,10 @@ class Fitness:
         fitness -= grid.get_area()
         fitness -= grid.get_used_block() / 1.5
         fitness += grid.get_number_of_pointing_to_center() * 10
+
+        # Idead with center is ok, but evolution find a way how to outsmart it and make "worse" factories
         fitness -= grid.get_distances_from_center()
+        
         fitness -= grid.get_inserter_cost()
 
         if test_connection and not self._connections_are_valid(grid, connection_pair):
