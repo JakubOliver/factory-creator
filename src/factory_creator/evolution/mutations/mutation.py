@@ -27,7 +27,8 @@ class Mutation(ABC):
     def generate(
         self,
         grid: Grid,
-        report_method: Callable[[str], None] = print,
+        report_method: Callable = print,
+        error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
         generation = self._generation
         self._generation += 1
@@ -35,7 +36,11 @@ class Mutation(ABC):
         if not self.start_generation <= generation < self.end_generation:
             return Mutation._unchanged_grid(grid)
 
-        return self._generate(grid, report_method)
+        return self._generate(
+            grid,
+            report_method,
+            error_report_method=error_report_method or report_method,
+        )
 
     @staticmethod
     def _unchanged_grid(grid: Grid) -> Iterator[MutationCandidate]:
@@ -45,6 +50,7 @@ class Mutation(ABC):
     def _generate(
         self,
         grid: Grid,
-        report_method: Callable[[str], None] = print,
+        report_method: Callable = print,
+        error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
         ...

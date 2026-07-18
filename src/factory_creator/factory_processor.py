@@ -4,6 +4,7 @@ from .evolution import Evolution
 from .graph_processing import GraphToMatrix
 from .loading import FactoryLoader
 from .export.json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
+from .util.output import OutputLevel, OutputReporter
 
 
 @dataclass
@@ -23,8 +24,10 @@ class FactoryProcessor:
         evolution_iteration=float("inf"),
         evolution_stagnation=10,
         create_presentation=False,
-        report_method = print
+        report_method=print,
+        output_level: OutputLevel = OutputLevel.MEDIUM,
     ) -> FactoryProcessingResult | None:
+        reporter = OutputReporter(report_method, output_level)
         factories = FactoryLoader.load(path)
 
         root = FactoryLoader.get_dependency_tree(factories, recipe_type)
@@ -37,7 +40,8 @@ class FactoryProcessor:
 
             matrix = GraphToMatrix.convert_via_heuristics(
                 graph,
-                report_method=report_method
+                report_method=reporter.high,
+                error_report_method=reporter.medium,
             )
             json_obj = MatrixJsonConvertor.encode(matrix)
             factory_seed = BluePrintRepresentation.encode(json_obj)
@@ -47,7 +51,8 @@ class FactoryProcessor:
                 iteration=evolution_iteration,
                 stagnation_break=evolution_stagnation,
                 create_presentation=create_presentation,
-                report_method=report_method
+                report_method=report_method,
+                output_level=output_level,
             )
 
             if create_presentation:

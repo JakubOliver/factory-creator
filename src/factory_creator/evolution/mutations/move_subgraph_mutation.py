@@ -22,7 +22,8 @@ class MoveSubgraphMutation(Mutation):
     def _generate(
         self,
         grid: Grid,
-        report_method: Callable[[str], None] = print,
+        report_method: Callable = print,
+        error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
         graph = grid.get_connection_graph()
 
@@ -41,7 +42,9 @@ class MoveSubgraphMutation(Mutation):
                 )
             except Exception as error:
                 if self.show_failure_reasons:
-                    report_method(f'  Individual failed because of "{error}"')
+                    (error_report_method or report_method)(
+                        f'  Individual failed because of "{error}"'
+                    )
 
     @staticmethod
     def _place_node(graph, node, cord: tuple, grid: Grid) -> str:
