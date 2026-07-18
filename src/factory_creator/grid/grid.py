@@ -357,7 +357,12 @@ class Grid:
         graph = DiGraph()
 
         for cord, entry in self.get_factories():
-            graph.add_node(entry.get_id_text(), cord=cord, entry=entry)
+            graph.add_node(
+                entry.get_id_text(),
+                cord=cord,
+                original_cord=cord,
+                entry=entry,
+            )
 
         for entry in self.data.values():
             if isinstance(entry.id, GridEntryTransportationId):

@@ -1,5 +1,6 @@
 import math
 import random
+from collections.abc import Callable, Iterable
 
 import networkx
 import collections
@@ -10,6 +11,11 @@ from pyrsistent import pset
 
 from ..grid.grid import *
 from ..util.factorio_const import FactorioConst
+
+
+class InvalidTopologicalOrderingError(ValueError):
+    """Raised when an ordering does not describe the supplied graph."""
+
 
 class AStartNode:
     """
@@ -93,7 +99,9 @@ class GraphToMatrix:
     @staticmethod
     def convert_via_heuristics(
         graph: DiGraph,
-        report_method: callable = print
+        report_method: callable = print,
+        topological_ordering: Iterable | None = None,
+        place_node_method: Callable | None = None,
     ) -> Grid:
         """
         Converts factory from graph to grid representation with the use of heuristics
@@ -118,10 +126,14 @@ class GraphToMatrix:
                     padding = padding,
                     width_multiplier = width_multiplier,
                     depth_multiplier = depth_multiplier,
-                    report_method=report_method
+                    report_method=report_method,
+                    topological_ordering=topological_ordering,
+                    place_node_method=place_node_method,
                 )
 
                 successful = True
+            except InvalidTopologicalOrderingError:
+                raise
             except Exception as e:
                 padding *= 2
                 width_multiplier *= 2
@@ -135,13 +147,42 @@ class GraphToMatrix:
         return grid
 
     @staticmethod
+    def _normalize_topological_ordering(
+        graph: DiGraph,
+        topological_ordering: Iterable | None,
+    ) -> tuple:
+        if topological_ordering is None:
+            ordering = tuple(networkx.topological_sort(graph))
+        else:
+            ordering = tuple(topological_ordering)
+
+        if len(ordering) != len(graph) or set(ordering) != set(graph.nodes):
+            raise InvalidTopologicalOrderingError(
+                "Topological ordering must contain every graph node exactly once."
+            )
+
+        positions = {node: position for position, node in enumerate(ordering)}
+        if any(positions[start] >= positions[end] for start, end in graph.edges):
+            raise InvalidTopologicalOrderingError(
+                "Provided node ordering is not topological."
+            )
+
+        return ordering
+
+    @staticmethod
     def _compute_grid(
         graph: networkx.classes.DiGraph,
         padding,
         width_multiplier,
         depth_multiplier,
-        report_method: callable = print
+        report_method: callable = print,
+        topological_ordering: tuple | None = None,
+        place_node_method: Callable | None = None,
     ) -> Grid:
+        topological_ordering = GraphToMatrix._normalize_topological_ordering(
+            graph,
+            topological_ordering,
+        )
         grid = Grid()
 
         # TODO: maybe we want nondeterministic BFS, so we get different planar graphs, therefore
@@ -159,12 +200,15 @@ class GraphToMatrix:
             padding,
             width_multiplier,
             depth_multiplier,
-            report_method,
+            report_method=report_method,
+            topological_ordering=topological_ordering,
+            place_node_method=place_node_method,
         )
         GraphToMatrix._connect_graph_nodes(
             graph,
             grid,
-            report_method
+            report_method,
+            topological_ordering,
         )
 
         return grid
@@ -177,10 +221,11 @@ class GraphToMatrix:
         width_multiplier, 
         depth_multiplier, 
         report_method,
-        topological_ordering = None
+        topological_ordering: tuple,
+        place_node_method: Callable | None = None,
     ):
-        if topological_ordering is None:
-            topological_ordering = list(networkx.topological_sort(graph))
+        if place_node_method is None:
+            place_node_method = GraphToMatrix._place_node
 
         layers = GraphToMatrix._get_critical_path_layers(
             graph, 
@@ -198,13 +243,13 @@ class GraphToMatrix:
                 padding + vertical_positions[node] * width_multiplier,
             )
             graph.nodes[node]["cord"] = cord
-            label = GraphToMatrix._place_node(graph, node, cord, grid)
+            label = place_node_method(graph, node, cord, grid)
             report_method(f"Building node: {label}")
 
     @staticmethod
     def _get_critical_path_layers(
         graph: DiGraph,
-        topological_ordering: list
+        topological_ordering: tuple,
     ) -> dict:
         layers = {node: 0 for node in graph.nodes}
 
@@ -221,7 +266,7 @@ class GraphToMatrix:
     def _get_vertical_positions(
         graph: DiGraph, 
         layers: dict,
-        topological_ordering: list
+        topological_ordering: tuple,
     ) -> dict:
         positions = {}
         next_source_position = 0
@@ -273,19 +318,22 @@ class GraphToMatrix:
         graph, 
         grid, 
         report_method,
-        topological_ordering = networkx.topological_sort
+        topological_ordering: tuple,
     ):
-        for from_node in reversed(list(topological_ordering(graph))):
+        for from_node in reversed(topological_ordering):
             cord = graph.nodes[from_node]["cord"]
             from_cords, is_in_cords, element_type = GraphToMatrix._get_node_path_data(
                 graph,
                 from_node,
+                grid,
             )
 
             for successor in graph.successors(from_node):
                 successor_cord = graph.nodes[successor]["cord"]
                 to_cords, is_in_successor, _ = GraphToMatrix._get_node_path_data(
-                    graph, successor,
+                    graph,
+                    successor,
+                    grid,
                 )
                 report_method(
                     f"Building path: {element_type}, {from_node}, {cord}, "
@@ -303,19 +351,19 @@ class GraphToMatrix:
                 )
 
     @staticmethod
-    def _get_node_path_data(graph: DiGraph, node):
-        """Return coordinates, membership predicate, and label used to route from a node."""
-        cord = graph.nodes[node]["cord"]
+    def _get_node_path_data(graph: DiGraph, node, grid: Grid):
+        """Return the occupied coordinates and label of an already placed graph node."""
+        main_coordinate = graph.nodes[node]["cord"]
+        grid_entry = grid[main_coordinate]
 
-        if "ref" not in graph.nodes[node]:
-            return [cord], lambda new_cord: new_cord == cord, node
+        occupied_coordinates = [
+            main_coordinate,
+            *grid_entry.surroundings,
+        ]
+        occupied_coordinate_set = set(occupied_coordinates)
+        is_part_of_node = lambda coordinate: coordinate in occupied_coordinate_set
 
-        dependency_node = graph.nodes[node]["ref"]
-        return (
-            list(dependency_node.factory.get_cords(cord)),
-            dependency_node.factory.get_cords_lambda(cord),
-            str(dependency_node),
-        )
+        return occupied_coordinates, is_part_of_node, grid_entry.name
 
     @staticmethod
     def find_path(
