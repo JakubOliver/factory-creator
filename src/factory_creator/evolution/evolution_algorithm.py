@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 
-from .mutation import Mutation
+from .mutations.mutation import Mutation
 from .fitness import Fitness
 from ..grid.grid import Grid
 

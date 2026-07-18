@@ -21,7 +21,8 @@ class Evolution:
         # TODO: As its is currently implemented, the computation can be parallelized by running multipler hill climbs or mayber better parts of hill climbs in different threads and then combining the results.
         algorithm = HillClimbing(
             mutations=[
-                MoveBuildingMutation(show_failure_reasons=True)
+                MoveBuildingMutation(show_failure_reasons=True),
+                #MoveSubgraphMutation(show_failure_reasons=True),
             ],
             fitness=Fitness(),
             generation_print=True,

@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterator
 
 from ..fitness import ConnectionPair
-from ..mutation import Mutation, MutationCandidate
+from .mutation import Mutation, MutationCandidate
 from ...graph_processing.graph_to_matrix import GraphToMatrix
 from ...grid.grid import Grid
 from ...grid.grid_entry import GridEntryTransportationId
@@ -10,10 +10,16 @@ from ...graph_processing import TopologicalSortGenerator
 class MoveSubgraphMutation(Mutation):
     HOW_MANY_GENERATE_IN_ONE_GENERATION = 4
 
-    def __init__(self, show_failure_reasons: bool = True) -> None:
+    def __init__(
+        self,
+        show_failure_reasons: bool = True,
+        start_generation: int = 0,
+        end_generation: int | float = float("inf"),
+    ) -> None:
+        super().__init__(start_generation, end_generation)
         self.show_failure_reasons = show_failure_reasons
 
-    def generate(
+    def _generate(
         self,
         grid: Grid,
         report_method: Callable[[str], None] = print,

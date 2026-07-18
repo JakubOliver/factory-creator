@@ -2,7 +2,7 @@ import copy
 from collections.abc import Callable, Iterator
 
 from ..fitness import ConnectionPair
-from ..mutation import Mutation, MutationCandidate
+from .mutation import Mutation, MutationCandidate
 from ...factory.factory import FactoryUtil
 from ...graph_processing.graph_to_matrix import GraphToMatrix
 from ...grid.grid import Grid
@@ -12,7 +12,13 @@ from ...grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTy
 class MoveBuildingMutation(Mutation):
     """Moves each movable entry by one tile and reconnects its incident edges."""
 
-    def __init__(self, show_failure_reasons: bool = True) -> None:
+    def __init__(
+        self,
+        show_failure_reasons: bool = True,
+        start_generation: int = 0,
+        end_generation: int | float = float("inf"),
+    ) -> None:
+        super().__init__(start_generation, end_generation)
         self.show_failure_reasons = show_failure_reasons
 
     @staticmethod
@@ -20,7 +26,7 @@ class MoveBuildingMutation(Mutation):
         for dx, dy in Grid.GRID_MOVES:
             yield cord[0] + dx, cord[1] + dy
 
-    def generate(
+    def _generate(
         self,
         grid: Grid,
         report_method: Callable[[str], None] = print,

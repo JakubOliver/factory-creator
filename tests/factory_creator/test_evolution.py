@@ -3,7 +3,7 @@ import copy
 from factory_creator.evolution import Evolution
 from factory_creator.evolution.mutations.move_building_mutation import MoveBuildingMutation
 from factory_creator.evolution.mutations.move_subgraph_mutation import MoveSubgraphMutation
-from factory_creator.evolution.mutation import MutationCandidate
+from factory_creator.evolution.mutations.mutation import MutationCandidate
 from factory_creator.evolution.fitness import Fitness
 from factory_creator.grid import Grid
 from factory_creator.evolution.hill_climbing import HillClimbing
