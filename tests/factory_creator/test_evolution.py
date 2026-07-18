@@ -1,7 +1,8 @@
 import copy
 
 from factory_creator.evolution import Evolution
-from factory_creator.evolution.mutation import MoveBuildingMutation, MutationCandidate
+from factory_creator.evolution.move_building_mutation import MoveBuildingMutation
+from factory_creator.evolution.mutation import MutationCandidate
 from factory_creator.evolution.fitness import Fitness
 from factory_creator.grid import Grid
 from factory_creator.evolution.hill_climbing import HillClimbing

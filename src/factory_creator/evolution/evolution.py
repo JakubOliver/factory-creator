@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from .fitness import Fitness
 from .hill_climbing import HillClimbing
-from .mutation import MoveBuildingMutation
+from .move_building_mutation import MoveBuildingMutation
 from ..grid.grid import Grid
 
 
