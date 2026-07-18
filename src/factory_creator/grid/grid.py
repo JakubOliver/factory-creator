@@ -218,6 +218,32 @@ class Grid:
     def __len__(self):
         return len(self.occupied) + len(self.data)
 
+    def state_key(self) -> tuple:
+        return (
+            frozenset(
+                (cord, entry.state_key())
+                for cord, entry in self.data.items()
+            ),
+            frozenset(self.occupied),
+        )
+
+    def get_snapshot(self) -> tuple:
+        return self.state_key()
+
+    def state_key_memory(self) -> int:
+        return hash(
+            (
+                frozenset(
+                    (cord, entry.state_key_memory())
+                    for cord, entry in self.data.items()
+                ),
+                frozenset(self.occupied),
+            )
+        )
+
+    def get_snapshot_memory(self) -> int:
+        return self.state_key_memory()
+
     def __str__(self) -> str:
         """
         Returns a table representation of the occupied part of the grid.
