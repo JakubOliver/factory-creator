@@ -3,13 +3,12 @@ import math
 import networkx
 import pytest
 
-from factory_creator.dependency_graph import DependencyTreeNode
+from factory_creator.factory import DependencyTreeNode, Factory
 from factory_creator.evolution import Evolution
-from factory_creator.factory import Factory
-from factory_creator.fitness import Fitness
-from factory_creator.graph_to_matrix import GraphToMatrix
+from factory_creator.evolution.fitness import Fitness
+from factory_creator.graph_processing import GraphToMatrix
 from factory_creator.grid import Grid
-from factory_creator.grid_entry import GridEntryTransportationId
+from factory_creator.grid.grid_entry import GridEntryTransportationId
 
 
 def _factory_node(name, layer):

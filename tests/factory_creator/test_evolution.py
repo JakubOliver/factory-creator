@@ -1,10 +1,10 @@
 import copy
 
 from factory_creator.evolution import Evolution
-from factory_creator.evolution_mutation import MoveBuildingMutation, MutationCandidate
-from factory_creator.fitness import Fitness
+from factory_creator.evolution.mutation import MoveBuildingMutation, MutationCandidate
+from factory_creator.evolution.fitness import Fitness
 from factory_creator.grid import Grid
-from factory_creator.hill_climbing import HillClimbing
+from factory_creator.evolution.hill_climbing import HillClimbing
 from factory_creator.util.factorio_const import FactorioConst
 
 

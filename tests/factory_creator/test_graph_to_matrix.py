@@ -2,11 +2,10 @@ import pytest
 import networkx
 from pyrsistent import pset
 
-from factory_creator.factory import Factory
-from factory_creator.dependency_graph import DependencyTreeNode
-from factory_creator.graph_to_matrix import AStartNode, GraphToMatrix, VisitedMatrix
+from factory_creator.factory import Factory, DependencyTreeNode
+from factory_creator.graph_processing.graph_to_matrix import AStartNode, GraphToMatrix, VisitedMatrix
 from factory_creator.grid import Grid
-from factory_creator.grid_entry import GridEntryTypes
+from factory_creator.grid.grid_entry import GridEntryTypes
 from factory_creator.util.factorio_const import FactorioConst
 
 

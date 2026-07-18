@@ -1,8 +1,6 @@
 import pytest
 
-from factory_creator.assembler import Assembler
-from factory_creator.dependency_graph import DependencyTreeNode, Stats
-from factory_creator.factory import Factory, Ingredient, Item
+from factory_creator.factory import Assembler, DependencyTreeNode, Factory, Ingredient, Item, Stats
 
 
 def test_stats_starts_with_only_layer_set():
