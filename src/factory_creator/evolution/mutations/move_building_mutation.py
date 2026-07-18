@@ -8,7 +8,7 @@ from ...graph_processing.graph_to_matrix import GraphToMatrix
 from ...grid.grid import Grid
 from ...grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
 
-
+# TODO: computing all moves is too expensive maybe choose only some random fraction or use some heuristic to choose whether to try this move or not
 class MoveBuildingMutation(Mutation):
     """Moves each movable entry by one tile and reconnects its incident edges."""
 
@@ -47,6 +47,12 @@ class MoveBuildingMutation(Mutation):
                 f"({grid_entry.name})"
             )
 
+    def get_cache_key(self, grid: Grid) -> int:
+        if not isinstance(grid, Grid):
+            raise TypeError("Expected a Grid instance for caching.")
+
+        return grid.state_key_memory()
+
     def _generate_for_building(
         self,
         grid: Grid,
@@ -62,8 +68,8 @@ class MoveBuildingMutation(Mutation):
                 if self.show_failure_reasons:
                     error_report_method(f'  Individual failed because of "{error}"')
 
-    @staticmethod
     def _move_building(
+        self,
         grid: Grid,
         active_cord: tuple,
         grid_entry: GridEntry,
@@ -138,4 +144,8 @@ class MoveBuildingMutation(Mutation):
                 )
             )
 
-        return MutationCandidate(new_grid, tuple(connection_pairs))
+        return MutationCandidate(
+            new_grid,
+            tuple(connection_pairs),
+            self.get_cache_key(new_grid),
+        )

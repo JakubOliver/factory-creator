@@ -18,9 +18,10 @@ class Evolution:
         create_presentation: bool = False,
         report_method: Callable = print,
         output_level: OutputLevel = OutputLevel.MEDIUM,
+        caching_enabled: bool = True,
     ) -> Grid | list[Grid]:
-        # TODO: Add optional per-run fitness caching to avoid evaluating the same layout repeatedly.
         # TODO: As its is currently implemented, the computation can be parallelized by running multipler hill climbs or mayber better parts of hill climbs in different threads and then combining the results.
+        # TODO: it makes sense to use reflection for fitness and also for mutations etc. so in the gui can user select which want to use or add own.
         reporter = OutputReporter(report_method, output_level)
         reporter.low("Evolution started.")
         algorithm = HillClimbing(
@@ -34,7 +35,9 @@ class Evolution:
             ],
             fitness=Fitness(),
             generation_print=True,
+            caching_enabled=caching_enabled,
         )
+        
         return algorithm.evolve(
             grid,
             iteration=iteration,
