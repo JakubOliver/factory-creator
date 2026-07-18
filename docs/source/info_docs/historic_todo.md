@@ -22,6 +22,21 @@ takový layout nesmí projít validací.
 ::::{grid} 1 1 2 2
 :gutter: 2
 
+:::{grid-item-card} Přidat přepínač podrobnosti výpisu evoluce
+:class-card: sd-shadow-sm sd-border-warning
+:class-title: sd-text-warning
+
+{bdg-warning}`open` {bdg-secondary}`GUI, Evolution`
+
+GUI má nabídnout volbu, zda během evoluce zobrazovat pouze průběh výpočtu,
+nebo také důvody selhání jednotlivých kandidátů včetně tracebacků.
+
+
++++
+**Vytvořeno:** 2026-07-11
+**Umístění:** `src/factory_creator/evolution.py:11`
+:::
+
 :::{grid-item-card} Načítat reálné rozměry strojů
 :class-card: sd-shadow-sm sd-border-warning
 :class-title: sd-text-warning

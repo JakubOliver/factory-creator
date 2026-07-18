@@ -199,6 +199,46 @@ def test_get_node_path_data_for_source_node():
     assert element_type == "iron-plate_source"
 
 
+@pytest.mark.parametrize("reverse", [False, True], ids=["chest-to-factory", "factory-to-chest"])
+def test_long_handed_inserter_is_placed_next_to_factory(reverse):
+    grid = Grid()
+    chest = (0, 1)
+    factory = (3, 0)
+    factory_cords = [(x, y) for x in range(3, 6) for y in range(3)]
+    grid.add_source(chest, "iron-plate_source")
+    grid.add_factory(factory, "engine-unit", factory_cords[1:])
+
+    if reverse:
+        start, start_cords = factory, factory_cords
+        target, target_cords = chest, [chest]
+    else:
+        start, start_cords = chest, [chest]
+        target, target_cords = factory, factory_cords
+
+    GraphToMatrix.find_path(
+        start,
+        start_cords,
+        lambda cord: cord in start_cords,
+        target,
+        target_cords,
+        lambda cord: cord in target_cords,
+        grid,
+    )
+
+    long_inserters = [
+        (cord, entry)
+        for cord, entry in grid.data.items()
+        if entry.name == FactorioConst.LONG_HANDED_INSERTER
+    ]
+    assert len(long_inserters) == 1
+    assert long_inserters[0][0] == (2, 1)
+    assert grid.exists_path(
+        start_cords,
+        target_cords,
+        long_inserters[0][1].get_id_text(),
+    )
+
+
 def test_graph_layout_uses_longest_path_to_root_for_layers():
     graph = networkx.DiGraph(
         [

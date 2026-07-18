@@ -34,6 +34,26 @@ def test_fitness_penalizes_missing_connections():
     assert Evolution.fitness(grid, connection_pair=[([(0, 0)], [(0, 2)], "missing")]) == -float("inf")
 
 
+def test_fitness_penalizes_long_handed_inserter_more_than_normal_inserter():
+    def grid_with(inserter_name):
+        grid = Grid()
+        grid.add_source((0, 0), "source")
+        grid.add_source((0, 2), "target")
+        grid.add_transportation(
+            (0, 1), inserter_name, 0, (0, 0), (0, 2)
+        )
+        return grid
+
+    normal_fitness = Evolution.fitness(
+        grid_with(FactorioConst.INSERTER), test_connection=False
+    )
+    long_fitness = Evolution.fitness(
+        grid_with(FactorioConst.LONG_HANDED_INSERTER), test_connection=False
+    )
+
+    assert long_fitness == normal_fitness - 2
+
+
 def test_evol_delegates_to_hill_climb(monkeypatch):
     grid = Grid()
     returned = Grid()

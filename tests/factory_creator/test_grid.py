@@ -65,6 +65,50 @@ def test_underground_belt_endpoint_cannot_be_transformed_to_inserter():
     assert grid[(0, 1)].underground_belt_type == FactorioConst.UNDERGROUND_BELT_OUTPUT
 
 
+@pytest.mark.parametrize(
+    "inserter_cords,target",
+    [
+        ([(0, 1), (0, 2)], (0, 3)),
+        ([(0, 1), (1, 1)], (2, 1)),
+        ([(0, 1), (1, 1)], (1, 0))
+    ],
+    ids=["straight-chain", "corner-chain", "tower-chain"],
+)
+def test_exists_path_rejects_adjacent_inserters(inserter_cords, target):
+    grid = Grid()
+    source = (0, 0)
+    grid.add_source(source, "source")
+    grid.add_source(target, "target")
+
+    for cord in inserter_cords:
+        grid.add_transportation(
+            cord, FactorioConst.TRANSPORT_BELT, 0, source, target
+        )
+        grid.transform_into_inserter(cord, source, target)
+
+    belt_id = grid[inserter_cords[0]].get_id_text()
+
+    assert not grid.exists_path([source], [target], belt_id)
+
+
+def test_exists_path_rejects_adjacent_mixed_inserter_types():
+    grid = Grid()
+    source = (0, 0)
+    target = (0, 3)
+    grid.add_source(source, "source")
+    grid.add_source(target, "target")
+    grid.add_transportation(
+        (0, 1), FactorioConst.INSERTER, 0, source, target
+    )
+    grid.add_transportation(
+        (0, 2), FactorioConst.LONG_HANDED_INSERTER, 0, source, target
+    )
+
+    belt_id = grid[(0, 1)].get_id_text()
+
+    assert not grid.exists_path([source], [target], belt_id)
+
+
 def test_erase_factory_removes_surroundings_and_connected_belts():
     grid = Grid()
     grid.add_factory((0, 0), "engine-unit", [(1, 0)])
