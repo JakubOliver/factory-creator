@@ -1,10 +1,11 @@
 import itertools
 from collections.abc import Iterator
 import prettytable
+from networkx import DiGraph
 from collections import deque
 
 from .grid_entry import *
-from .util.factorio_const import FactorioConst
+from ..util.factorio_const import FactorioConst
 
 
 #TODO: maybe add mapping id to object
@@ -350,6 +351,28 @@ class Grid:
                 n += 1
 
         return n
+
+    def get_connection_graph(self) -> DiGraph:
+        """Return the directed logical connections represented by this layout."""
+        graph = DiGraph()
+
+        for cord, entry in self.get_factories():
+            graph.add_node(
+                entry.get_id_text(),
+                cord=cord,
+                original_cord=cord,
+                entry=entry,
+            )
+
+        for entry in self.data.values():
+            if isinstance(entry.id, GridEntryTransportationId):
+                graph.add_edge(
+                    entry.id.from_id.get_id(),
+                    entry.id.to_id.get_id(),
+                    transportation_id=entry.get_id_text(),
+                )
+
+        return graph
 
     def get_inserter_cost(self) -> int:
         """Return the total fitness cost of all inserters in the grid."""

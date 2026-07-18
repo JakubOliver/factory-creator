@@ -1,7 +1,7 @@
 import json
 
 from factory_creator.factory import Factory, Ingredient, Item
-from factory_creator.factory_loader import FactoryLoader
+from factory_creator.loading import FactoryLoader
 
 
 def write_recipes(tmp_path, recipes):

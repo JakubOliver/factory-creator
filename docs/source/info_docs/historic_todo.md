@@ -22,6 +22,23 @@ takový layout nesmí projít validací.
 ::::{grid} 1 1 2 2
 :gutter: 2
 
+:::{grid-item-card} Cachovat opakované výsledky fitness během evoluce
+:class-card: sd-shadow-sm sd-border-warning
+:class-title: sd-text-warning
+
+{bdg-warning}`open` {bdg-secondary}`Evolution, Fitness, Performance`
+
+Hill climbing nyní znovu počítá fitness stejného layoutu v každé generaci
+a také při opakovaném vygenerování stejného kandidáta. Přidat volitelnou cache
+platnou po dobu jednoho běhu evoluce. Klíč musí zahrnout layout i kontrolovaná
+spojení, aby se nezaměnily odlišné validační požadavky.
+
+
++++
+**Vytvořeno:** 2026-07-18
+**Umístění:** `src/factory_creator/evolution/evolution.py`
+:::
+
 :::{grid-item-card} Přidat přepínač podrobnosti výpisu evoluce
 :class-card: sd-shadow-sm sd-border-warning
 :class-title: sd-text-warning
@@ -35,6 +52,25 @@ nebo také důvody selhání jednotlivých kandidátů včetně tracebacků.
 +++
 **Vytvořeno:** 2026-07-11
 **Umístění:** `src/factory_creator/evolution.py:11`
+:::
+
+:::{grid-item-card} Rozložit fitness na pojmenované složky
+:class-card: sd-shadow-sm sd-border-warning
+:class-title: sd-text-warning
+
+{bdg-warning}`open` {bdg-secondary}`Evolution, Fitness`
+
+Fitness je nyní počítána jako jedno výsledné číslo s vahami zapsanými přímo
+ve funkci. Výsledek vyhodnocení by měl obsahovat pojmenované složky, například
+plochu, počet použitých polí, vzdálenost od středu, cenu inserterů, zarovnání
+pásů a validitu spojení, spolu s celkovým skóre. Váhy jednotlivých složek mají
+být přesunuty do konfigurace, aby šlo fitness snáze ladit, porovnávat a později
+nastavovat z GUI.
+
+
++++
+**Vytvořeno:** 2026-07-18
+**Umístění:** `src/factory_creator/evolution.py:254`
 :::
 
 :::{grid-item-card} Načítat reálné rozměry strojů

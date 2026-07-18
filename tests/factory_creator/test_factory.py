@@ -1,7 +1,13 @@
 import pytest
 
-from factory_creator.assembler import Assembler, AssemblingMachine3
-from factory_creator.factory import Factory, FactoryUtil, Ingredient, Item
+from factory_creator.factory import (
+    Assembler,
+    AssemblingMachine3,
+    Factory,
+    FactoryUtil,
+    Ingredient,
+    Item,
+)
 
 
 def test_item_required_amount_returns_matching_ingredient():

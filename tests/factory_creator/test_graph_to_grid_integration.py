@@ -3,12 +3,12 @@ import math
 import networkx
 import pytest
 
-from factory_creator.dependency_graph import DependencyTreeNode
+from factory_creator.factory import DependencyTreeNode, Factory
 from factory_creator.evolution import Evolution
-from factory_creator.factory import Factory
-from factory_creator.graph_to_matrix import GraphToMatrix
+from factory_creator.evolution.fitness import Fitness
+from factory_creator.graph_processing import GraphToMatrix
 from factory_creator.grid import Grid
-from factory_creator.grid_entry import GridEntryTransportationId
+from factory_creator.grid.grid_entry import GridEntryTransportationId
 
 
 def _factory_node(name, layer):
@@ -95,7 +95,6 @@ def test_networkx_graph_is_converted_to_connected_grid(edges, factory_names):
 
     grid = GraphToMatrix.convert_via_heuristics(
         graph,
-        factory_nodes[DependencyTreeNode.get_root_identifier()],
         report_method=lambda _: None,
     )
 
@@ -128,11 +127,10 @@ def test_grid_created_from_graph_can_run_one_evolution_step(edges, factory_names
     graph = _make_graph(edges, factory_nodes)
     grid = GraphToMatrix.convert_via_heuristics(
         graph,
-        factory_nodes[DependencyTreeNode.get_root_identifier()],
         report_method=lambda _: None,
     )
 
-    evolved_grid = Evolution.evol(
+    evolved_grid = Evolution.evolve(
         grid,
         iteration=1,
         stagnation_break=1,
@@ -141,4 +139,4 @@ def test_grid_created_from_graph_can_run_one_evolution_step(edges, factory_names
 
     assert isinstance(evolved_grid, Grid)
     assert evolved_grid.get_number_of_factories() == len(graph.nodes)
-    assert math.isfinite(Evolution.fitness(evolved_grid, test_connection=False))
+    assert math.isfinite(Fitness().evaluate(evolved_grid, test_connection=False))

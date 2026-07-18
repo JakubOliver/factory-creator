@@ -2,11 +2,10 @@ import pytest
 import networkx
 from pyrsistent import pset
 
-from factory_creator.factory import Factory
-from factory_creator.dependency_graph import DependencyTreeNode
-from factory_creator.graph_to_matrix import AStartNode, GraphToMatrix, VisitedMatrix
+from factory_creator.factory import Factory, DependencyTreeNode
+from factory_creator.graph_processing.graph_to_matrix import AStartNode, GraphToMatrix, VisitedMatrix
 from factory_creator.grid import Grid
-from factory_creator.grid_entry import GridEntryTypes
+from factory_creator.grid.grid_entry import GridEntryTypes
 from factory_creator.util.factorio_const import FactorioConst
 
 
@@ -248,7 +247,10 @@ def test_graph_layout_uses_longest_path_to_root_for_layers():
         ]
     )
 
-    layers = GraphToMatrix._get_critical_path_layers(graph)
+    layers = GraphToMatrix._get_critical_path_layers(
+        graph,
+        list(networkx.topological_sort(graph))
+    )
 
     assert layers == {
         "root": 0,
@@ -266,9 +268,19 @@ def test_graph_layout_centers_consumers_over_their_inputs():
             ("consumer", "root"),
         ]
     )
-    layers = GraphToMatrix._get_critical_path_layers(graph)
 
-    positions = GraphToMatrix._get_vertical_positions(graph, layers)
+    topological_ordering = list(networkx.topological_sort(graph))
+
+    layers = GraphToMatrix._get_critical_path_layers(
+        graph,
+        topological_ordering
+    )
+
+    positions = GraphToMatrix._get_vertical_positions(
+        graph, 
+        layers,
+        topological_ordering
+    )
 
     assert positions["left-source"] < positions["right-source"]
     assert positions["consumer"] == round(

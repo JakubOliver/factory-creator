@@ -35,7 +35,7 @@ if __name__ == "__main__":
         return grid
 
     grid = create_grid()
-    evolved_grid = Evolution.evol(grid)
+    evolved_grid = Evolution.evolve(grid)
 
     Path("output").mkdir(parents=True, exist_ok=True)
     url = URLCreator.create_factory_url_from_grid(evolved_grid)

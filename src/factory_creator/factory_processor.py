@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from .evolution import Evolution
-from .factory_loader import FactoryLoader
-from .graph_to_matrix import GraphToMatrix
-from src.factory_creator.export.json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
+from .graph_processing import GraphToMatrix
+from .loading import FactoryLoader
+from .export.json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
 
 
 @dataclass
@@ -37,13 +37,12 @@ class FactoryProcessor:
 
             matrix = GraphToMatrix.convert_via_heuristics(
                 graph,
-                root,
                 report_method=report_method
             )
             json_obj = MatrixJsonConvertor.encode(matrix)
             factory_seed = BluePrintRepresentation.encode(json_obj)
 
-            after_evolution = Evolution.evol(
+            after_evolution = Evolution.evolve(
                 matrix,
                 iteration=evolution_iteration,
                 stagnation_break=evolution_stagnation,

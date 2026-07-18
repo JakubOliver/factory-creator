@@ -1,7 +1,7 @@
 import pytest
 
 from factory_creator.grid import Grid
-from factory_creator.grid_entry import GridEntryTypes
+from factory_creator.grid.grid_entry import GridEntryTypes
 from factory_creator.util.factorio_const import FactorioConst
 
 
