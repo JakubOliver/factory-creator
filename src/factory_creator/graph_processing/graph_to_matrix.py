@@ -103,6 +103,7 @@ class GraphToMatrix:
         report_method: callable = print,
         topological_ordering: Iterable | None = None,
         place_node_method: Callable | None = None,
+        error_report_method: callable | None = None,
     ) -> Grid:
         """
         Converts factory from graph to grid representation with the use of heuristics
@@ -112,6 +113,7 @@ class GraphToMatrix:
         :return: Grid representation of the factory.
         """
 
+        error_report_method = error_report_method or report_method
         padding = GraphToMatrix.DEFAULT_PADDING
 
         width_multiplier = GraphToMatrix.DEFAULT_WIDTH_MULTIPLIER
@@ -135,7 +137,7 @@ class GraphToMatrix:
                 raise
             except Exception as e:
                 if resize_count >= GraphToMatrix.MAX_GRID_RESIZES:
-                    report_method(
+                    error_report_method(
                         f"Grid conversion failed after {resize_count} resizes: {e}"
                     )
                     raise
@@ -145,14 +147,14 @@ class GraphToMatrix:
                 width_multiplier *= 2
                 depth_multiplier *= 2
 
-                report_method(
+                error_report_method(
                     f"Grid conversion failed; resize {resize_count}/"
                     f"{GraphToMatrix.MAX_GRID_RESIZES}: padding: {padding}, "
                     f"width_multiplier: {width_multiplier}, "
                     f"depth_multiplier: {depth_multiplier}"
                 )
 
-                report_method(str(e))
+                error_report_method(str(e))
 
     @staticmethod
     def _normalize_topological_ordering(

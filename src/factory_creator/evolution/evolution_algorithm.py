@@ -26,6 +26,8 @@ class EvolutionAlgorithm(ABC):
         iteration: int | float = float("inf"),
         stagnation_break: int = 10,
         create_presentation: bool = False,
-        report_method: Callable[[str], None] = print,
+        report_method: Callable = print,
+        generation_report_method: Callable = print,
+        error_report_method: Callable | None = None,
     ) -> Grid | list[Grid]:
         """Optimize and return the supplied layout."""

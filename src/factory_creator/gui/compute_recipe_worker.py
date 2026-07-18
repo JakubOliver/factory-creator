@@ -2,6 +2,7 @@ from PySide6.QtCore import QObject, Signal, Slot
 
 from ..factory_processor import FactoryProcessor
 from ..util.file_util import FileUtil
+from ..util.output import OutputLevel
 
 
 class ComputeRecipeWorker(QObject):
@@ -22,6 +23,7 @@ class ComputeRecipeWorker(QObject):
         simplified_structure: bool,
         evolution_iterations: int,
         evolution_stagnation: int,
+        output_level: OutputLevel = OutputLevel.MEDIUM,
     ) -> None:
         """
         Store the recipe path, selected recipe, graph options, and evolution limits.
@@ -40,6 +42,7 @@ class ComputeRecipeWorker(QObject):
         self.simplified_structure = simplified_structure
         self.evolution_iterations = evolution_iterations
         self.evolution_stagnation = evolution_stagnation
+        self.output_level = output_level
 
     @Slot()
     def run(self) -> None:
@@ -57,7 +60,8 @@ class ComputeRecipeWorker(QObject):
                 simplified_structure=self.simplified_structure,
                 evolution_iteration=self.evolution_iterations,
                 evolution_stagnation=self.evolution_stagnation,
-                report_method=self.message.emit
+                report_method=self.message.emit,
+                output_level=self.output_level,
             ))
             self.message.emit("Factory computation finished.")
         except Exception as e:

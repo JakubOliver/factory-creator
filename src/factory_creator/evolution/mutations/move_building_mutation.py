@@ -29,7 +29,8 @@ class MoveBuildingMutation(Mutation):
     def _generate(
         self,
         grid: Grid,
-        report_method: Callable[[str], None] = print,
+        report_method: Callable = print,
+        error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
         factories = list(grid.get_factories())
         number_of_factories = len(factories)
@@ -39,6 +40,7 @@ class MoveBuildingMutation(Mutation):
                 active_cord,
                 grid_entry,
                 report_method,
+                error_report_method or report_method,
             )
             report_method(
                 f"  Processed: {processed / number_of_factories * 100:.1f}% "
@@ -50,14 +52,15 @@ class MoveBuildingMutation(Mutation):
         grid: Grid,
         active_cord: tuple,
         grid_entry: GridEntry,
-        report_method: Callable[[str], None] = print,
+        report_method: Callable = print,
+        error_report_method: Callable = print,
     ) -> Iterator[MutationCandidate]:
         for new_cord in self._get_changed_cords(active_cord):
             try:
                 yield self._move_building(grid, active_cord, grid_entry, new_cord)
             except Exception as error:
                 if self.show_failure_reasons:
-                    report_method(f'  Individual failed because of "{error}"')
+                    error_report_method(f'  Individual failed because of "{error}"')
 
     @staticmethod
     def _move_building(
