@@ -24,6 +24,8 @@ from .factory_result_widget import FactoryResultWidget
 from .recipe_options_widget import RecipeOptionsWidget
 
 
+# TODO: Make the GUI more responsive, when making bigger the usefull width is not resizable. 
+
 class MainWindow(QMainWindow):
     """
     Main GUI windows of the GUI.
