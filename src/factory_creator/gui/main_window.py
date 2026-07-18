@@ -1,7 +1,8 @@
 import os
 
-from PySide6.QtCore import QThread, Slot
+from PySide6.QtCore import QSettings, QThread, Slot
 from PySide6.QtWidgets import (
+    QDialog,
     QFileDialog,
     QComboBox,
     QHBoxLayout,
@@ -16,13 +17,17 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..factory_loader import FactoryLoader
+from ..loading import FactoryLoader
 from ..export.url_creator import URLCreator
 from ..util.file_util import FileUtil
+from ..util.output import OutputLevel
 from .compute_recipe_worker import ComputeRecipeWorker
 from .factory_result_widget import FactoryResultWidget
+from .preferences_dialog import PreferencesDialog
 from .recipe_options_widget import RecipeOptionsWidget
 
+
+# TODO: Make the GUI more responsive, when making bigger the usefull width is not resizable. 
 
 class MainWindow(QMainWindow):
     """
@@ -31,6 +36,8 @@ class MainWindow(QMainWindow):
     Provides user with basic controls: imports factories, select which recipe wants to compute etc.
     """
     COMBOBOX_ITEMS = 8
+    OUTPUT_LEVEL_SETTING = "output/level"
+    FACTORY_URL_SETTING = "factory/url"
 
     @staticmethod
     def _normalize_input_path(path: str) -> str:
@@ -52,6 +59,13 @@ class MainWindow(QMainWindow):
         self.compute_thread = None
         self.compute_worker = None
         self.show_graph_after_compute = False
+        self.settings = QSettings("FactoryCreator", "FactoryCreator")
+        self.output_level = self._load_output_level()
+        self.factory_url = self.settings.value(
+            self.FACTORY_URL_SETTING,
+            URLCreator.BASE_URL,
+            type=str,
+        )
 
         self._setup_ui()
         self._connect_signals()
@@ -60,6 +74,8 @@ class MainWindow(QMainWindow):
         """
         Setups the widgets of the main window.
         """
+        self._setup_menu_bar()
+
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -80,6 +96,40 @@ class MainWindow(QMainWindow):
 
         if not self.use_embedded_browser:
             self.menu_layout.addStretch()
+
+    def _setup_menu_bar(self):
+        settings_menu = self.menuBar().addMenu("&Settings")
+        preferences_action = settings_menu.addAction("&Preferences...")
+        preferences_action.triggered.connect(self._open_preferences)
+
+    def _load_output_level(self) -> OutputLevel:
+        saved_level = self.settings.value(
+            self.OUTPUT_LEVEL_SETTING,
+            OutputLevel.MEDIUM.name,
+            type=str,
+        )
+        try:
+            return OutputLevel[saved_level]
+        except KeyError:
+            return OutputLevel.MEDIUM
+
+    def _open_preferences(self):
+        dialog = PreferencesDialog(
+            self.output_level,
+            self.factory_url,
+            self,
+        )
+        if dialog.exec() == QDialog.Accepted:
+            self.output_level = dialog.output_level()
+            self.factory_url = dialog.factory_url()
+            self.settings.setValue(
+                self.OUTPUT_LEVEL_SETTING,
+                self.output_level.name,
+            )
+            self.settings.setValue(
+                self.FACTORY_URL_SETTING,
+                self.factory_url,
+            )
 
     def _setup_file_layout(self) -> None:
         """
@@ -229,6 +279,7 @@ class MainWindow(QMainWindow):
             self.options_widget.simplified_structure(),
             self.options_widget.evolution_iterations(),
             self.options_widget.evolution_stagnation(),
+            self.output_level,
         )
         self.compute_worker.moveToThread(self.compute_thread)
 
@@ -256,8 +307,14 @@ class MainWindow(QMainWindow):
 
         if result.factory_seed is not None:
             self.factory_result_widget.show_results(
-                URLCreator.create_factory_url_link(result.factory_seed),
-                URLCreator.create_factory_url_link(result.evolution_seed)
+                URLCreator.create_factory_url_link(
+                    result.factory_seed,
+                    self.factory_url,
+                ),
+                URLCreator.create_factory_url_link(
+                    result.evolution_seed,
+                    self.factory_url,
+                )
             )
             self._append_worker_message("Factory results are ready.")
 

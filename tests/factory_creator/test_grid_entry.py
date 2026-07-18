@@ -1,4 +1,4 @@
-from factory_creator.grid_entry import (
+from factory_creator.grid.grid_entry import (
     GridEntry,
     GridEntryMovableId,
     GridEntryTransportationId,

@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import IntEnum
 
-from .util.factorio_const import FactorioConst
+from ..util.factorio_const import FactorioConst
 
 
 class GridEntryTypes(IntEnum):

@@ -2,11 +2,11 @@ import pytest
 import networkx
 from pyrsistent import pset
 
-from factory_creator.factory import Factory
-from factory_creator.dependency_graph import DependencyTreeNode
-from factory_creator.graph_to_matrix import AStartNode, GraphToMatrix, VisitedMatrix
+from factory_creator.factory import Factory, DependencyTreeNode
+from factory_creator.graph_processing.graph_to_matrix import AStartNode, GraphToMatrix, VisitedMatrix
+from factory_creator.graph_processing.topological_sort_generator import TopologicalSortGenerator
 from factory_creator.grid import Grid
-from factory_creator.grid_entry import GridEntryTypes
+from factory_creator.grid.grid_entry import GridEntryTypes
 from factory_creator.util.factorio_const import FactorioConst
 
 
@@ -173,12 +173,18 @@ def test_visited_matrix_tracks_a_star_keys():
 
 def test_get_node_path_data_for_factory_node():
     graph = networkx.DiGraph()
+    grid = Grid()
     dependency_node = DependencyTreeNode(Factory("engine-unit", 0.5, 1, [], 3, 3), [], 0)
     graph.add_node("factory", cord=(4, 5), ref=dependency_node)
+    GraphToMatrix._place_node(graph, "factory", (4, 5), grid)
 
-    cords, contains_cord, element_type = GraphToMatrix._get_node_path_data(graph, "factory")
+    cords, contains_cord, element_type = GraphToMatrix._get_node_path_data(
+        graph,
+        "factory",
+        grid,
+    )
 
-    assert cords == list(dependency_node.factory.get_cords((4, 5)))
+    assert set(cords) == set(dependency_node.factory.get_cords((4, 5)))
     assert all(contains_cord(cord) for cord in cords)
     assert not contains_cord((0, 0))
     assert element_type == "engine-unit"
@@ -186,11 +192,14 @@ def test_get_node_path_data_for_factory_node():
 
 def test_get_node_path_data_for_source_node():
     graph = networkx.DiGraph()
+    grid = Grid()
     graph.add_node("iron-plate_source", cord=(4, 5))
+    GraphToMatrix._place_node(graph, "iron-plate_source", (4, 5), grid)
 
     cords, contains_cord, element_type = GraphToMatrix._get_node_path_data(
         graph,
         "iron-plate_source",
+        grid,
     )
 
     assert cords == [(4, 5)]
@@ -248,7 +257,10 @@ def test_graph_layout_uses_longest_path_to_root_for_layers():
         ]
     )
 
-    layers = GraphToMatrix._get_critical_path_layers(graph)
+    layers = GraphToMatrix._get_critical_path_layers(
+        graph,
+        list(networkx.topological_sort(graph))
+    )
 
     assert layers == {
         "root": 0,
@@ -266,15 +278,52 @@ def test_graph_layout_centers_consumers_over_their_inputs():
             ("consumer", "root"),
         ]
     )
-    layers = GraphToMatrix._get_critical_path_layers(graph)
 
-    positions = GraphToMatrix._get_vertical_positions(graph, layers)
+    topological_ordering = list(networkx.topological_sort(graph))
+
+    layers = GraphToMatrix._get_critical_path_layers(
+        graph,
+        topological_ordering
+    )
+
+    positions = GraphToMatrix._get_vertical_positions(
+        graph, 
+        layers,
+        topological_ordering
+    )
 
     assert positions["left-source"] < positions["right-source"]
     assert positions["consumer"] == round(
         (positions["left-source"] + positions["right-source"]) / 2
     )
     assert positions["root"] == positions["consumer"]
+
+
+def test_random_topological_sort_respects_every_graph_edge():
+    graph = networkx.DiGraph(
+        [
+            ("left-source", "consumer"),
+            ("right-source", "consumer"),
+            ("consumer", "root"),
+        ]
+    )
+
+    ordering = TopologicalSortGenerator.generate_random(graph)
+    positions = {node: position for position, node in enumerate(ordering)}
+
+    assert set(ordering) == set(graph.nodes)
+    assert all(positions[start] < positions[end] for start, end in graph.edges)
+
+
+def test_graph_conversion_rejects_non_topological_ordering():
+    graph = networkx.DiGraph([("source", "target")])
+
+    with pytest.raises(ValueError, match="not topological"):
+        GraphToMatrix.convert_via_heuristics(
+            graph,
+            report_method=lambda _: None,
+            topological_ordering=["target", "source"],
+        )
 
 
 def test_distance_and_orientation_helpers():

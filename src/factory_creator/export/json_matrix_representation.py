@@ -3,8 +3,8 @@ import sys
 
 import json
 
-from src.factory_creator.graph_to_matrix import Grid, GridEntry
-from src.factory_creator.util.factorio_const import FactorioConst
+from ..grid import Grid, GridEntry
+from ..util.factorio_const import FactorioConst
 
 
 class MatrixJsonConvertor:

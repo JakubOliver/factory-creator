@@ -1,7 +1,7 @@
 import json
 
-from .factory import Factory, Ingredient, Item
-from .dependency_graph import DependencyTreeNode
+from ..factory.factory import Factory, Ingredient, Item
+from ..factory.dependency_graph import DependencyTreeNode
 
 class FactoryLoader:
     """
