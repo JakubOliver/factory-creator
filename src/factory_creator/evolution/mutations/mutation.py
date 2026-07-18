@@ -10,6 +10,7 @@ from ...grid.grid import Grid
 class MutationCandidate:
     grid: Grid
     connection_pairs: tuple[ConnectionPair, ...] = ()
+    cache_key: int | None = None
 
 
 class Mutation(ABC):
@@ -53,4 +54,8 @@ class Mutation(ABC):
         report_method: Callable = print,
         error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
+        ...
+
+    @abstractmethod
+    def get_cache_key(self, value: object) -> int:
         ...

@@ -20,6 +20,7 @@ class HillClimbing(EvolutionAlgorithm):
     ) -> Grid | list[Grid]:
         generation_report_method = generation_report_method or report_method
         error_report_method = error_report_method or report_method
+        self._reset_fitness_cache()
         active_iteration = 0
         stagnation_streak = 0
         presentation = []
@@ -28,7 +29,10 @@ class HillClimbing(EvolutionAlgorithm):
             if create_presentation:
                 presentation.append(grid)
 
-            current_fitness = self.fitness.evaluate(grid)
+            current_fitness = self._evaluate_fitness(
+                grid,
+                cache_key=("current", grid.state_key_memory()),
+            )
             if self.generation_print:
                 generation_report_method(
                     f"----------- NEXT GENERATION ({active_iteration}) -------------"
@@ -64,8 +68,11 @@ class HillClimbing(EvolutionAlgorithm):
         error_report_method = error_report_method or report_method
         for mutation in self.mutations:
             for candidate in mutation.generate(grid, report_method):
-                candidate_fitness = self.fitness.evaluate(
+                candidate_fitness = self._evaluate_fitness(
                     candidate.grid,
+                    cache_key=(type(mutation), candidate.cache_key)
+                    if candidate.cache_key is not None
+                    else None,
                     connection_pair=candidate.connection_pairs,
                 )
                 if candidate_fitness > best_fitness:

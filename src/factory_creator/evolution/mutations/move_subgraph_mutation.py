@@ -39,12 +39,19 @@ class MoveSubgraphMutation(Mutation):
                 yield MutationCandidate(
                     new_grid,
                     self._get_connection_pairs(graph, new_grid),
+                    self.get_cache_key(ordering),
                 )
             except Exception as error:
                 if self.show_failure_reasons:
                     (error_report_method or report_method)(
                         f'  Individual failed because of "{error}"'
                     )
+
+    def get_cache_key(self, ordering: list) -> int:
+        if not isinstance(ordering, list):
+            raise TypeError("Expected a list instance for caching.")
+
+        return hash(tuple(ordering))
 
     @staticmethod
     def _place_node(graph, node, cord: tuple, grid: Grid) -> str:
