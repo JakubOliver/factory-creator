@@ -5,6 +5,7 @@ from ...graph_processing.graph_to_matrix import GraphToMatrix
 from ...grid.grid import Grid
 from ...grid.grid_entry import GridEntryTransportationId
 from ...graph_processing import TopologicalSortGenerator
+from ...util.cancellation import ComputationCancelled
 
 class MoveSubgraphMutation(Mutation):
     HOW_MANY_GENERATE_IN_ONE_GENERATION = 4
@@ -34,12 +35,15 @@ class MoveSubgraphMutation(Mutation):
                     report_method=report_method,
                     topological_ordering=ordering,
                     place_node_method=self._place_node,
+                    stop_requested=self.stop_requested,
                 )
                 yield MutationCandidate(
                     new_grid,
                     self._get_connection_pairs(graph, new_grid),
                     self.get_cache_key(ordering),
                 )
+            except ComputationCancelled:
+                raise
             except Exception as error:
                 if self.show_failure_reasons:
                     (error_report_method or report_method)(

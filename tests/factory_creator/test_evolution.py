@@ -3,7 +3,7 @@ import copy
 from factory_creator.evolution import Evolution
 from factory_creator.evolution.mutations.move_building_mutation import MoveBuildingMutation
 from factory_creator.evolution.mutations.move_subgraph_mutation import MoveSubgraphMutation
-from factory_creator.evolution.mutations.mutation import MutationCandidate
+from factory_creator.evolution.mutations.mutation import Mutation, MutationCandidate
 from factory_creator.evolution.fitness import Fitness
 from factory_creator.evolution.fitness_aspects import (
     AreaAspect,
@@ -142,10 +142,13 @@ def test_hill_climbing_passes_grid_to_each_mutation():
     grid.add_source((0, 0), "a")
     received_grids = []
 
-    class EmptyMutation:
-        def generate(self, grid, report_method):
+    class EmptyMutation(Mutation):
+        def _generate(self, grid, report_method, error_report_method=None):
             received_grids.append(grid)
-            return iter(())
+            yield from ()
+
+        def get_cache_key(self, value):
+            return 0
 
     supervisor = HillClimbing(
         [EmptyMutation(), EmptyMutation()],
@@ -243,10 +246,13 @@ def test_supervisor_selects_best_candidate():
     worse = copy.deepcopy(original)
     better = copy.deepcopy(original)
 
-    class CandidateMutation:
-        def generate(self, grid, report_method):
+    class CandidateMutation(Mutation):
+        def _generate(self, grid, report_method, error_report_method=None):
             yield MutationCandidate(worse)
             yield MutationCandidate(better)
+
+        def get_cache_key(self, value):
+            return 0
 
     class StubFitness:
         def evaluate(self, context):

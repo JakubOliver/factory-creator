@@ -8,6 +8,7 @@ from .hill_climbing import HillClimbing
 from .mutations.mutation import Mutation
 from ..grid.grid import Grid
 from ..util.output import OutputLevel, OutputReporter
+from ..util.cancellation import never_cancelled
 
 
 class Evolution:
@@ -24,6 +25,7 @@ class Evolution:
         report_method: Callable = print,
         output_level: OutputLevel = OutputLevel.MEDIUM,
         caching_enabled: bool = True,
+        stop_requested: Callable[[], bool] = never_cancelled,
     ) -> Grid | list[Grid]:
         # TODO: As its is currently implemented, the computation can be parallelized by running multipler hill climbs or mayber better parts of hill climbs in different threads and then combining the results.
         # TODO: it makes sense to use reflection for fitness and also for mutations etc. so in the gui can user select which want to use or add own.
@@ -45,4 +47,5 @@ class Evolution:
             report_method=reporter.high,
             generation_report_method=reporter.low,
             error_report_method=reporter.medium,
+            stop_requested=stop_requested,
         )

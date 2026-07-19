@@ -1,3 +1,5 @@
+from threading import Event
+
 from PySide6.QtCore import QObject, Signal, Slot
 
 from ..factory_processor import FactoryProcessor
@@ -5,6 +7,7 @@ from ..util.file_util import FileUtil
 from ..util.output import OutputLevel
 from ..evolution.fitness_aspects import FitnessAspect
 from ..evolution.mutations.mutation import Mutation
+from ..util.cancellation import ComputationCancelled
 
 
 class ComputeRecipeWorker(QObject):
@@ -51,6 +54,10 @@ class ComputeRecipeWorker(QObject):
         self.evolution_caching = evolution_caching
         self.mutations = mutations
         self.fitness_aspects = fitness_aspects
+        self._stop_event = Event()
+
+    def request_stop(self) -> None:
+        self._stop_event.set()
 
     @Slot()
     def run(self) -> None:
@@ -73,9 +80,12 @@ class ComputeRecipeWorker(QObject):
                 evolution_caching = self.evolution_caching,
                 mutations = self.mutations,
                 fitness_aspects = self.fitness_aspects,
+                stop_requested=self._stop_event.is_set,
             ))
             
             self.message.emit("Factory computation finished.")
+        except ComputationCancelled:
+            self.message.emit("Factory computation cancelled.")
         except Exception as e:
             self.message.emit("Factory computation failed.")
             self.error.emit(str(e))

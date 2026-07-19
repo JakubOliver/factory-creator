@@ -3,6 +3,7 @@ from collections.abc import Callable
 from .evolution_algorithm import EvolutionAlgorithm
 from .mutations.mutation import Mutation
 from ..grid.grid import Grid
+from ..util.cancellation import never_cancelled
 
 
 class HillClimbing(EvolutionAlgorithm):
@@ -15,12 +16,20 @@ class HillClimbing(EvolutionAlgorithm):
         stagnation_break: int = 10,
         create_presentation: bool = False,
         report_method: Callable = print,
-        generation_report_method: Callable = print,
+        generation_report_method: Callable | None = None,
         error_report_method: Callable | None = None,
+        stop_requested: Callable[[], bool] = never_cancelled,
     ) -> Grid | list[Grid]:
-        generation_report_method = generation_report_method or report_method
-        error_report_method = error_report_method or report_method
+        if generation_report_method is None:
+            generation_report_method = report_method
+        if error_report_method is None:
+            error_report_method = report_method
+
         self._reset_fitness_cache()
+
+        for mutation in self.mutations:
+            mutation.set_stop_requested(stop_requested)
+
         active_iteration = 0
         stagnation_streak = 0
         presentation = []
@@ -65,16 +74,19 @@ class HillClimbing(EvolutionAlgorithm):
         best_grid = grid
         best_fitness = current_fitness
 
-        error_report_method = error_report_method or report_method
+        if error_report_method is None:
+            error_report_method = report_method
+
         for mutation in self.mutations:
             for candidate in mutation.generate(grid, report_method):
                 candidate_fitness = self._evaluate_fitness(
                     candidate.grid,
                     cache_key=(type(mutation), candidate.cache_key)
-                    if candidate.cache_key is not None
-                    else None,
+                        if candidate.cache_key is not None
+                        else None,
                     connection_pairs=candidate.connection_pairs,
                 )
+
                 if candidate_fitness > best_fitness:
                     best_grid = candidate.grid
                     best_fitness = candidate_fitness

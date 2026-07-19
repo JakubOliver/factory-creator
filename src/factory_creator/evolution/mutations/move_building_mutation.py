@@ -7,6 +7,7 @@ from ...factory.factory import FactoryUtil
 from ...graph_processing.graph_to_matrix import GraphToMatrix
 from ...grid.grid import Grid
 from ...grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
+from ...util.cancellation import ComputationCancelled, raise_if_cancelled
 
 # TODO: computing all moves is too expensive maybe choose only some random fraction or use some heuristic to choose whether to try this move or not
 class MoveBuildingMutation(Mutation):
@@ -64,6 +65,8 @@ class MoveBuildingMutation(Mutation):
         for new_cord in self._get_changed_cords(active_cord):
             try:
                 yield self._move_building(grid, active_cord, grid_entry, new_cord)
+            except ComputationCancelled:
+                raise
             except Exception as error:
                 if self.show_failure_reasons:
                     error_report_method(f'  Individual failed because of "{error}"')
@@ -93,6 +96,7 @@ class MoveBuildingMutation(Mutation):
 
         connection_pairs: list[ConnectionPair] = []
         for neighbor, direction in neighbors:
+            raise_if_cancelled(self.stop_requested)
             neighbor_entry = new_grid.data[neighbor]
             if neighbor_entry.entry_type == GridEntryTypes.Factory:
                 neighbor_cords = list(FactoryUtil.get_cords(neighbor))

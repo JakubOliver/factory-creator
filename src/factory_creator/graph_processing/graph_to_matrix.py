@@ -11,6 +11,11 @@ from pyrsistent import pset
 
 from ..grid.grid import *
 from ..util.factorio_const import FactorioConst
+from ..util.cancellation import (
+    ComputationCancelled,
+    never_cancelled,
+    raise_if_cancelled,
+)
 
 
 class InvalidTopologicalOrderingError(ValueError):
@@ -104,6 +109,7 @@ class GraphToMatrix:
         topological_ordering: Iterable | None = None,
         place_node_method: Callable | None = None,
         error_report_method: callable | None = None,
+        stop_requested: Callable[[], bool] = never_cancelled,
     ) -> Grid:
         """
         Converts factory from graph to grid representation with the use of heuristics
@@ -121,6 +127,7 @@ class GraphToMatrix:
 
         resize_count = 0
         while True:
+            raise_if_cancelled(stop_requested)
             try:
                 grid = GraphToMatrix._compute_grid(
                     graph,
@@ -130,10 +137,13 @@ class GraphToMatrix:
                     report_method=report_method,
                     topological_ordering=topological_ordering,
                     place_node_method=place_node_method,
+                    stop_requested=stop_requested,
                 )
 
                 return grid
             except InvalidTopologicalOrderingError:
+                raise
+            except ComputationCancelled:
                 raise
             except Exception as e:
                 if resize_count >= GraphToMatrix.MAX_GRID_RESIZES:
@@ -188,6 +198,7 @@ class GraphToMatrix:
         report_method: callable = print,
         topological_ordering: tuple | None = None,
         place_node_method: Callable | None = None,
+        stop_requested: Callable[[], bool] = never_cancelled,
     ) -> Grid:
         topological_ordering = GraphToMatrix._normalize_topological_ordering(
             graph,
@@ -219,6 +230,7 @@ class GraphToMatrix:
             grid,
             report_method,
             topological_ordering,
+            stop_requested=stop_requested,
         )
 
         return grid
@@ -329,6 +341,7 @@ class GraphToMatrix:
         grid, 
         report_method,
         topological_ordering: tuple,
+        stop_requested: Callable[[], bool] = never_cancelled,
     ):
         for from_node in reversed(topological_ordering):
             cord = graph.nodes[from_node]["cord"]
@@ -339,6 +352,9 @@ class GraphToMatrix:
             )
 
             for successor in graph.successors(from_node):
+                # A single A* search is intentionally atomic. Cancellation is checked
+                # before starting each connection, keeping the hot A* loop untouched.
+                raise_if_cancelled(stop_requested)
                 successor_cord = graph.nodes[successor]["cord"]
                 to_cords, is_in_successor, _ = GraphToMatrix._get_node_path_data(
                     graph,

@@ -7,6 +7,7 @@ from .export.json_matrix_representation import MatrixJsonConvertor, BluePrintRep
 from .util.output import OutputLevel, OutputReporter
 from .evolution.fitness_aspects import FitnessAspect
 from .evolution.mutations.mutation import Mutation
+from .util.cancellation import never_cancelled, raise_if_cancelled
 
 
 @dataclass
@@ -31,9 +32,12 @@ class FactoryProcessor:
         report_method=print,
         output_level: OutputLevel = OutputLevel.MEDIUM,
         evolution_caching = True,        
+        stop_requested=never_cancelled,
     ) -> FactoryProcessingResult | None:
         reporter = OutputReporter(report_method, output_level)
         factories = FactoryLoader.load(path)
+        
+        raise_if_cancelled(stop_requested)
 
         root = FactoryLoader.get_dependency_tree(factories, recipe_type)
 
@@ -47,7 +51,11 @@ class FactoryProcessor:
                 graph,
                 report_method=reporter.high,
                 error_report_method=reporter.medium,
+                stop_requested=stop_requested,
             )
+
+            raise_if_cancelled(stop_requested)
+
             json_obj = MatrixJsonConvertor.encode(matrix)
             factory_seed = BluePrintRepresentation.encode(json_obj)
 
@@ -61,6 +69,7 @@ class FactoryProcessor:
                 report_method=report_method,
                 output_level=output_level,
                 caching_enabled=evolution_caching,
+                stop_requested=stop_requested,
             )
 
             if create_presentation:

@@ -388,6 +388,12 @@ class MainWindow(QMainWindow):
         """
         Start recipe computation in a background thread using the current options.
         """
+        if self.compute_worker is not None:
+            self.compute_worker.request_stop()
+            self.type_input_compute_button.setEnabled(False)
+            self._append_worker_message("Cancellation requested...")
+            return
+
         path = self._normalize_input_path(self.input_path.text())
         recipe_type = self.type_input.currentText()
 
@@ -406,7 +412,7 @@ class MainWindow(QMainWindow):
             self._show_error(str(error))
             return
 
-        self.type_input_compute_button.setEnabled(False)
+        self.type_input_compute_button.setText("Stop computation")
         self.factory_result_widget.set_controls_enabled(False)
         self.show_graph_after_compute = self.options_widget.show_graph()
         self.worker_messages.clear()
@@ -483,6 +489,7 @@ class MainWindow(QMainWindow):
         Restore controls and release worker references when the thread finishes.
         """
         self.type_input_compute_button.setEnabled(True)
+        self.type_input_compute_button.setText("Compute recipe")
         self.factory_result_widget.set_controls_enabled(True)
         self.compute_thread = None
         self.compute_worker = None
