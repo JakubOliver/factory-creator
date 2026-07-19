@@ -58,7 +58,7 @@ pytest -ra -vv
 pytest -x --lf
 ```
 
-It is used `xfail` for a known bug or functionality that is specified by a test
+`xfail` is used for a known bug or functionality that is specified by a test
 but has not been implemented yet.
 
 ### Test coverage

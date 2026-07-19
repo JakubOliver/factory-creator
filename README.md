@@ -57,5 +57,5 @@ python .\main.py
 
 ## Documentation
 
-Instruction how to generate documentation can be found in the
+Instructions for generating the documentation can be found in the
 [docs](docs/source/user_docs/docs_gen.md) folder.

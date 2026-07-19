@@ -39,11 +39,11 @@ python -m factory_creator
 Development setup, including documentation generation and Graphviz installation,
 is described in [Development setup](dev_docs.md).
 
-- Some GPUs are not compatible with PySide6 and WebGL redenring. In this case
-  can be the GUI mode be started with `--no-browser` flag to use external
-  browser buttons instead of embedded browser tabs. Or can be used this comamnd
+- Some GPUs are not compatible with PySide6 and WebGL rendering. In this case,
+  the GUI mode can be started with the `--no-browser` flag to use external
+  browser buttons instead of embedded browser tabs. Alternatively, use this command:
   `QTWEBENGINE_CHROMIUM_FLAGS="--enable-webgl --ignore-gpu-blocklist --enable-unsafe-swiftshader --use-angle=swiftshader" ./main.py`
-  which set WebGL computing with swiftshader which uses CPU for rendering
+  which enables WebGL computing with SwiftShader, which uses the CPU for rendering
   instead of GPU.
 
 ## Controls
@@ -97,14 +97,14 @@ In this menu user can set **how detailed the progress message should be**:
   - Generation started
   - Fitness of the best individual in the current generation
 - Medium - same as low, plus:
-  - Info about failures and errors occured while computing the factory
+  - Info about failures and errors that occurred while computing the factory
 - High - same as medium, plus:
   - Detailed info about the evolution process, placement of individual
-    buildings, thier connections etc.
+    buildings, their connections, etc.
 
 Other option is **what website should be used to open generated factory**. By
-defauled is set to 'https://fbe.teoxoy.com/'. This website/project is open
-source and can be run locally. So user can set the URL to ther own instance.
+default it is set to 'https://fbe.teoxoy.com/'. This website/project is open
+source and can be run locally. So the user can set the URL to their own instance.
 
 **User mutations directory** is a directory from where can be loaded
 user-defined mutations via reflection.
@@ -132,7 +132,7 @@ aspect.
 
 ### CLI
 
-- CLI mode is not upto date with GUI mode. If not necessary, it is recommended
+- CLI mode is not up to date with GUI mode. If not necessary, it is recommended
   to use GUI mode instead of CLI mode.
 
 The CLI mode is started with the `--cli` flag. In this mode, the input recipe

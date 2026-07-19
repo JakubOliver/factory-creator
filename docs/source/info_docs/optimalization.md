@@ -1,9 +1,9 @@
 # Optimalizace Python kódu
 
 Defaultně je Python pro numerické výpočty velmi pomalý. Obecně se tento problém
-řeší použitím knihoven, Numpy, Scipy etc. Bohužel pro svůj projekt se mi
-nepovedlo podařit použít tyto knihovny, poněvadž nepodporovali potřebnou
-modularitu pro zakódování.
+řeší použitím knihoven NumPy, SciPy atd. Bohužel se mi pro svůj projekt
+nepodařilo použít tyto knihovny, poněvadž nepodporovaly potřebnou modularitu pro
+zakódování.
 
 Absence rychlých knihoven je možné řešit pomocí použití optimalizačních
 principů, které převádějí určité "typované" částí kódu a rychlejších jazyků či

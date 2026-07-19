@@ -54,15 +54,15 @@ závislostí, který je následně předán do další části systému, kterou 
 Více o tom, jak Loader funguje, je možné se dočíst v
 [technické dokumentaci pro Loader](loader.md).
 
-Další částí projektu je **Core** část, která zahruje práci s maticí/gridem/2D
-polem, které repreztuje továrnu, a evoluční algoritmus, který je zodpovědný za
+Další částí projektu je **Core** část, která zahrnuje práci s maticí/gridem/2D
+polem, které reprezentuje továrnu, a evoluční algoritmus, který je zodpovědný za
 optimalizaci továrny. Více o tom, jak Core část funguje, je možné se dočíst v
 [technické dokumentaci pro Core](core.md).
 
 Poslední částí projektu je output část, která zahrnuje transformaci interní
 gridové reprezentace továrny do webově přívětivého JSON formátu a jeho následné
-zobrazní v embeded prohlížeci. Více o tom, jak output část funguje, je možné se
-dočíst v [technické dokumentaci pro Output](output.md).
+zobrazení v embedded prohlížeči. Více o tom, jak output část funguje, je možné
+se dočíst v [technické dokumentaci pro Output](output.md).
 
 Mimo příslušné technické dokumentace pro jednotlivé části projektu, je u každé
 třídy a jejich metod přítomné i in code dokumentace.

@@ -47,8 +47,8 @@ poznat, ke kterým ostatním budovám nebo zdrojům byla původně připojená.
 
 V druhé fázi se znovu prochází budovy v topologickém pořadí a pro každý aktuální
 vrchol se hledá nejkratší cesta k jeho potomkům. Problém je lehce rozšířen tím,
-že nehledáme nejkratší cestu mezi dvoumi atomickými body, ale pracuejme s 2
-neprázdnymi množinami atomických bodů, v implementaci tvoří jedna množina bodů
+že nehledáme nejkratší cestu mezi dvěma atomickými body, ale pracujeme se 2
+neprázdnými množinami atomických bodů, v implementaci tvoří jedna množina bodů
 jednu komponentu souvislosti (pokud by tvořila více komponent souvislosti tak by
 i tak algoritmus níže našel korektní cestu).
 
@@ -56,16 +56,16 @@ Z podstaty toho, že jako výstup se využívají **Factorio** assety, tak toto
 přináší určitá další omezení (mnohá z těchto omezení by dávala smysl v "reálném
 světě"). Jedním z hlavních omezení je, že propojovací pásy se nesmí křížit, na
 toto existuje mechanika podzemních pásu, které ale přináší omezení, že pásy před
-vstupem a výstupem podzeního pásu musí minimálně 2 polička určovat stejnou
+vstupem a výstupem podzemního pásu musí minimálně 2 políčka určovat stejnou
 orientaci. Podobné omezení, dávající smysl i v realitě, je že orientaci musíme
 kontrolovat i u napojení na samotné budovy, tedy konkrétně napojení pomocí
 překladačů, poněvadž potřebujeme zajistit, že překladače "ukazují" na korektní
-pozice, nestačí pouze, že sousedí s pásem a budouvou zároveň.
+pozice, nestačí pouze, že sousedí s pásem a budovou zároveň.
 
-Tyto omezení nás nutí používat komplexnější statový prostor než pouze 2D mřížku.
+Tato omezení nás nutí používat komplexnější stavový prostor než pouze 2D mřížku.
 V aktuální implementaci je stavový prostor rozšířen ještě o informaci "streaku"
 tedy kolik pásů/políček v řadě má stejnou orientaci. Tedy stav nám tvoří
-uspořádáná trojice (souřadnice, orientace, streak). Naivní implementace by
+uspořádaná trojice (souřadnice, orientace, streak). Naivní implementace by
 násobně zvětšila stavový prostor, poněvadž by streak mohl nabývat libovolné
 hodnoty, ale my v omezeních potřebujeme streak pouze do hodnoty 2, tedy můžeme
 streak omezit konečnou hodnotou větší než tento treshold.
@@ -83,7 +83,7 @@ Manhattanovská vzdálenost mezi libovolnými body z obou množin).
 S rozšířeným statovým prostorem se nám objevují další problémy. Z pohledu A\*
 algoritmu je možné na jedné cestě vícekrát navštívit jednu souřadnici, ale s
 různou orientací a streakem. Což by nám ale způsobovalo, že na jedné souřadnici
-by se nacházelo více definic pásů. Zároveň si nemůeme "naivně" pamatovat, že
+by se nacházelo více definic pásů. Zároveň si nemůžeme „naivně“ pamatovat, že
 jsme už danou souřadnici navštívili, protože by nám to způsobovalo, že bychom
 mohli danou souřadnici využít s jinou orientací a streakem.
 
@@ -97,7 +97,7 @@ paměťová náročnost.
 
 Tím že, datová struktura, která si má pamatovat předky, velmi rychle roste (z
 globálního hlediska), ale velké části se opakují. Tak mě vedli cesty k využití
-nějaké semi-persistentní či persistnetní datové struktury. Z prvu jsem zkoušel
+nějaké semi-persistentní či persistentní datové struktury. Zprvu jsem zkoušel
 najít nějakou rozumnou implementaci semi-persistentní stromů, ale nenašel jsem
 nic vhodného. Následně jsem narazil na knihovny
 [pyrsistent](https://github.com/tobgu/pyrsistent), která obsahuje implementaci
@@ -120,9 +120,9 @@ cesty.
 
 ## Hill climbing
 
-Hill climbing je jednoduchý evoluční algortmus, který v mé implementaci pracuje
+Hill climbing je jednoduchý evoluční algoritmus, který v mé implementaci pracuje
 s populací o velikosti 1. V každé generaci posune každou pohyblivou budovu o 1
-políčko\* ve všechn 4 směrech znovu napojí na ostatní budovy a vyhodnotí
+políčko\* ve všech 4 směrech, znovu napojí na ostatní budovy a vyhodnotí
 fitness. Pokud je fitness lepší než fitness předchozí generace, tak se tato nová
 generace stává aktuální generací. Pokud ne, si ponecháme jedince z minulé
 generace.
@@ -148,7 +148,7 @@ pouze mutace topologického uspořádání a až poté se přidá mutace posunu 
 Poněvadž posun nás může vést rychle k nějakému lokálnímu optimu, ale větší
 prohledávání na začátku (různé topologické uspořádání) vede k lepším výsledkům.
 
-Tento process opakujeme dokud nenastane situace, kdy se fitness nezlepší po
+Tento proces opakujeme, dokud nenastane situace, kdy se fitness nezlepší po
 určitém počtu generací. Nebo dojde počet generací k nastavenému limitu.
 
 Každá mutace musí rozvíjet abstraktní třídu `Mutation`, která požaduje
@@ -158,11 +158,11 @@ stejné operace.
 
 ## Fitness funkce
 
-V aktuální implementaci se fitness skládá s z několika částí:
+V aktuální implementaci se fitness skládá z několika částí:
 
 Funkce, které se snaží minimalizovat:
 
-- Obsah blochy obdelníku, který obklopuje všechny budovy.
+- Obsah plochy obdélníku, který obklopuje všechny budovy.
 - Počet využitých políček.
 
 Funkce, které se snaží o kompaktnost:
@@ -182,5 +182,5 @@ několik nápadů, které jsou v současné době sepsány v poznámkách.
 
 Každá z fitness aspektů musí rozvíjet abstraktní třídu `FitnessAspect`, která
 požaduje implementaci metody `_evaluate`. Díky tomu je fitness modulární a je
-možné přidávát libovolné množství fitness aspektů. A měnit jejich parametry v
-GUI (obdobně jako mutace).
+možné přidávat libovolné množství fitness aspektů a měnit jejich parametry v GUI
+(obdobně jako mutace).
