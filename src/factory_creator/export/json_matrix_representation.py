@@ -53,7 +53,7 @@ class MatrixJsonConvertor:
                 FactorioConst.FAST_UNDERGROUND_BELT,
                 FactorioConst.INSERTER,
                 FactorioConst.LONG_HANDED_INSERTER,
-            ]:
+            ] and entry.is_transportation():
                 entity = MatrixJsonConvertor._get_entity(
                     entry.name,
                     (i + 1/2 + ox, j + 1/2 + oy),

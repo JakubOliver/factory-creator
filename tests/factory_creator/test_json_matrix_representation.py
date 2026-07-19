@@ -46,3 +46,18 @@ def test_load_entities_exports_belts_sources_and_factories():
     assert entities[1]["recipe"] == "engine-unit"
     assert entities[2]["name"] == FactorioConst.FAST_UNDERGROUND_BELT
     assert entities[2]["type"] == FactorioConst.UNDERGROUND_BELT_INPUT
+
+
+def test_factory_producing_transport_belts_is_exported_as_assembler():
+    grid = Grid()
+    grid.add_factory(
+        (0, 0),
+        FactorioConst.TRANSPORT_BELT,
+        [(0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)],
+    )
+
+    entities = MatrixJsonConvertor._load_entities(grid)["entities"]
+
+    assert len(entities) == 1
+    assert entities[0]["name"] == FactorioConst.ASSEMBLING_MACHINE_2
+    assert entities[0]["recipe"] == FactorioConst.TRANSPORT_BELT
