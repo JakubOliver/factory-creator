@@ -3,6 +3,8 @@ from PySide6.QtCore import QObject, Signal, Slot
 from ..factory_processor import FactoryProcessor
 from ..util.file_util import FileUtil
 from ..util.output import OutputLevel
+from ..evolution.fitness_aspects import FitnessAspect
+from ..evolution.mutations.mutation import Mutation
 
 
 class ComputeRecipeWorker(QObject):
@@ -23,6 +25,8 @@ class ComputeRecipeWorker(QObject):
         simplified_structure: bool,
         evolution_iterations: int,
         evolution_stagnation: int,
+        mutations: list[Mutation],
+        fitness_aspects: list[FitnessAspect],
         output_level: OutputLevel = OutputLevel.MEDIUM,
         evolution_caching: bool = True,
     ) -> None:
@@ -45,6 +49,8 @@ class ComputeRecipeWorker(QObject):
         self.evolution_stagnation = evolution_stagnation
         self.output_level = output_level
         self.evolution_caching = evolution_caching
+        self.mutations = mutations
+        self.fitness_aspects = fitness_aspects
 
     @Slot()
     def run(self) -> None:
@@ -58,14 +64,17 @@ class ComputeRecipeWorker(QObject):
             self.result.emit(FactoryProcessor.process_factory(
                 self.path,
                 self.recipe_type,
-                show_amounts=self.show_amounts,
-                simplified_structure=self.simplified_structure,
-                evolution_iteration=self.evolution_iterations,
-                evolution_stagnation=self.evolution_stagnation,
-                report_method=self.message.emit,
-                output_level=self.output_level,
-                evolution_caching=self.evolution_caching,
+                show_amounts = self.show_amounts,
+                simplified_structure = self.simplified_structure,
+                evolution_iteration = self.evolution_iterations,
+                evolution_stagnation = self.evolution_stagnation,
+                report_method = self.message.emit,
+                output_level = self.output_level,
+                evolution_caching = self.evolution_caching,
+                mutations = self.mutations,
+                fitness_aspects = self.fitness_aspects,
             ))
+            
             self.message.emit("Factory computation finished.")
         except Exception as e:
             self.message.emit("Factory computation failed.")

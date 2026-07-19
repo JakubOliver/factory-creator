@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
 
 import sys
+from pathlib import Path
 
-from src.factory_creator.cli import ArgumentProcessor, CLI
-#TODO: setup pyproject.toml (and use pip install -e .   so it is not needed to write src.factory... but only factory...)
+
+SRC_DIRECTORY = Path(__file__).resolve().parent / "src"
+if str(SRC_DIRECTORY) not in sys.path:
+    # Use the canonical factory_creator package name in both the application
+    # and external plugins.
+    sys.path.insert(0, str(SRC_DIRECTORY))
+
+from factory_creator.cli import ArgumentProcessor, CLI
+
+# TODO: Add pyproject.toml and use ``pip install -e .`` so the package can be
+# imported as ``factory_creator`` without modifying ``sys.path`` here.
 #TODO: add option to set start and end of mutaiton in gui (and CLI)
 
 
@@ -12,7 +22,7 @@ def main(no_browser: bool = False):
     Main function which call the GUI.
     """
     from PySide6.QtWidgets import QApplication
-    from src.factory_creator import MainWindow
+    from factory_creator import MainWindow
 
     app = QApplication(sys.argv)
 

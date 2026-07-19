@@ -1,4 +1,5 @@
 import os
+import json
 
 from PySide6.QtCore import QSettings, QThread, Slot
 from PySide6.QtWidgets import (
@@ -21,10 +22,17 @@ from ..loading import FactoryLoader
 from ..export.url_creator import URLCreator
 from ..util.file_util import FileUtil
 from ..util.output import OutputLevel
+from ..util.reflection import ReflectionError
+from ..evolution.plugin_configuration import (
+    FitnessAspectConfiguration,
+    MutationConfiguration,
+    PluginConfiguration,
+)
 from .compute_recipe_worker import ComputeRecipeWorker
 from .factory_result_widget import FactoryResultWidget
 from .preferences_dialog import PreferencesDialog
 from .recipe_options_widget import RecipeOptionsWidget
+from .evolution_settings_dialogs import FitnessesDialog, MutationsDialog
 
 
 # TODO: Make the GUI more responsive, when making bigger the usefull width is not resizable. 
@@ -40,6 +48,10 @@ class MainWindow(QMainWindow):
     OUTPUT_LEVEL_SETTING = "output/level"
     FACTORY_URL_SETTING = "factory/url"
     EVOLUTION_CACHING_SETTING = "evolution/caching_enabled"
+    MUTATION_PLUGINS_PATH_SETTING = "evolution/mutation_plugins_path"
+    FITNESS_PLUGINS_PATH_SETTING = "evolution/fitness_plugins_path"
+    MUTATION_CONFIG_SETTING = "evolution/mutations"
+    FITNESS_CONFIG_SETTING = "evolution/fitness_aspects"
 
     @staticmethod
     def _normalize_input_path(path: str) -> str:
@@ -73,6 +85,14 @@ class MainWindow(QMainWindow):
             True,
             type=bool,
         )
+        self.mutation_plugins_path = self.settings.value(
+            self.MUTATION_PLUGINS_PATH_SETTING, "", type=str
+        )
+        self.fitness_plugins_path = self.settings.value(
+            self.FITNESS_PLUGINS_PATH_SETTING, "", type=str
+        )
+        self.mutation_configurations = self._load_mutation_configurations()
+        self.fitness_configurations = self._load_fitness_configurations()
 
         self._setup_ui()
         self._connect_signals()
@@ -108,6 +128,10 @@ class MainWindow(QMainWindow):
         settings_menu = self.menuBar().addMenu("&Settings")
         preferences_action = settings_menu.addAction("&Preferences...")
         preferences_action.triggered.connect(self._open_preferences)
+        mutations_action = settings_menu.addAction("&Mutations...")
+        mutations_action.triggered.connect(self._open_mutations)
+        fitnesses_action = settings_menu.addAction("&Fitnesses...")
+        fitnesses_action.triggered.connect(self._open_fitnesses)
 
     def _load_output_level(self) -> OutputLevel:
         saved_level = self.settings.value(
@@ -126,12 +150,16 @@ class MainWindow(QMainWindow):
             self.factory_url,
             self,
             self.evolution_caching,
+            self.mutation_plugins_path,
+            self.fitness_plugins_path,
         )
 
         if dialog.exec() == QDialog.Accepted:
             self.output_level = dialog.output_level()
             self.factory_url = dialog.factory_url()
             self.evolution_caching = dialog.evolution_caching()
+            self.mutation_plugins_path = dialog.mutation_plugins_path()
+            self.fitness_plugins_path = dialog.fitness_plugins_path()
 
             self.settings.setValue(
                 self.OUTPUT_LEVEL_SETTING,
@@ -147,6 +175,86 @@ class MainWindow(QMainWindow):
                 self.EVOLUTION_CACHING_SETTING,
                 self.evolution_caching,
             )
+            self.settings.setValue(
+                self.MUTATION_PLUGINS_PATH_SETTING, self.mutation_plugins_path
+            )
+            self.settings.setValue(
+                self.FITNESS_PLUGINS_PATH_SETTING, self.fitness_plugins_path
+            )
+
+    def _open_mutations(self) -> None:
+        try:
+            discovered = PluginConfiguration.discover_mutations(
+                self.mutation_plugins_path
+            )
+        except ReflectionError as error:
+            self._show_error(str(error))
+            return
+        dialog = MutationsDialog(discovered, self.mutation_configurations, self)
+        if dialog.exec() == QDialog.Accepted:
+            self.mutation_configurations = dialog.configurations()
+            self._save_configurations(
+                self.MUTATION_CONFIG_SETTING, self.mutation_configurations
+            )
+
+    def _open_fitnesses(self) -> None:
+        try:
+            discovered = PluginConfiguration.discover_fitness_aspects(
+                self.fitness_plugins_path
+            )
+        except ReflectionError as error:
+            self._show_error(str(error))
+            return
+        dialog = FitnessesDialog(discovered, self.fitness_configurations, self)
+        if dialog.exec() == QDialog.Accepted:
+            self.fitness_configurations = dialog.configurations()
+            self._save_configurations(
+                self.FITNESS_CONFIG_SETTING, self.fitness_configurations
+            )
+
+    def _load_mutation_configurations(self) -> dict[str, MutationConfiguration]:
+        raw = self._load_configuration_data(self.MUTATION_CONFIG_SETTING)
+        return {
+            identifier: MutationConfiguration(
+                identifier,
+                bool(values.get("enabled", True)),
+                int(values.get("start_generation", 0)),
+                values.get("end_generation", float("inf")),
+            )
+            for identifier, values in raw.items()
+        }
+
+    def _load_fitness_configurations(self) -> dict[str, FitnessAspectConfiguration]:
+        raw = self._load_configuration_data(self.FITNESS_CONFIG_SETTING)
+        return {
+            identifier: FitnessAspectConfiguration(
+                identifier,
+                bool(values.get("enabled", True)),
+                float(values.get("weight", 1)),
+            )
+            for identifier, values in raw.items()
+        }
+
+    def _load_configuration_data(self, key: str) -> dict:
+        value = self.settings.value(key, "", type=str)
+        if not value:
+            return {}
+        try:
+            loaded = json.loads(value)
+            return loaded if isinstance(loaded, dict) else {}
+        except (TypeError, ValueError):
+            return {}
+
+    def _save_configurations(self, key: str, configurations: dict) -> None:
+        self.settings.setValue(
+            key,
+            json.dumps(
+                {
+                    identifier: vars(config)
+                    for identifier, config in configurations.items()
+                }
+            ),
+        )
 
     def _setup_file_layout(self) -> None:
         """
@@ -283,6 +391,21 @@ class MainWindow(QMainWindow):
         path = self._normalize_input_path(self.input_path.text())
         recipe_type = self.type_input.currentText()
 
+        try:
+            mutations = PluginConfiguration.create_mutations(
+                PluginConfiguration.discover_mutations(self.mutation_plugins_path),
+                self.mutation_configurations,
+            )
+            fitness_aspects = PluginConfiguration.create_fitness_aspects(
+                PluginConfiguration.discover_fitness_aspects(
+                    self.fitness_plugins_path
+                ),
+                self.fitness_configurations,
+            )
+        except ReflectionError as error:
+            self._show_error(str(error))
+            return
+
         self.type_input_compute_button.setEnabled(False)
         self.factory_result_widget.set_controls_enabled(False)
         self.show_graph_after_compute = self.options_widget.show_graph()
@@ -296,6 +419,8 @@ class MainWindow(QMainWindow):
             self.options_widget.simplified_structure(),
             self.options_widget.evolution_iterations(),
             self.options_widget.evolution_stagnation(),
+            mutations,
+            fitness_aspects,
             self.output_level,
             self.evolution_caching,
         )
