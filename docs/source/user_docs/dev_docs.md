@@ -7,8 +7,11 @@ documentation generation, and mind map conversion.
 
 Install the development requirements with:
 
+Optional graph rendering and development tools can be installed with extras:
+
 ```bash
-pip install -r requirements_dev.txt
+python -m pip install -e ".[graph]"
+python -m pip install -e ".[dev]"
 ```
 
 This installs the runtime dependencies together with packages used for:
