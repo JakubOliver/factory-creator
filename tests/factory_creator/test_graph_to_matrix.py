@@ -422,6 +422,76 @@ def test_a_star_does_not_enter_target_from_vertical_underground_endpoint():
     )
 
 
+def test_a_star_does_not_start_underground_belt_at_source_inserter(monkeypatch):
+    # Keep this invariant independent of the streak threshold. Even when
+    # underground movement is otherwise immediately available, the first tile
+    # after the source must remain transformable into an inserter.
+    monkeypatch.setattr(GraphToMatrix, "A_STAR_STREAK_THRESHOLD", 0)
+
+    grid = Grid()
+    grid.add_source((0, 2), "obstacle")
+
+    target_node, _ = GraphToMatrix.a_star(
+        [(0, 0)],
+        lambda cord: cord == (0, 4),
+        [(0, 4)],
+        grid,
+    )
+
+    path = []
+    node = target_node
+    while node is not None:
+        path.append(node)
+        node = node.predecessor
+    path.reverse()
+
+    first_path_tile = path[1]
+    assert not path[2].is_underground_belt_end()
+    assert first_path_tile.is_after_start()
+
+
+def test_a_star_endpoint_validation_checks_both_sides_of_both_inserters():
+    start = AStartNode((0, 0), 0, 0, None, 0, None, path_set=pset(), is_start=True)
+    source_inserter = AStartNode((0, 1), 1, 0, 0, 1, start, path_set=start.path_set)
+    underground_output = AStartNode(
+        (0, 4), 4, 0, 0, 2, source_inserter, path_set=source_inserter.path_set
+    )
+    target_inserter = AStartNode(
+        (0, 5), 5, 0, 0, 3, underground_output, path_set=underground_output.path_set
+    )
+    target = AStartNode(
+        (0, 6), 6, 0, 0, 4, target_inserter, path_set=target_inserter.path_set
+    )
+
+    assert not target.has_transformable_path_endpoints(
+        {(0, 0)},
+        lambda cord: cord == (0, 6),
+    )
+
+
+def test_endpoint_validation_uses_factory_boundary_not_end_of_a_star_path():
+    start = AStartNode((0, 0), 0, 0, None, 0, None, path_set=pset(), is_start=True)
+    source_inserter = AStartNode((0, 1), 1, 0, 0, 1, start, path_set=start.path_set)
+    surface_belt = AStartNode(
+        (0, 2), 2, 0, 0, 2, source_inserter, path_set=source_inserter.path_set
+    )
+    underground_target_endpoint = AStartNode(
+        (0, 5), 5, 0, 0, 3, surface_belt, path_set=surface_belt.path_set
+    )
+    factory_edge = AStartNode(
+        (0, 6), 6, 0, 0, 4, underground_target_endpoint,
+        path_set=underground_target_endpoint.path_set,
+    )
+    factory_interior = AStartNode(
+        (0, 7), 7, 0, 0, 5, factory_edge, path_set=factory_edge.path_set
+    )
+
+    assert not factory_interior.has_transformable_path_endpoints(
+        {(0, 0)},
+        lambda cord: cord in {(0, 6), (0, 7)},
+    )
+
+
 def test_a_star_cannot_jump_over_foreign_path_directly_into_target():
     start = (0, 0)
     target = (0, 20)

@@ -58,6 +58,60 @@ class AStartNode:
 
         return self.predecessor.reconstruct_path() + [self.cord]
 
+    # TODO: rewrite
+    def has_transformable_path_endpoints(self, from_cords, is_in_successor):
+        path = []
+        node = self
+        while node is not None:
+            path.append(node)
+            node = node.predecessor
+        path.reverse()
+
+        # A usable belt connection has a source, at least one belt tile, and a
+        # destination. The first and last belt tiles are later transformed into
+        # inserters, so neither of their adjacent path segments may be an
+        # underground jump.
+        if len(path) < 3:
+            return False
+
+        from_cord_set = set(from_cords)
+
+        source_inserter_index = next(
+            (index for index, node in enumerate(path) if node.cord not in from_cord_set),
+            None,
+        )
+
+        target_inserter_index = next(
+            (
+                index
+                for index in range(len(path) - 1, -1, -1)
+                if not is_in_successor(path[index].cord)
+            ),
+            None,
+        )
+
+        if (
+            source_inserter_index is None
+            or target_inserter_index is None
+            or source_inserter_index == 0
+            or target_inserter_index >= len(path) - 1
+        ):
+            return False
+
+        checked_edges = {
+            (source_inserter_index - 1, source_inserter_index),
+            (source_inserter_index, source_inserter_index + 1),
+            (target_inserter_index - 1, target_inserter_index),
+            (target_inserter_index, target_inserter_index + 1),
+        }
+
+        return all(
+            abs(path[right].cord[0] - path[left].cord[0])
+            + abs(path[right].cord[1] - path[left].cord[1])
+            == 1
+            for left, right in checked_edges
+        )
+
     def __lt__(self, other):
         if self.comp != other.comp:
             return self.comp < other.comp
@@ -701,14 +755,13 @@ class GraphToMatrix:
 
             # Solves the problem that we at the place when we change to inserter was underground belt end,
             # so now the connection does not exists
-            predecessor_can_be_inserter = (
-                a_star_node.predecessor is not None
-                and not a_star_node.predecessor.is_underground_belt_end()
-            )
             if (
                 is_in_successor(a_star_node.cord)
                 and a_star_node.streak > GraphToMatrix.A_STAR_STREAK_THRESHOLD
-                and predecessor_can_be_inserter
+                and a_star_node.has_transformable_path_endpoints(
+                    from_cords,
+                    is_in_successor,
+                )
             ):
                 active_node = a_star_node
 
@@ -719,6 +772,12 @@ class GraphToMatrix:
             #  we give the points more or less points
             for multiplier in range(1, Grid.UNDERGROUND_MOVE_LENGTH):
                 if a_star_node.streak < GraphToMatrix.A_STAR_STREAK_THRESHOLD and multiplier > 1:
+                    break
+
+                # The first path tile after the source is transformed into an
+                # inserter during reconstruction. It therefore cannot also be
+                # the input endpoint of an underground belt.
+                if a_star_node.is_after_start() and multiplier > 1:
                     break
 
                 # Consecutive underground sections may have adjacent output
