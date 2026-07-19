@@ -122,9 +122,10 @@ cesty.
 
 Hill climbing je jednoduchý evoluční algortmus, který v mé implementaci pracuje
 s populací o velikosti 1. V každé generaci posune každou pohyblivou budovu o 1
-políčko ve všechn 4 směrech znovu napojí na ostatní budovy a vyhodnotí fitness.
-Pokud je fitness lepší než fitness předchozí generace, tak se tato nová generace
-stává aktuální generací. Pokud ne, si ponecháme jedince z minulé generace.
+políčko\* ve všechn 4 směrech znovu napojí na ostatní budovy a vyhodnotí
+fitness. Pokud je fitness lepší než fitness předchozí generace, tak se tato nová
+generace stává aktuální generací. Pokud ne, si ponecháme jedince z minulé
+generace.
 
 Při posunu jedné budovy se nejprve odstraní její původní propojovací pásy, ale
 zůstane zachována informace o tom, se kterými sousedními prvky byla propojena a
@@ -133,8 +134,27 @@ propojení znovu sestaví stejným algoritmem pro hledání cest jako při prvot
 konstrukci gridu. Evoluce tedy nemění receptovou strukturu továrny, ale pouze
 hledá jiné geometrické rozmístění stejných prvků a jejich spojů.
 
+\* V aktuální verzi jsou mutace modulární, tedy hill climbing může být rozšířen
+o libovolné množství mutací. Jednou takovou mutací, která je už implementována
+je transformace gridu podle jiného topologického uspořádání. Poněvadž
+topologické uspořádání není jednoznačné a určitá topologická uspořádání ná
+dávají "lepší" továrny. U velkých grafů není možné zkoušet všechny možnosti,
+proto tato mutace vytvoří v každé generaci pevné množství náhodných
+topologických uspořádání.
+
+Technická poznámka v aktuální implementaci, kdy jsou pouze 2 výše zmíněné
+mutace, vede k mnohem lepším výsledkům, když prvních několik generací se používá
+pouze mutace topologického uspořádání a až poté se přidá mutace posunu budovy.
+Poněvadž posun nás může vést rychle k nějakému lokálnímu optimu, ale větší
+prohledávání na začátku (různé topologické uspořádání) vede k lepším výsledkům.
+
 Tento process opakujeme dokud nenastane situace, kdy se fitness nezlepší po
 určitém počtu generací. Nebo dojde počet generací k nastavenému limitu.
+
+Každá mutace musí rozvíjet abstraktní třídu `Mutation`, která požaduje
+implementaci metody `_generate` a cachování. A tedy díky cachování dochází k
+zrychlení a zefektivnění evolučního algoritmu, poněvadž se opakovaně nepočítají
+stejné operace.
 
 ## Fitness funkce
 
@@ -159,3 +179,8 @@ Kontrolní funkce, které penalizují:
 
 Právě tato část s evolučními algoritmy bude nejvíce rozvíjena existuje už
 několik nápadů, které jsou v současné době sepsány v poznámkách.
+
+Každá z fitness aspektů musí rozvíjet abstraktní třídu `FitnessAspect`, která
+požaduje implementaci metody `_evaluate`. Díky tomu je fitness modulární a je
+možné přidávát libovolné množství fitness aspektů. A měnit jejich parametry v
+GUI (obdobně jako mutace).
