@@ -10,6 +10,15 @@ stages:
 
 pytest:
   stage: test
+  rules:
+    - changes:
+        - src/**/*
+        - tests/**/*
+        - data/**/*
+        - main.py
+        - requirements*.txt
+        - .gitlab-ci.yml
+    - when: never
   script:
     - python -m pytest --junitxml=report.xml
   artifacts:
