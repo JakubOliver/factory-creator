@@ -17,6 +17,8 @@ from ..util.cancellation import (
     raise_if_cancelled,
 )
 
+import cython
+
 
 class InvalidTopologicalOrderingError(ValueError):
     """Raised when an ordering does not describe the supplied graph."""
@@ -853,7 +855,11 @@ class GraphToMatrix:
         return min(GraphToMatrix.get_manhattan_metric(from_cord, to_cords) for from_cord in from_cords)
 
     @staticmethod
-    def get_manhattan_metric(from_cord, to_cords):
+    @cython.ccall
+    def get_manhattan_metric(
+        from_cord: tuple[int, int], 
+        to_cords: list[tuple[int, int]]
+    ) -> cython.Py_ssize_t:
         """
         Returns the minimal manhattan distance between coordinate and the
         coordinates of the final elements.
@@ -863,8 +869,40 @@ class GraphToMatrix:
         :return: The minimal manhattan distance between coordinate and
             the coordinates of the final elements.
         """
+        fx: cython.Py_ssize_t = from_cord[0]
+        fy: cython.Py_ssize_t = from_cord[1]
 
-        return min((sum(abs(x - y) for x, y in zip(from_cord, to_cord)) for to_cord in to_cords))
+        tx: cython.Py_ssize_t
+        ty: cython.Py_ssize_t
+        dx: cython.Py_ssize_t
+        dy: cython.Py_ssize_t
+
+        distance: cython.Py_ssize_t
+        minimum: cython.Py_ssize_t = 1 << 30
+
+        to_cord: tuple
+
+        for to_cord in to_cords:
+            tx = to_cord[0]
+            ty = to_cord[1]
+
+            dx = fx - tx
+            dy = fy - ty
+
+            if dx < 0:
+                dx = -dx
+
+            if dy < 0:
+                dy = -dy
+
+            distance = dx + dy
+
+            if distance < minimum:
+                minimum = distance
+
+        return minimum
+
+        #return min((sum(abs(x - y) for x, y in zip(from_cord, to_cord)) for to_cord in to_cords))
 
     @staticmethod
     def get_moves(a_star_node: AStartNode, visited_matrix, multiplier = 1, was_visited = False, return_enumeration = False):

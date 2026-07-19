@@ -1,6 +1,7 @@
 .idea
 *.xmind
 .venv/
+.venv-pypy
 docs/build
 
 testing
