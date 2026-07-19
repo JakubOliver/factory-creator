@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Hashable, Sequence
 
 from .mutations.mutation import Mutation
-from .fitness import ConnectionPair, Fitness
+from .fitness import Fitness
+from .fitness_aspects import ConnectionPair, FitnessContext
 from ..grid.grid import Grid
 
 
@@ -29,20 +30,16 @@ class EvolutionAlgorithm(ABC):
         self,
         grid: Grid,
         cache_key: Hashable | None = None,
-        connection_pair: Sequence[ConnectionPair] = (),
+        connection_pairs: Sequence[ConnectionPair] = (),
     ) -> int | float:
+        context = FitnessContext(grid, connection_pairs=connection_pairs)
+        
         if not self.caching_enabled or cache_key is None:
-            return self.fitness.evaluate(
-                grid,
-                connection_pair=connection_pair,
-            )
+            return self.fitness.evaluate(context)
 
         if cache_key not in self._fitness_cache:
-            self._fitness_cache[cache_key] = self.fitness.evaluate(
-                grid,
-                connection_pair=connection_pair,
-            )
-            
+            self._fitness_cache[cache_key] = self.fitness.evaluate(context)
+
         return self._fitness_cache[cache_key]
 
     @abstractmethod

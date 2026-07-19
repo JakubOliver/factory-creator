@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QSlider,
+    QPushButton,
+    QFileDialog,
     QVBoxLayout,
 )
 
@@ -21,6 +23,8 @@ class PreferencesDialog(QDialog):
         factory_url: str = URLCreator.BASE_URL,
         parent=None,
         evolution_caching: bool = True,
+        mutation_plugins_path: str = "",
+        fitness_plugins_path: str = "",
     ):
         super().__init__(parent)
         self.setWindowTitle("Preferences")
@@ -63,6 +67,18 @@ class PreferencesDialog(QDialog):
         )
         layout.addWidget(self.evolution_caching_checkbox)
 
+        self.mutation_plugins_input = self._add_directory_input(
+            layout, "User mutations directory", mutation_plugins_path
+        )
+        self.fitness_plugins_input = self._add_directory_input(
+            layout, "User fitness aspects directory", fitness_plugins_path
+        )
+        warning = QLabel(
+            "Plugin files will be executed as Python code without any sandboxing. Only use trusted plugins."
+        )
+        warning.setWordWrap(True)
+        layout.addWidget(warning)
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
@@ -79,6 +95,28 @@ class PreferencesDialog(QDialog):
 
     def evolution_caching(self) -> bool:
         return self.evolution_caching_checkbox.isChecked()
+
+    def mutation_plugins_path(self) -> str:
+        return self.mutation_plugins_input.text().strip()
+
+    def fitness_plugins_path(self) -> str:
+        return self.fitness_plugins_input.text().strip()
+
+    def _add_directory_input(self, layout, label: str, value: str) -> QLineEdit:
+        layout.addWidget(QLabel(label))
+        row = QHBoxLayout()
+        path_input = QLineEdit(value)
+        browse = QPushButton("Browse...")
+        browse.clicked.connect(lambda: self._choose_directory(path_input))
+        row.addWidget(path_input)
+        row.addWidget(browse)
+        layout.addLayout(row)
+        return path_input
+
+    def _choose_directory(self, path_input: QLineEdit) -> None:
+        directory = QFileDialog.getExistingDirectory(self, "Select plugin directory")
+        if directory:
+            path_input.setText(directory)
 
     def _update_selected_level(self, value):
         level = OutputLevel(value)

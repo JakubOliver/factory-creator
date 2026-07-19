@@ -1,6 +1,7 @@
 from ..loading import FactoryLoader
 from ..factory_processor import FactoryProcessor
 from ..export.url_creator import URLCreator
+from ..evolution.plugin_configuration import PluginConfiguration
 
 
 class CLI:
@@ -14,7 +15,13 @@ class CLI:
             args.building,
             evolution_iteration=args.iteration,
             evolution_stagnation=args.stagnation,
-            create_presentation=False
+            create_presentation=False,
+            mutations=PluginConfiguration.create_mutations(
+                PluginConfiguration.discover_mutations()
+            ),
+            fitness_aspects=PluginConfiguration.create_fitness_aspects(
+                PluginConfiguration.discover_fitness_aspects()
+            ),
         )
 
         print(URLCreator.create_factory_url_link(result.factory_seed))

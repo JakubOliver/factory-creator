@@ -1,6 +1,5 @@
 from collections.abc import Callable, Iterator
 
-from ..fitness import ConnectionPair
 from .mutation import Mutation, MutationCandidate
 from ...graph_processing.graph_to_matrix import GraphToMatrix
 from ...grid.grid import Grid

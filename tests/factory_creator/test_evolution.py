@@ -5,15 +5,42 @@ from factory_creator.evolution.mutations.move_building_mutation import MoveBuild
 from factory_creator.evolution.mutations.move_subgraph_mutation import MoveSubgraphMutation
 from factory_creator.evolution.mutations.mutation import MutationCandidate
 from factory_creator.evolution.fitness import Fitness
+from factory_creator.evolution.fitness_aspects import (
+    AreaAspect,
+    ConnectionValidityAspect,
+    DistanceFromCenterAspect,
+    FitnessContext,
+    InserterCostAspect,
+    PointingToCenterAspect,
+    UsedBlockAspect,
+)
 from factory_creator.grid import Grid
 from factory_creator.evolution.hill_climbing import HillClimbing
 from factory_creator.util.factorio_const import FactorioConst
 
 
+def create_fitness():
+    return Fitness([
+        AreaAspect(),
+        UsedBlockAspect(),
+        PointingToCenterAspect(),
+        DistanceFromCenterAspect(),
+        InserterCostAspect(),
+        ConnectionValidityAspect(),
+    ])
+
+
+def evolution_plugins():
+    return (
+        [MoveBuildingMutation(), MoveSubgraphMutation()],
+        create_fitness().aspects,
+    )
+
+
 def create_hill_climbing():
     return HillClimbing(
         mutations=[MoveBuildingMutation(show_failure_reasons=True)],
-        fitness=Fitness(),
+        fitness=create_fitness(),
         generation_print=False,
     )
 
@@ -34,14 +61,12 @@ def test_fitness_connection_checks_all_expected_paths():
     grid.add_transportation((0, 1), FactorioConst.TRANSPORT_BELT, 0, (0, 0), (0, 2))
     belt_id = grid[(0, 1)].get_id_text()
 
-    fitness = Fitness()
+    fitness = create_fitness()
     assert fitness.evaluate(
-        grid,
-        connection_pair=[([(0, 0)], [(0, 2)], belt_id)],
+        FitnessContext(grid, connection_pairs=[([(0, 0)], [(0, 2)], belt_id)])
     ) > -float("inf")
     assert fitness.evaluate(
-        grid,
-        connection_pair=[([(0, 2)], [(0, 0)], "missing")],
+        FitnessContext(grid, connection_pairs=[([(0, 2)], [(0, 0)], "missing")])
     ) == -float("inf")
 
 
@@ -50,11 +75,13 @@ def test_fitness_penalizes_missing_connections():
     grid.add_source((0, 0), "a")
     grid.add_source((0, 2), "b")
 
-    fitness = Fitness()
-    assert fitness.evaluate(grid, test_connection=False) > -float("inf")
+    fitness = create_fitness()
+    assert fitness.evaluate(FitnessContext(grid, test_connection=False)) > -float("inf")
     assert fitness.evaluate(
-        grid,
-        connection_pair=[([(0, 0)], [(0, 2)], "missing")],
+        FitnessContext(
+            grid,
+            connection_pairs=[([(0, 0)], [(0, 2)], "missing")],
+        )
     ) == -float("inf")
 
 
@@ -68,12 +95,15 @@ def test_fitness_penalizes_long_handed_inserter_more_than_normal_inserter():
         )
         return grid
 
-    fitness = Fitness()
+    fitness = create_fitness()
     normal_fitness = fitness.evaluate(
-        grid_with(FactorioConst.INSERTER), test_connection=False
+        FitnessContext(grid_with(FactorioConst.INSERTER), test_connection=False)
     )
     long_fitness = fitness.evaluate(
-        grid_with(FactorioConst.LONG_HANDED_INSERTER), test_connection=False
+        FitnessContext(
+            grid_with(FactorioConst.LONG_HANDED_INSERTER),
+            test_connection=False,
+        )
     )
 
     assert long_fitness == normal_fitness - 2
@@ -93,7 +123,15 @@ def test_evolution_delegates_to_hill_climbing(monkeypatch):
     # monkeypatch temporarily swaps hill_climb for a fake function,
     # so we can verify that evol only forwards the call and returns the same value.
 
-    assert Evolution.evolve(grid, iteration=3, stagnation_break=2, report_method=lambda _: None) is returned
+    mutations, aspects = evolution_plugins()
+    assert Evolution.evolve(
+        grid,
+        mutations,
+        aspects,
+        iteration=3,
+        stagnation_break=2,
+        report_method=lambda _: None,
+    ) is returned
     assert calls["args"][1] is grid
     assert calls["kwargs"]["iteration"] == 3
     assert calls["kwargs"]["stagnation_break"] == 2
@@ -111,7 +149,7 @@ def test_hill_climbing_passes_grid_to_each_mutation():
 
     supervisor = HillClimbing(
         [EmptyMutation(), EmptyMutation()],
-        Fitness(),
+        create_fitness(),
         generation_print=False,
     )
 
@@ -126,9 +164,9 @@ def test_fitness_cache_reuses_result_for_same_key():
     fitness = 41
 
     class CountingFitness:
-        def evaluate(self, evaluated_grid, **_):
+        def evaluate(self, context):
             nonlocal fitness
-            evaluated_grids.append(evaluated_grid)
+            evaluated_grids.append(context.grid)
             fitness += 1
             return fitness
 
@@ -146,7 +184,7 @@ def test_fitness_cache_can_be_disabled():
     evaluation_count = 0
 
     class CountingFitness:
-        def evaluate(self, evaluated_grid, **kwargs):
+        def evaluate(self, context):
             nonlocal evaluation_count
             evaluation_count += 1
             return evaluation_count
@@ -168,7 +206,7 @@ def test_fitness_without_cache_key_is_not_cached():
     evaluation_count = 0
 
     class CountingFitness:
-        def evaluate(self, evaluated_grid, **_):
+        def evaluate(self, context):
             nonlocal evaluation_count
             evaluation_count += 1
             return evaluation_count
@@ -185,7 +223,7 @@ def test_fitness_cache_is_reset_between_evolve_runs():
     evaluation_count = 0
 
     class CountingFitness:
-        def evaluate(self, evaluated_grid, **_):
+        def evaluate(self, context):
             nonlocal evaluation_count
             evaluation_count += 1
             return evaluation_count
@@ -211,8 +249,12 @@ def test_supervisor_selects_best_candidate():
             yield MutationCandidate(better)
 
     class StubFitness:
-        def evaluate(self, grid, **kwargs):
-            return {id(original): 0, id(worse): 1, id(better): 2}[id(grid)]
+        def evaluate(self, context):
+            return {
+                id(original): 0,
+                id(worse): 1,
+                id(better): 2,
+            }[id(context.grid)]
 
     supervisor = HillClimbing(
         [CandidateMutation()],
@@ -258,9 +300,11 @@ def test_move_subgraph_mutation_rebuilds_grid_and_connections():
     assert len(candidates) == MoveSubgraphMutation.HOW_MANY_GENERATE_IN_ONE_GENERATION
     assert all(isinstance(candidate, MutationCandidate) for candidate in candidates)
     assert all(
-        Fitness().evaluate(
-            candidate.grid,
-            connection_pair=candidate.connection_pairs,
+        create_fitness().evaluate(
+            FitnessContext(
+                candidate.grid,
+                connection_pairs=candidate.connection_pairs,
+            )
         ) > -float("inf")
         for candidate in candidates
     )

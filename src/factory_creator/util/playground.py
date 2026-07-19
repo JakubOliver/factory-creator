@@ -12,6 +12,7 @@ if __name__ == "__main__":
     from src.factory_creator.export.url_creator import URLCreator
     from src.factory_creator.grid import Grid
     from src.factory_creator.util.factorio_const import FactorioConst
+    from src.factory_creator.evolution.plugin_configuration import PluginConfiguration
 
     def create_grid() -> Grid:
         """Create the grid used by this debugging run.
@@ -35,7 +36,15 @@ if __name__ == "__main__":
         return grid
 
     grid = create_grid()
-    evolved_grid = Evolution.evolve(grid)
+    evolved_grid = Evolution.evolve(
+        grid,
+        PluginConfiguration.create_mutations(
+            PluginConfiguration.discover_mutations()
+        ),
+        PluginConfiguration.create_fitness_aspects(
+            PluginConfiguration.discover_fitness_aspects()
+        ),
+    )
 
     Path("output").mkdir(parents=True, exist_ok=True)
     url = URLCreator.create_factory_url_from_grid(evolved_grid)
