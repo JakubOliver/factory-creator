@@ -5,6 +5,8 @@ from .graph_processing import GraphToMatrix
 from .loading import FactoryLoader
 from .export.json_matrix_representation import MatrixJsonConvertor, BluePrintRepresentation
 from .util.output import OutputLevel, OutputReporter
+from .evolution.fitness_aspects import FitnessAspect
+from .evolution.mutations.mutation import Mutation
 
 
 @dataclass
@@ -19,6 +21,8 @@ class FactoryProcessor:
     def process_factory(
         path,
         recipe_type,
+        mutations: list[Mutation],
+        fitness_aspects: list[FitnessAspect],
         show_amounts=True,
         simplified_structure=False,
         evolution_iteration=float("inf"),
@@ -26,7 +30,7 @@ class FactoryProcessor:
         create_presentation=False,
         report_method=print,
         output_level: OutputLevel = OutputLevel.MEDIUM,
-        evolution_caching = True,
+        evolution_caching = True,        
     ) -> FactoryProcessingResult | None:
         reporter = OutputReporter(report_method, output_level)
         factories = FactoryLoader.load(path)
@@ -49,6 +53,8 @@ class FactoryProcessor:
 
             after_evolution = Evolution.evolve(
                 matrix,
+                mutations,
+                fitness_aspects,
                 iteration=evolution_iteration,
                 stagnation_break=evolution_stagnation,
                 create_presentation=create_presentation,
