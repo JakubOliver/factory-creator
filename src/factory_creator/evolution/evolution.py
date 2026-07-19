@@ -1,8 +1,11 @@
 from collections.abc import Callable
 
+from collections.abc import Sequence
+
 from .fitness import Fitness
+from .fitness_aspects import FitnessAspect
 from .hill_climbing import HillClimbing
-from .mutations import *
+from .mutations.mutation import Mutation
 from ..grid.grid import Grid
 from ..util.output import OutputLevel, OutputReporter
 
@@ -13,6 +16,8 @@ class Evolution:
     @staticmethod
     def evolve(
         grid: Grid,
+        mutations: Sequence[Mutation],
+        fitness_aspects: Sequence[FitnessAspect],
         iteration: int | float = float("inf"),
         stagnation_break: int = 10,
         create_presentation: bool = False,
@@ -24,16 +29,10 @@ class Evolution:
         # TODO: it makes sense to use reflection for fitness and also for mutations etc. so in the gui can user select which want to use or add own.
         reporter = OutputReporter(report_method, output_level)
         reporter.low("Evolution started.")
+        
         algorithm = HillClimbing(
-            mutations=[
-                MoveBuildingMutation(
-                    show_failure_reasons=True,
-                    #start_generation=iteration // 5
-                    start_generation= 10
-                ),
-                MoveSubgraphMutation(show_failure_reasons=True),
-            ],
-            fitness=Fitness(),
+            mutations=list(mutations),
+            fitness=Fitness(fitness_aspects),
             generation_print=True,
             caching_enabled=caching_enabled,
         )

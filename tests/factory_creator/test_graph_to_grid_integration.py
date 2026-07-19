@@ -6,9 +6,30 @@ import pytest
 from factory_creator.factory import DependencyTreeNode, Factory
 from factory_creator.evolution import Evolution
 from factory_creator.evolution.fitness import Fitness
+from factory_creator.evolution.fitness_aspects import (
+    AreaAspect,
+    ConnectionValidityAspect,
+    DistanceFromCenterAspect,
+    FitnessContext,
+    InserterCostAspect,
+    PointingToCenterAspect,
+    UsedBlockAspect,
+)
+from factory_creator.evolution.mutations import MoveBuildingMutation, MoveSubgraphMutation
 from factory_creator.graph_processing import GraphToMatrix
 from factory_creator.grid import Grid
 from factory_creator.grid.grid_entry import GridEntryTransportationId
+
+
+def create_fitness_aspects():
+    return [
+        AreaAspect(),
+        UsedBlockAspect(),
+        PointingToCenterAspect(),
+        DistanceFromCenterAspect(),
+        InserterCostAspect(),
+        ConnectionValidityAspect(),
+    ]
 
 
 def _factory_node(name, layer):
@@ -132,6 +153,8 @@ def test_grid_created_from_graph_can_run_one_evolution_step(edges, factory_names
 
     evolved_grid = Evolution.evolve(
         grid,
+        [MoveBuildingMutation(), MoveSubgraphMutation()],
+        create_fitness_aspects(),
         iteration=1,
         stagnation_break=1,
         report_method=lambda _: None,
@@ -139,4 +162,8 @@ def test_grid_created_from_graph_can_run_one_evolution_step(edges, factory_names
 
     assert isinstance(evolved_grid, Grid)
     assert evolved_grid.get_number_of_factories() == len(graph.nodes)
-    assert math.isfinite(Fitness().evaluate(evolved_grid, test_connection=False))
+    assert math.isfinite(
+        Fitness(create_fitness_aspects()).evaluate(
+            FitnessContext(evolved_grid, test_connection=False)
+        )
+    )

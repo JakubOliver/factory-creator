@@ -1,7 +1,7 @@
 import copy
 from collections.abc import Callable, Iterator
 
-from ..fitness import ConnectionPair
+from ..fitness_aspects import ConnectionPair
 from .mutation import Mutation, MutationCandidate
 from ...factory.factory import FactoryUtil
 from ...graph_processing.graph_to_matrix import GraphToMatrix

@@ -73,7 +73,7 @@ class HillClimbing(EvolutionAlgorithm):
                     cache_key=(type(mutation), candidate.cache_key)
                     if candidate.cache_key is not None
                     else None,
-                    connection_pair=candidate.connection_pairs,
+                    connection_pairs=candidate.connection_pairs,
                 )
                 if candidate_fitness > best_fitness:
                     best_grid = candidate.grid

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 
-from ..fitness import ConnectionPair
+from ..fitness_aspects import ConnectionPair
 from ...grid.grid import Grid
 
 
