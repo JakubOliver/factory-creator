@@ -6,23 +6,31 @@ generate an optimized production layout or graph.
 
 ## Installation
 
-Install the runtime dependencies:
+Create and activate a virtual environment, then install the project in editable
+mode:
 
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
 ```
 
-or install with optional graph rendering:
+Optional graph rendering and development tools can be installed with extras:
 
 ```bash
-pip install -r requirements_with_graph.txt
+python -m pip install -e ".[graph]"
+python -m pip install -e ".[dev]"
 ```
 
-For development, testing, and documentation generation, install the extended
-set:
+## Usage
 
 ```bash
-pip install -r requirements_dev.txt
+factory-creator
+factory-creator --cli --input data/recipe.json --building <recipe-name>
+# Alternatively:
+python -m factory_creator
+# Or
+./main.py
 ```
 
 ## Documentation

@@ -6,7 +6,7 @@ které reprezentuje továrnu.
 
 ## Převod na grid
 
-Jak už bylo zmíněno v [Loader modulu](loader.html), recepty se nepřevádějí přímo
+Jak už bylo zmíněno v [Loader modulu](loader.md), recepty se nepřevádějí přímo
 do gridu, ale nejprve se převádějí na dependency tree, který je následně
 převeden na grid.
 

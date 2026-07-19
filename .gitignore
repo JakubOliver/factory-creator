@@ -8,9 +8,15 @@ output
 /*.png
 /*.svg
 
-#Python cache
-__pycache__
-.pytest_cache
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+build/
+dist/
+*.egg-info/
 
 .coverage
 devbox.json

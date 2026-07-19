@@ -2,7 +2,7 @@ image: python:3.14
 
 default:
   before_script:
-    - python -m pip install -r requirements_dev.txt
+    - python -m pip install -e ".[dev]"
 
 stages:
   - test
@@ -16,7 +16,7 @@ pytest:
         - tests/**/*
         - data/**/*
         - main.py
-        - requirements*.txt
+        - pyproject.toml
         - .gitlab-ci.yml
     - when: never
   script:

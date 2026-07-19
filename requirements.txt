@@ -1,4 +1,0 @@
-networkx==3.6.1
-prettytable==3.17.0
-pyrsistent==0.20.0
-PySide6==6.10.2

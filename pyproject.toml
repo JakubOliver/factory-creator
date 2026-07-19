@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "factory-creator"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [
+    { name = "Jakub Oliver Kubín" },
+]
+dependencies = [
+    "networkx==3.6.1",
+    "prettytable==3.17.0",
+    "pyrsistent==0.20.0",
+    "PySide6==6.10.2",
+]
+
+[project.optional-dependencies]
+graph = [
+    "matplotlib==3.10.8",
+    "pydot==4.0.1",
+]
+dev = [
+    "factory-creator[graph]",
+    "pytest==9.0.3",
+    "pytest-cov==7.1.0",
+    "ruff>=0.15,<0.16",
+    "ortools==9.15.6755",
+    "furo==2025.12.19",
+    "myst-parser==5.1.0",
+    "Sphinx==9.1.0",
+    "sphinx-autobuild==2025.8.25",
+    "sphinx-design==0.7.0",
+    "sphinx-needs==8.3.0",
+    "sphinxcontrib-mermaid==2.0.3",
+    "xmindparser==1.2.2",
+]
+
+[project.scripts]
+factory-creator = "factory_creator.application:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.coverage.run]
+source = ["factory_creator"]
+branch = true
+
+[tool.ruff]
+target-version = "py314"
+src = ["src", "tests"]
+
