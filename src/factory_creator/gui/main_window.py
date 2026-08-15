@@ -429,6 +429,7 @@ class MainWindow(QMainWindow):
             fitness_aspects,
             self.output_level,
             self.evolution_caching,
+            self.options_widget.output_efficiency(),
         )
 
         self.compute_worker.moveToThread(self.compute_thread)

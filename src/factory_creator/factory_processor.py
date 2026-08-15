@@ -33,6 +33,7 @@ class FactoryProcessor:
         output_level: OutputLevel = OutputLevel.MEDIUM,
         evolution_caching = True,        
         stop_requested=never_cancelled,
+        output_efficiency=1.0,
     ) -> FactoryProcessingResult | None:
         reporter = OutputReporter(report_method, output_level)
         factories = FactoryLoader.load(path)
@@ -44,7 +45,8 @@ class FactoryProcessor:
         if root is not None:
             graph = root.get_dependency_graph(
                 show_amounts=show_amounts,
-                show_simplified=simplified_structure
+                show_simplified=simplified_structure,
+                output_efficiency=output_efficiency,
             )
 
             matrix = GraphToMatrix.convert_via_heuristics(
