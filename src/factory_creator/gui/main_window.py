@@ -1,7 +1,7 @@
 import os
 import json
 
-from PySide6.QtCore import QSettings, QThread, Slot
+from PySide6.QtCore import QSettings, QThread, Qt, Slot
 from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(self.main_layout)
 
         self.menu_container = QWidget()
-        self.menu_container.setMaximumWidth(430)
+        self.menu_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.menu_layout = QVBoxLayout(self.menu_container)
         self.main_layout.addWidget(self.menu_container, 0)
 
@@ -120,6 +120,7 @@ class MainWindow(QMainWindow):
         self._setup_options_layout()
         self._setup_result_layout()
         self._setup_messages_layout()
+        self._set_menu_centered(True)
 
         if not self.use_embedded_browser:
             self.menu_layout.addStretch()
@@ -325,6 +326,11 @@ class MainWindow(QMainWindow):
             self.worker_messages.setFixedHeight(180)
             self.menu_layout.addWidget(self.worker_messages)
 
+    def _set_menu_centered(self, centered: bool) -> None:
+        """Center the menu while no embedded factory result is displayed."""
+        alignment = Qt.AlignHCenter if centered else Qt.AlignLeft
+        self.main_layout.setAlignment(self.menu_container, alignment)
+
     def _update_recipe_combobox(self, values: list[str]) -> None:
         """
         Populate recipe choices and show the recipe selection controls.
@@ -344,6 +350,7 @@ class MainWindow(QMainWindow):
         """
         self.type_container.hide()
         self.factory_result_widget.clear()
+        self._set_menu_centered(True)
 
     def _connect_signals(self) -> None:
         """
@@ -457,6 +464,8 @@ class MainWindow(QMainWindow):
             return
 
         if result.factory_seed is not None:
+            if self.use_embedded_browser:
+                self._set_menu_centered(False)
             self.factory_result_widget.show_results(
                 URLCreator.create_factory_url_link(
                     result.factory_seed,
