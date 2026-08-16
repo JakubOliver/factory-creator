@@ -63,3 +63,8 @@ případech nechtít 100 % využití.
 
 ![Před evolucí](../_static/images/lab_pre_evolution.png)
 ![Simple verze](../_static/images/lab_simple_version.png)
+
+Přidání možnosti nastavení effectivity na output node, tak abychom se vyhly explodujícím továrnám, ale nemuseli rovnou používat simplified structure. 
+
+![Inserter max output](../_static/images/inserter_max_output.png)
+![Inserter not max output](../_static/images/inserter_not_max_output.png)
