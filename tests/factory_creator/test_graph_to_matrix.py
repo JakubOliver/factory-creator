@@ -315,6 +315,13 @@ def test_random_topological_sort_respects_every_graph_edge():
     assert all(positions[start] < positions[end] for start, end in graph.edges)
 
 
+def test_random_topological_sort_rejects_cycle():
+    graph = networkx.DiGraph([("first", "second"), ("second", "first")])
+
+    with pytest.raises(ValueError, match="Graph contains a cycle"):
+        TopologicalSortGenerator.generate_random(graph)
+
+
 def test_graph_conversion_rejects_non_topological_ordering():
     graph = networkx.DiGraph([("source", "target")])
 
