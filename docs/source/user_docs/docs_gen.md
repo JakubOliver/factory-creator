@@ -18,7 +18,7 @@ cd docs && sphinx-build -E -a -b html source build/html
 ```
 
 If code was changed, it is recommended to clean the documentation before
-generating it:
+generating it (this script also regenerates the docs):
 
 ```bash
 cd docs
