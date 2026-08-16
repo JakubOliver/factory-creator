@@ -12,6 +12,10 @@ Documentation can be generated using the following command:
 ```bash
 cd docs && make html
 ```
+or 
+```bash
+cd docs && sphinx-build -E -a -b html source build/html
+```
 
 If code was changed, it is recommended to clean the documentation before
 generating it:
