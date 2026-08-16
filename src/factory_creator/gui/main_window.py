@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(self.main_layout)
 
         self.menu_container = QWidget()
-        self.menu_container.setMaximumWidth(430)
+        self.menu_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.menu_layout = QVBoxLayout(self.menu_container)
         self.main_layout.addWidget(self.menu_container, 0)
 
