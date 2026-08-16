@@ -12,6 +12,14 @@ factory\_creator.gui.compute\_recipe\_worker module
    :show-inheritance:
    :undoc-members:
 
+factory\_creator.gui.evolution\_settings\_dialogs module
+--------------------------------------------------------
+
+.. automodule:: factory_creator.gui.evolution_settings_dialogs
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 factory\_creator.gui.factory\_result\_widget module
 ---------------------------------------------------
 
@@ -24,6 +32,14 @@ factory\_creator.gui.main\_window module
 ----------------------------------------
 
 .. automodule:: factory_creator.gui.main_window
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.gui.preferences\_dialog module
+-----------------------------------------------
+
+.. automodule:: factory_creator.gui.preferences_dialog
    :members:
    :show-inheritance:
    :undoc-members:

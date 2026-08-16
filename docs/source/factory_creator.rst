@@ -20,6 +20,14 @@ Subpackages
 Submodules
 ----------
 
+factory\_creator.application module
+-----------------------------------
+
+.. automodule:: factory_creator.application
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 factory\_creator.factory\_processor module
 ------------------------------------------
 

@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   factory_creator.evolution.fitness_aspects
    factory_creator.evolution.mutations
 
 Submodules
@@ -40,6 +41,14 @@ factory\_creator.evolution.hill\_climbing module
 ------------------------------------------------
 
 .. automodule:: factory_creator.evolution.hill_climbing
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.evolution.plugin\_configuration module
+-------------------------------------------------------
+
+.. automodule:: factory_creator.evolution.plugin_configuration
    :members:
    :show-inheritance:
    :undoc-members:
