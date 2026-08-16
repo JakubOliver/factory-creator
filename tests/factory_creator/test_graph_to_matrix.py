@@ -171,6 +171,32 @@ def test_visited_matrix_tracks_a_star_keys():
     assert len(matrix) == 1
 
 
+def test_a_star_visited_limit_uses_baseline_and_scales_with_grid_area():
+    empty_grid = Grid()
+    assert (
+        GraphToMatrix.get_a_star_max_visited_states(empty_grid)
+        == GraphToMatrix.A_STAR_MIN_VISITED_STATES
+    )
+
+    large_grid = Grid()
+    large_grid.add_source((0, 0), "first")
+    large_grid.add_source((100, 100), "second")
+    states_per_tile = 4 * (GraphToMatrix.A_STAR_STREAK_THRESHOLD + 2)
+
+    assert GraphToMatrix.get_a_star_max_visited_states(large_grid) == (
+        large_grid.get_area() * states_per_tile
+    )
+
+    huge_grid = Grid()
+    huge_grid.add_source((0, 0), "first")
+    huge_grid.add_source((1_000_000, 1_000_000), "second")
+
+    assert (
+        GraphToMatrix.get_a_star_max_visited_states(huge_grid)
+        == GraphToMatrix.A_STAR_MAX_VISITED_STATES
+    )
+
+
 def test_get_node_path_data_for_factory_node():
     graph = networkx.DiGraph()
     grid = Grid()
