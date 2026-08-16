@@ -150,6 +150,8 @@ class GraphToMatrix:
     ENABLE_UNFINISH_BELTS = False # ONLY FOR DEBUGGING PURPOSES
 
     A_STAR_STREAK_THRESHOLD = 1 # Can use underground belts if and only if the streak of orientation is bigger or equal to the threshold
+    A_STAR_MIN_VISITED_STATES = 10_000
+    A_STAR_MAX_VISITED_STATES = 1_000_000
 
     DEFAULT_WIDTH_MULTIPLIER = 10
     DEFAULT_DEPTH_MULTIPLIER = 10
@@ -714,6 +716,18 @@ class GraphToMatrix:
         return (cord, orientation, min(streak, max_tracked_streak))
 
     @staticmethod
+    def get_a_star_max_visited_states(grid: Grid) -> int:
+        search_area = grid.get_area() if len(grid) else 0
+        states_per_tile = 4 * (GraphToMatrix.A_STAR_STREAK_THRESHOLD + 2)
+        return min(
+            max(
+                GraphToMatrix.A_STAR_MIN_VISITED_STATES,
+                search_area * states_per_tile,
+            ),
+            GraphToMatrix.A_STAR_MAX_VISITED_STATES,
+        )
+
+    @staticmethod
     def a_star(from_cords, is_in_successor, to_cords, grid):
         """
         Finds path between elements in the grid with the usage
@@ -749,8 +763,9 @@ class GraphToMatrix:
 
         active_node = None
         found = False
+        max_visited_states = GraphToMatrix.get_a_star_max_visited_states(grid)
 
-        while not found and len(heap) != 0 and len(visited_matrix) <= 1_000_000:
+        while not found and len(heap) != 0 and len(visited_matrix) < max_visited_states:
             a_star_node = heapq.heappop(heap)
 
             # Solves the problem that we at the place when we change to inserter was underground belt end,
@@ -818,7 +833,7 @@ class GraphToMatrix:
                         if GraphToMatrix.ENABLE_UNFINISH_BELTS:
                             active_node = node
 
-        if len(visited_matrix) > 1_000_000 and not GraphToMatrix.ENABLE_UNFINISH_BELTS or active_node is None:
+        if (len(visited_matrix) > max_visited_states or active_node is None) and not GraphToMatrix.ENABLE_UNFINISH_BELTS:
             raise Exception("Unable to find a path")
 
         return active_node, visited_matrix

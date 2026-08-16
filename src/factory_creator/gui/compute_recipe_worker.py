@@ -32,6 +32,7 @@ class ComputeRecipeWorker(QObject):
         fitness_aspects: list[FitnessAspect],
         output_level: OutputLevel = OutputLevel.MEDIUM,
         evolution_caching: bool = True,
+        output_efficiency: float = 1.0,
     ) -> None:
         """
         Store the recipe path, selected recipe, graph options, and evolution limits.
@@ -42,12 +43,14 @@ class ComputeRecipeWorker(QObject):
         :param simplified_structure: Whether to use the simplified dependency graph.
         :param evolution_iterations: Maximum number of evolution iterations.
         :param evolution_stagnation: Stagnation threshold for stopping evolution.
+        :param output_efficiency: Requested utilization of the root factory.
         """
         super().__init__()
         self.path = path
         self.recipe_type = recipe_type
         self.show_amounts = show_amounts
         self.simplified_structure = simplified_structure
+        self.output_efficiency = output_efficiency
         self.evolution_iterations = evolution_iterations
         self.evolution_stagnation = evolution_stagnation
         self.output_level = output_level
@@ -73,6 +76,7 @@ class ComputeRecipeWorker(QObject):
                 self.recipe_type,
                 show_amounts = self.show_amounts,
                 simplified_structure = self.simplified_structure,
+                output_efficiency = self.output_efficiency,
                 evolution_iteration = self.evolution_iterations,
                 evolution_stagnation = self.evolution_stagnation,
                 report_method = self.message.emit,

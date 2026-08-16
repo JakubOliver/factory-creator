@@ -18,6 +18,9 @@ class TopologicalSortGenerator:
                 node for node in working_graph.nodes if working_graph.out_degree(node) == 0
             ]
 
+            if not zero_out_degree_nodes:
+                raise ValueError("Graph contains a cycle.")
+
             weights = [working_graph.nodes[node]["weight"] for node in zero_out_degree_nodes]
             selected_node = random.choices(zero_out_degree_nodes, weights=weights)[0]
 

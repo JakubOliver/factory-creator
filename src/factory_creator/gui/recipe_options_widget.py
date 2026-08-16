@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
+    QDoubleSpinBox,
     QHBoxLayout,
     QLabel,
     QMessageBox,
@@ -23,6 +24,10 @@ class RecipeOptionsWidget(QWidget):
     MIN_STAGNATION = 1
     MAX_STAGNATION = 1_000_000
     DEFAULT_STAGNATION = 10
+
+    MIN_OUTPUT_EFFICIENCY = 0.0
+    MAX_OUTPUT_EFFICIENCY = 100.0
+    DEFAULT_OUTPUT_EFFICIENCY = 100.0
 
     def __init__(self) -> None:
         """
@@ -56,6 +61,26 @@ class RecipeOptionsWidget(QWidget):
         graph_characteristic_vector_layout.addWidget(self.show_simplified_structure)
         graph_characteristic_vector_layout.addWidget(self.show_graph_check_box)
 
+        output_efficiency_layout = QHBoxLayout()
+
+        self.output_efficiency_input = QDoubleSpinBox()
+        self.output_efficiency_input.setRange(
+            self.MIN_OUTPUT_EFFICIENCY,
+            self.MAX_OUTPUT_EFFICIENCY,
+        )
+        self.output_efficiency_input.setDecimals(2)
+        self.output_efficiency_input.setSingleStep(1.0)
+        self.output_efficiency_input.setValue(self.DEFAULT_OUTPUT_EFFICIENCY)
+        self.output_efficiency_input.setSuffix(" %")
+        self.output_efficiency_input.setToolTip(
+            "Utilization of the output factory. Lower values create fewer "
+            "duplicated dependency subtrees; 0% keeps a minimal structure."
+        )
+
+        output_efficiency_layout.addWidget(QLabel("Output efficiency"))
+        output_efficiency_layout.addWidget(self.output_efficiency_input)
+        output_efficiency_layout.addStretch()
+
         evolution_parameters_layout = QHBoxLayout()
 
         self.evolution_iterations_input = QSpinBox()
@@ -72,6 +97,7 @@ class RecipeOptionsWidget(QWidget):
         evolution_parameters_layout.addWidget(self.evolution_stagnation_input)
 
         options_layout.addLayout(graph_characteristic_vector_layout)
+        options_layout.addLayout(output_efficiency_layout)
         options_layout.addLayout(evolution_parameters_layout)
 
         layout.addWidget(self.options_toggle_button)
@@ -111,6 +137,14 @@ class RecipeOptionsWidget(QWidget):
         :return: Maximum number of evolution iterations.
         """
         return self.evolution_iterations_input.value()
+
+    def output_efficiency(self) -> float:
+        """
+        Return the requested utilization of the root factory.
+
+        :return: Output efficiency normalized to the interval from 0.0 to 1.0.
+        """
+        return self.output_efficiency_input.value() / 100
 
     def evolution_stagnation(self) -> int:
         """

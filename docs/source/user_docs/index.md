@@ -69,6 +69,7 @@ The GUI contains these controls:
 | `Show amounts`          | Shows ingredient amounts on dependency graph edges.                                                               |
 | `Simplified structure`  | Uses a simplified backend dependency graph. This changes the generated graph, grid, matrix, and evolution result. |
 | `Show graph (Graphviz)` | Opens the rendered dependency graph after computation if the optional Graphviz support is installed.              |
+| `Output efficiency`     | Sets root factory utilization from 0% to 100%. Lower values create fewer repeated production subtrees.            |
 | `Iterations`            | Maximum number of evolution iterations.                                                                           |
 | `Stagnation threshold`  | Stops evolution after this many generations without improvement.                                                  |
 | `Worker messages`       | Displays progress and error messages from the computation.                                                        |

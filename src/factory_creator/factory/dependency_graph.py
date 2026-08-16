@@ -58,6 +58,7 @@ class DependencyTreeNode:
         self,
         show_amounts: bool,
         show_simplified: bool,
+        output_efficiency: float = 1.0,
     ) -> DiGraph:
         """
         Returns dependency graph for the corresponding recipe dependency tree which has
@@ -67,15 +68,21 @@ class DependencyTreeNode:
             the usage of the factories in the recipe dependency graph.
         :param show_simplified: Denotes whether the graph should compute real numbers of needed factories
             or only show simplified version.
+        :param output_efficiency: Utilization of the root factory in the interval
+            from 0.0 to 1.0. Zero keeps one instance of every dependency without
+            multiplying subtrees by the required production rate.
         :return: Directed acyclic graph which represents the recipe dependency relations.
         """
+
+        if not 0 <= output_efficiency <= 1:
+            raise ValueError("Output efficiency must be between 0 and 1.")
 
         graph = DiGraph()
 
         self._dependency_graph(
             graph,
             0,
-            1,
+            output_efficiency,
             show_amounts=show_amounts,
             show_simplified=show_simplified
         )
@@ -241,6 +248,9 @@ class DependencyTreeNode:
         #  factory bigger for no reason
 
         # TODO: make the computation more readable
+        if output_needed == 0:
+            return [0 for _ in self.children]
+
         item_crafting_time = self.relative_crafting_time(output_needed)
 
         return [self._get_required_min_number_of_child_factory(child, item_crafting_time) for child in self.children]
