@@ -21,26 +21,32 @@ class EvolutionAlgorithm(ABC):
         self.fitness = fitness
         self.generation_print = generation_print
         self.caching_enabled = caching_enabled
-        self._fitness_cache: dict[Hashable, int | float] = {}
+        self._evolution_cache: set[Hashable] = set()
 
-    def _reset_fitness_cache(self) -> None:
-        self._fitness_cache.clear()
+    def _reset_evolution_cache(self) -> None:
+        self._evolution_cache.clear()
+
+    def _cache_attempt(
+        self,
+        mutation: Mutation,
+        attempt_key: Hashable | None,
+    ) -> None:
+        if not self.caching_enabled or attempt_key is None:
+            return
+
+        self._evolution_cache.add(mutation._get_attempt_cache_key(attempt_key))
 
     def _evaluate_fitness(
         self,
         grid: Grid,
-        cache_key: Hashable | None = None,
         connection_pairs: Sequence[ConnectionPair] = (),
     ) -> int | float:
-        context = FitnessContext(grid, connection_pairs=connection_pairs)
-        
-        if not self.caching_enabled or cache_key is None:
-            return self.fitness.evaluate(context)
-
-        if cache_key not in self._fitness_cache:
-            self._fitness_cache[cache_key] = self.fitness.evaluate(context)
-
-        return self._fitness_cache[cache_key]
+        return self.fitness.evaluate(
+            FitnessContext(
+                grid,
+                connection_pairs=connection_pairs,
+            )
+        )
 
     @abstractmethod
     def evolve(

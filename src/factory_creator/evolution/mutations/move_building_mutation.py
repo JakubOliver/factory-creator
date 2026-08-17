@@ -1,6 +1,6 @@
 import copy
 import random
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Hashable, Iterator
 
 from ..fitness_aspects import ConnectionPair
 from .mutation import Mutation, MutationCandidate
@@ -30,13 +30,54 @@ class MoveBuildingMutation(Mutation):
         for dx, dy in Grid.GRID_MOVES:
             yield cord[0] + dx, cord[1] + dy
 
+    @staticmethod
+    def _get_attempt_key(
+        source_state: int,
+        active_cord: tuple,
+        grid_entry: GridEntry,
+        new_cord: tuple,
+    ) -> tuple:
+        return (
+            source_state,
+            grid_entry.get_id_text(),
+            active_cord,
+            new_cord,
+        )
+
+    def _has_untried_move(
+        self,
+        source_state: int,
+        active_cord: tuple,
+        grid_entry: GridEntry,
+    ) -> bool:
+        return any(
+            not self._is_attempt_cached(
+                self._get_attempt_key(
+                    source_state,
+                    active_cord,
+                    grid_entry,
+                    new_cord,
+                )
+            )
+            for new_cord in self._get_changed_cords(active_cord)
+        )
+
     def _generate(
         self,
         grid: Grid,
         report_method: Callable = print,
         error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
-        factories = list(grid.get_factories())
+        source_state = grid.state_key_memory()
+        factories = [
+            (active_cord, grid_entry)
+            for active_cord, grid_entry in grid.get_factories()
+            if self._has_untried_move(
+                source_state,
+                active_cord,
+                grid_entry,
+            )
+        ]
         selected_factories = random.sample(
             factories,
             k=min(BUILDINGS_PER_MUTATION, len(factories)),
@@ -53,17 +94,12 @@ class MoveBuildingMutation(Mutation):
                 grid_entry,
                 report_method,
                 error_report_method or report_method,
+                source_state,
             )
             report_method(
                 f"  Processed: {processed / number_of_selected_factories * 100:.1f}% "
                 f"({grid_entry.name})"
             )
-
-    def get_cache_key(self, grid: Grid) -> int:
-        if not isinstance(grid, Grid):
-            raise TypeError("Expected a Grid instance for caching.")
-
-        return grid.state_key_memory()
 
     def _generate_for_building(
         self,
@@ -72,15 +108,38 @@ class MoveBuildingMutation(Mutation):
         grid_entry: GridEntry,
         report_method: Callable = print,
         error_report_method: Callable = print,
+        source_state: int | None = None,
     ) -> Iterator[MutationCandidate]:
+        if source_state is None:
+            source_state = grid.state_key_memory()
+
         for new_cord in self._get_changed_cords(active_cord):
+            attempt_key = self._get_attempt_key(
+                source_state,
+                active_cord,
+                grid_entry,
+                new_cord,
+            )
+            if self._is_attempt_cached(attempt_key):
+                continue
+
             try:
-                yield self._move_building(grid, active_cord, grid_entry, new_cord)
+                yield self._move_building(
+                    grid,
+                    active_cord,
+                    grid_entry,
+                    new_cord,
+                    attempt_key,
+                )
             except ComputationCancelled:
                 raise
             except Exception as error:
                 if self.show_failure_reasons:
                     error_report_method(f'  Individual failed because of "{error}"')
+                yield MutationCandidate(
+                    grid=None,
+                    attempt_key=attempt_key,
+                )
 
     def _move_building(
         self,
@@ -88,6 +147,7 @@ class MoveBuildingMutation(Mutation):
         active_cord: tuple,
         grid_entry: GridEntry,
         new_cord: tuple,
+        attempt_key: Hashable | None = None,
     ) -> MutationCandidate:
         new_grid = copy.deepcopy(grid)
         neighbors = new_grid.erase_factory(active_cord)
@@ -160,7 +220,7 @@ class MoveBuildingMutation(Mutation):
             )
 
         return MutationCandidate(
-            new_grid,
-            tuple(connection_pairs),
-            self.get_cache_key(new_grid),
+            grid=new_grid,
+            connection_pairs=tuple(connection_pairs),
+            attempt_key=attempt_key,
         )

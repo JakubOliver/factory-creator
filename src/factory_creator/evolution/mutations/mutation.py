@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Collection, Hashable, Iterator
 from dataclasses import dataclass
 
 from ..fitness_aspects import ConnectionPair
@@ -9,9 +9,11 @@ from ...util.cancellation import never_cancelled, raise_if_cancelled
 
 @dataclass(frozen=True)
 class MutationCandidate:
-    grid: Grid
+    """A generated layout, or an invalid attempt represented by a null grid."""
+
+    grid: Grid | None
     connection_pairs: tuple[ConnectionPair, ...] = ()
-    cache_key: int | None = None
+    attempt_key: Hashable | None = None
 
 
 class Mutation(ABC):
@@ -26,6 +28,26 @@ class Mutation(ABC):
         self.end_generation = end_generation
         self._generation = 0
         self._stop_requested = never_cancelled
+        self._evolution_cache: Collection[Hashable] | None = None
+
+    def set_evolution_cache(
+        self,
+        evolution_cache: Collection[Hashable] | None,
+    ) -> None:
+        """Attach the cache owned and reset by the evolution algorithm."""
+        self._evolution_cache = evolution_cache
+
+    def _get_attempt_cache_key(
+        self,
+        attempt_key: Hashable,
+    ) -> tuple:
+        return "attempt", type(self), attempt_key
+
+    def _is_attempt_cached(self, attempt_key: Hashable) -> bool:
+        return (
+            self._evolution_cache is not None
+            and self._get_attempt_cache_key(attempt_key) in self._evolution_cache
+        )
 
     def set_stop_requested(self, stop_requested) -> None:
         self._stop_requested = stop_requested
@@ -68,8 +90,4 @@ class Mutation(ABC):
         report_method: Callable = print,
         error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
-        ...
-
-    @abstractmethod
-    def get_cache_key(self, value: object) -> int:
         ...

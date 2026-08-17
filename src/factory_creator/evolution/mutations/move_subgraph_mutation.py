@@ -30,6 +30,23 @@ class MoveSubgraphMutation(Mutation):
         for _ in range(self.HOW_MANY_GENERATE_IN_ONE_GENERATION):
             try:
                 ordering = TopologicalSortGenerator.generate_random(graph)
+            except ComputationCancelled:
+                raise
+            except Exception as error:
+                if self.show_failure_reasons:
+                    (error_report_method or report_method)(
+                        f'  Individual failed because of "{error}"'
+                    )
+                yield MutationCandidate(
+                    grid=None,
+                )
+                return
+
+            attempt_key = tuple(ordering)
+            if self._is_attempt_cached(attempt_key):
+                continue
+
+            try:
                 new_grid = GraphToMatrix.convert_via_heuristics(
                     graph,
                     report_method=report_method,
@@ -38,9 +55,9 @@ class MoveSubgraphMutation(Mutation):
                     stop_requested=self.stop_requested,
                 )
                 yield MutationCandidate(
-                    new_grid,
-                    self._get_connection_pairs(graph, new_grid),
-                    self.get_cache_key(ordering),
+                    grid=new_grid,
+                    connection_pairs=self._get_connection_pairs(graph, new_grid),
+                    attempt_key=attempt_key,
                 )
             except ComputationCancelled:
                 raise
@@ -49,12 +66,10 @@ class MoveSubgraphMutation(Mutation):
                     (error_report_method or report_method)(
                         f'  Individual failed because of "{error}"'
                     )
-
-    def get_cache_key(self, ordering: list) -> int:
-        if not isinstance(ordering, list):
-            raise TypeError("Expected a list instance for caching.")
-
-        return hash(tuple(ordering))
+                yield MutationCandidate(
+                    grid=None,
+                    attempt_key=attempt_key,
+                )
 
     @staticmethod
     def _place_node(graph, node, cord: tuple, grid: Grid) -> str:

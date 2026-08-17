@@ -1,7 +1,6 @@
 from collections.abc import Callable
 
 from .evolution_algorithm import EvolutionAlgorithm
-from .mutations.mutation import Mutation
 from ..grid.grid import Grid
 from ..util.cancellation import never_cancelled
 
@@ -25,23 +24,26 @@ class HillClimbing(EvolutionAlgorithm):
         if error_report_method is None:
             error_report_method = report_method
 
-        self._reset_fitness_cache()
+        self._reset_evolution_cache()
 
         for mutation in self.mutations:
+            mutation.set_evolution_cache(
+                self._evolution_cache if self.caching_enabled else None
+            )
             mutation.set_stop_requested(stop_requested)
 
         active_iteration = 0
         stagnation_streak = 0
         presentation = []
+        current_fitness = None
 
         while active_iteration < iteration and stagnation_streak < stagnation_break:
             if create_presentation:
                 presentation.append(grid)
 
-            current_fitness = self._evaluate_fitness(
-                grid,
-                cache_key=("current", grid.state_key_memory()),
-            )
+            if current_fitness is None:
+                current_fitness = self._evaluate_fitness(grid)
+
             if self.generation_print:
                 generation_report_method(
                     f"----------- NEXT GENERATION ({active_iteration}) -------------"
@@ -56,6 +58,7 @@ class HillClimbing(EvolutionAlgorithm):
             )
             if candidate_fitness > current_fitness:
                 grid = candidate
+                current_fitness = candidate_fitness
                 stagnation_streak = 0
             else:
                 stagnation_streak += 1
@@ -79,15 +82,20 @@ class HillClimbing(EvolutionAlgorithm):
 
         for mutation in self.mutations:
             for candidate in mutation.generate(grid, report_method):
-                candidate_fitness = self._evaluate_fitness(
-                    candidate.grid,
-                    cache_key=(type(mutation), candidate.cache_key)
-                        if candidate.cache_key is not None
-                        else None,
-                    connection_pairs=candidate.connection_pairs,
+                if candidate.grid is None:
+                    candidate_fitness = -float("inf")
+                else:
+                    candidate_fitness = self._evaluate_fitness(
+                        candidate.grid,
+                        connection_pairs=candidate.connection_pairs,
+                    )
+
+                self._cache_attempt(
+                    mutation,
+                    candidate.attempt_key,
                 )
 
-                if candidate_fitness > best_fitness:
+                if candidate.grid is not None and candidate_fitness > best_fitness:
                     best_grid = candidate.grid
                     best_fitness = candidate_fitness
 
