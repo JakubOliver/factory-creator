@@ -58,8 +58,18 @@ pytest -ra -vv
 pytest -x --lf
 ```
 
-`xfail` is used for a known bug or functionality that is specified by a test
-but has not been implemented yet.
+`xfail` is used for a known bug or functionality that is specified by a test but
+has not been implemented yet.
+
+## Development playground
+
+Saved development scenarios live in
+`src/factory_creator/util/playground/scenarios`. List and run them with:
+
+```bash
+python -m factory_creator.util.playground --list
+python -m factory_creator.util.playground electric-mining-drill-topological-orderings
+```
 
 ### Test coverage
 

@@ -36,10 +36,34 @@ factory\_creator.util.output module
    :show-inheritance:
    :undoc-members:
 
-factory\_creator.util.playground module
----------------------------------------
+factory\_creator.util.playground package
+----------------------------------------
 
 .. automodule:: factory_creator.util.playground
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.util.playground.scenario module
+-------------------------------------------------
+
+.. automodule:: factory_creator.util.playground.scenario
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.util.playground.scenarios package
+--------------------------------------------------
+
+.. automodule:: factory_creator.util.playground.scenarios
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+factory\_creator.util.playground.scenarios.electric\_mining\_drill\_topological\_orderings module
+--------------------------------------------------------------------------------------------------
+
+.. automodule:: factory_creator.util.playground.scenarios.electric_mining_drill_topological_orderings
    :members:
    :show-inheritance:
    :undoc-members:
