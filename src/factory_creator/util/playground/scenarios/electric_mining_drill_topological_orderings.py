@@ -16,7 +16,7 @@ RECIPE_NAME = "electric-mining-drill"
 RECIPE_PATH = Path(__file__).resolve().parents[5] / "data" / "recipe.json"
 OUTPUT_DIRECTORY = Path("output")
 RESULT_CSV_PATH = OUTPUT_DIRECTORY / "electric-mining-drill-topological-orderings.csv"
-TOPOLOGICAL_ORDERING_SAMPLE_SIZE = 25
+TOPOLOGICAL_ORDERING_SAMPLE_SIZE = 100
 PROGRESS_INTERVAL = 1
 
 
