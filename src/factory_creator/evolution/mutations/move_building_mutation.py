@@ -1,4 +1,5 @@
 import copy
+import random
 from collections.abc import Callable, Iterator
 
 from ..fitness_aspects import ConnectionPair
@@ -9,9 +10,11 @@ from ...grid.grid import Grid
 from ...grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
 from ...util.cancellation import ComputationCancelled, raise_if_cancelled
 
-# TODO: computing all moves is too expensive maybe choose only some random fraction or use some heuristic to choose whether to try this move or not
+BUILDINGS_PER_MUTATION = 4
+
+
 class MoveBuildingMutation(Mutation):
-    """Moves each movable entry by one tile and reconnects its incident edges."""
+    """Moves randomly selected entries by one tile and reconnects their edges."""
 
     def __init__(
         self,
@@ -34,8 +37,16 @@ class MoveBuildingMutation(Mutation):
         error_report_method: Callable | None = None,
     ) -> Iterator[MutationCandidate]:
         factories = list(grid.get_factories())
-        number_of_factories = len(factories)
-        for processed, (active_cord, grid_entry) in enumerate(factories, start=1):
+        selected_factories = random.sample(
+            factories,
+            k=min(BUILDINGS_PER_MUTATION, len(factories)),
+        )
+        number_of_selected_factories = len(selected_factories)
+
+        for processed, (active_cord, grid_entry) in enumerate(
+            selected_factories,
+            start=1,
+        ):
             yield from self._generate_for_building(
                 grid,
                 active_cord,
@@ -44,7 +55,7 @@ class MoveBuildingMutation(Mutation):
                 error_report_method or report_method,
             )
             report_method(
-                f"  Processed: {processed / number_of_factories * 100:.1f}% "
+                f"  Processed: {processed / number_of_selected_factories * 100:.1f}% "
                 f"({grid_entry.name})"
             )
 
