@@ -97,6 +97,25 @@ def parse_asset_name(asset_name):
     )
 
 
+def asset_sort_key(asset):
+    asset_name = str(asset.get("name", ""))
+    match = ASSET_NAME_PATTERN.fullmatch(asset_name)
+
+    if match is not None:
+        return (
+            1,
+            int(match.group("run_id")),
+            int(match.group("attempt")),
+            match.group("scenario"),
+        )
+
+    return (
+        0,
+        str(asset.get("created_at", "")),
+        asset_name,
+    )
+
+
 class GitHubReleaseAssetsDirective(SphinxDirective):
     has_content = False
 
@@ -156,13 +175,7 @@ class GitHubReleaseAssetsDirective(SphinxDirective):
             if str(asset.get("name", "")).lower().endswith(".csv")
         ]
 
-        assets.sort(
-            key=lambda asset: (
-                str(asset.get("created_at", "")),
-                str(asset.get("name", "")),
-            ),
-            reverse=True,
-        )
+        assets.sort(key=asset_sort_key, reverse=True)
 
         if not assets:
             return [
