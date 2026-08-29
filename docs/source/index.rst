@@ -10,6 +10,9 @@ The project focuses on creating an AI-based production line generator inspired
 by Factorio. Given a target product and required output rate, the system would
 generate an optimized production layout or graph.
 
+Persistent benchmark CSV files are available in the
+`GitHub benchmark release <https://github.com/JakubOliver/factory-creator/releases/tag/benchmark-results>`_.
+
 
 .. toctree::
    :maxdepth: 1

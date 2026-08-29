@@ -25,6 +25,7 @@ class PreferencesDialog(QDialog):
         evolution_caching: bool = True,
         mutation_plugins_path: str = "",
         fitness_plugins_path: str = "",
+        retry_topological_ordering_resizes: bool = False,
     ):
         super().__init__(parent)
         self.setWindowTitle("Preferences")
@@ -67,6 +68,18 @@ class PreferencesDialog(QDialog):
         )
         layout.addWidget(self.evolution_caching_checkbox)
 
+        self.retry_topological_ordering_resizes_checkbox = QCheckBox(
+            "Retry topological orderings with larger grids"
+        )
+        self.retry_topological_ordering_resizes_checkbox.setChecked(
+            retry_topological_ordering_resizes
+        )
+        self.retry_topological_ordering_resizes_checkbox.setToolTip(
+            "Retry failed topological orderings on progressively larger grids "
+            "during evolution."
+        )
+        layout.addWidget(self.retry_topological_ordering_resizes_checkbox)
+
         self.mutation_plugins_input = self._add_directory_input(
             layout, "User mutations directory", mutation_plugins_path
         )
@@ -95,6 +108,9 @@ class PreferencesDialog(QDialog):
 
     def evolution_caching(self) -> bool:
         return self.evolution_caching_checkbox.isChecked()
+
+    def retry_topological_ordering_resizes(self) -> bool:
+        return self.retry_topological_ordering_resizes_checkbox.isChecked()
 
     def mutation_plugins_path(self) -> str:
         return self.mutation_plugins_input.text().strip()

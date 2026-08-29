@@ -3,6 +3,7 @@ from pathlib import Path
 
 from .fitness_aspects import FitnessAspect
 from .mutations.mutation import Mutation
+from .mutations.move_subgraph_mutation import MoveSubgraphMutation
 from ..util.reflection import DiscoveredClass, Reflection
 
 
@@ -52,6 +53,7 @@ class PluginConfiguration:
     def create_mutations(
         discovered: list[DiscoveredClass[Mutation]],
         configurations: dict[str, MutationConfiguration] | None = None,
+        retry_topological_ordering_resizes: bool = False,
     ) -> list[Mutation]:
         result = []
         configurations = configurations or {}
@@ -66,6 +68,10 @@ class PluginConfiguration:
             if config is not None:
                 mutation.start_generation = config.start_generation
                 mutation.end_generation = config.end_generation
+
+            #TODO: Maybe find better solution for this, than checking for one specific mutation type. 
+            if isinstance(mutation, MoveSubgraphMutation):
+                mutation.retry_resizes = retry_topological_ordering_resizes
 
             result.append(mutation)
 

@@ -12,6 +12,14 @@ factory\_creator.util.playground.scenarios.electric\_mining\_drill\_topological\
    :show-inheritance:
    :undoc-members:
 
+factory\_creator.util.playground.scenarios.retry\_or\_not\_retry module
+-----------------------------------------------------------------------
+
+.. automodule:: factory_creator.util.playground.scenarios.retry_or_not_retry
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Module contents
 ---------------
 

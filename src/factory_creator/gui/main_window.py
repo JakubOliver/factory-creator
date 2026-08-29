@@ -48,6 +48,9 @@ class MainWindow(QMainWindow):
     OUTPUT_LEVEL_SETTING = "output/level"
     FACTORY_URL_SETTING = "factory/url"
     EVOLUTION_CACHING_SETTING = "evolution/caching_enabled"
+    RETRY_TOPOLOGICAL_ORDERING_RESIZES_SETTING = (
+        "evolution/retry_topological_ordering_resizes"
+    )
     MUTATION_PLUGINS_PATH_SETTING = "evolution/mutation_plugins_path"
     FITNESS_PLUGINS_PATH_SETTING = "evolution/fitness_plugins_path"
     MUTATION_CONFIG_SETTING = "evolution/mutations"
@@ -83,6 +86,11 @@ class MainWindow(QMainWindow):
         self.evolution_caching = self.settings.value(
             self.EVOLUTION_CACHING_SETTING,
             True,
+            type=bool,
+        )
+        self.retry_topological_ordering_resizes = self.settings.value(
+            self.RETRY_TOPOLOGICAL_ORDERING_RESIZES_SETTING,
+            False,
             type=bool,
         )
         self.mutation_plugins_path = self.settings.value(
@@ -147,18 +155,20 @@ class MainWindow(QMainWindow):
 
     def _open_preferences(self):
         dialog = PreferencesDialog(
-            self.output_level,
-            self.factory_url,
-            self,
-            self.evolution_caching,
-            self.mutation_plugins_path,
-            self.fitness_plugins_path,
+            output_level=self.output_level,
+            factory_url=self.factory_url,
+            parent=self,
+            evolution_caching=self.evolution_caching,
+            retry_topological_ordering_resizes=self.retry_topological_ordering_resizes,
+            mutation_plugins_path=self.mutation_plugins_path,
+            fitness_plugins_path=self.fitness_plugins_path,
         )
 
         if dialog.exec() == QDialog.Accepted:
             self.output_level = dialog.output_level()
             self.factory_url = dialog.factory_url()
             self.evolution_caching = dialog.evolution_caching()
+            self.retry_topological_ordering_resizes = dialog.retry_topological_ordering_resizes()
             self.mutation_plugins_path = dialog.mutation_plugins_path()
             self.fitness_plugins_path = dialog.fitness_plugins_path()
 
@@ -175,6 +185,10 @@ class MainWindow(QMainWindow):
             self.settings.setValue(
                 self.EVOLUTION_CACHING_SETTING,
                 self.evolution_caching,
+            )
+            self.settings.setValue(
+                self.RETRY_TOPOLOGICAL_ORDERING_RESIZES_SETTING,
+                self.retry_topological_ordering_resizes,
             )
             self.settings.setValue(
                 self.MUTATION_PLUGINS_PATH_SETTING, self.mutation_plugins_path
@@ -408,6 +422,9 @@ class MainWindow(QMainWindow):
             mutations = PluginConfiguration.create_mutations(
                 PluginConfiguration.discover_mutations(self.mutation_plugins_path),
                 self.mutation_configurations,
+                retry_topological_ordering_resizes=(
+                    self.retry_topological_ordering_resizes
+                ),
             )
             fitness_aspects = PluginConfiguration.create_fitness_aspects(
                 PluginConfiguration.discover_fitness_aspects(

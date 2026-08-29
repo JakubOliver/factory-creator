@@ -71,6 +71,10 @@ python -m factory_creator.util.playground --list
 python -m factory_creator.util.playground electric-mining-drill-topological-orderings
 ```
 
+CSV results produced by the GitHub benchmark workflow are stored as uniquely
+named assets in the persistent
+[benchmark-results release](https://github.com/JakubOliver/factory-creator/releases/tag/benchmark-results).
+
 ### Test coverage
 
 The development requirements include `pytest-cov`. Display coverage and missing

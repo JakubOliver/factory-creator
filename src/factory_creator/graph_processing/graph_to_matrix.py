@@ -156,7 +156,7 @@ class GraphToMatrix:
     DEFAULT_WIDTH_MULTIPLIER = 10
     DEFAULT_DEPTH_MULTIPLIER = 10
     DEFAULT_PADDING = 1
-    MAX_GRID_RESIZES = 5
+    MAX_GRID_RESIZES = 3
 
     @staticmethod
     def convert_via_heuristics(
@@ -166,12 +166,15 @@ class GraphToMatrix:
         place_node_method: Callable | None = None,
         error_report_method: callable | None = None,
         stop_requested: Callable[[], bool] = never_cancelled,
+        retry_resizes: bool = True,
     ) -> Grid:
         """
         Converts factory from graph to grid representation with the use of heuristics
         and general graph algorithms.
 
         :param graph: Graph of the factory that will be transformed.
+        :param retry_resizes: Whether failed conversions should be retried on
+            progressively larger grids.
         :return: Grid representation of the factory.
         """
 
@@ -180,6 +183,11 @@ class GraphToMatrix:
 
         width_multiplier = GraphToMatrix.DEFAULT_WIDTH_MULTIPLIER
         depth_multiplier = GraphToMatrix.DEFAULT_DEPTH_MULTIPLIER
+        max_grid_resizes = (
+            GraphToMatrix.MAX_GRID_RESIZES
+            if retry_resizes
+            else 0
+        )
 
         resize_count = 0
         while True:
@@ -202,7 +210,7 @@ class GraphToMatrix:
             except ComputationCancelled:
                 raise
             except Exception as e:
-                if resize_count >= GraphToMatrix.MAX_GRID_RESIZES:
+                if resize_count >= max_grid_resizes:
                     error_report_method(
                         f"Grid conversion failed after {resize_count} resizes: {e}"
                     )
@@ -215,7 +223,7 @@ class GraphToMatrix:
 
                 error_report_method(
                     f"Grid conversion failed; resize {resize_count}/"
-                    f"{GraphToMatrix.MAX_GRID_RESIZES}: padding: {padding}, "
+                    f"{max_grid_resizes}: padding: {padding}, "
                     f"width_multiplier: {width_multiplier}, "
                     f"depth_multiplier: {depth_multiplier}"
                 )
