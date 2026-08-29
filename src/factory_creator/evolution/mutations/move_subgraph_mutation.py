@@ -7,6 +7,11 @@ from ...grid.grid_entry import GridEntryTransportationId
 from ...graph_processing import TopologicalSortGenerator
 from ...util.cancellation import ComputationCancelled
 
+#TODO: Now the disabling retry works, but it is possible, that for some recipes,
+# the basic size is not enough and all orderings fails (for now this did not occured).
+# But maybe add some check that if they all fail then we overwrite the retry option.
+# So it starts using it. 
+
 class MoveSubgraphMutation(Mutation):
     HOW_MANY_GENERATE_IN_ONE_GENERATION = 4
 
