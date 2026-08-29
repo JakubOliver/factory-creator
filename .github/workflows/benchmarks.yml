@@ -12,7 +12,7 @@ jobs:
   electric-mining-drill:
     name: Electric mining drill topological orderings
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 330
 
     permissions:
       contents: write
@@ -83,3 +83,16 @@ jobs:
             output/retry-or-not-retry.log
           if-no-files-found: warn
           retention-days: 90
+
+  documentation:
+    name: Sphinx documentation
+    needs: electric-mining-drill
+    uses: ./.github/workflows/docs.yml
+    with:
+      deploy: true
+
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+      id-token: write
