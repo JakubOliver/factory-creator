@@ -59,3 +59,6 @@ python .\main.py
 
 Instructions for generating the documentation can be found in the
 [docs](docs/source/user_docs/docs_gen.md) folder.
+
+Or you can visit the
+[documentation website](https://kubinlabs.org/factory-creator/).
