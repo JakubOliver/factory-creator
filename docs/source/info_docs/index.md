@@ -10,6 +10,7 @@ loader
 core
 output
 gallery
+benchmarks
 historic_todo
 optimalization
 ```
