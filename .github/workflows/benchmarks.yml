@@ -12,7 +12,7 @@ jobs:
   electric-mining-drill:
     name: Electric mining drill topological orderings
     runs-on: ubuntu-latest
-    timeout-minutes: 65
+    timeout-minutes: 120
 
     env:
       PYTHONUNBUFFERED: "1"
@@ -35,9 +35,14 @@ jobs:
         timeout-minutes: 120
         run: |
           mkdir -p output
+          
           python -m factory_creator.util.playground \
             electric-mining-drill-topological-orderings \
             2>&1 | tee output/electric-mining-drill-topological-orderings.log
+
+          python -m factory_creator.util.playground \
+            retry-or-not-retry \
+            2>&1 | tee output/retry-or-not-retry.log
 
       - name: Upload benchmark results
         if: always()
@@ -47,5 +52,6 @@ jobs:
           path: |
             output/electric-mining-drill-topological-orderings.csv
             output/electric-mining-drill-topological-orderings.log
+            output/retry-or-not-retry.log
           if-no-files-found: warn
           retention-days: 365
