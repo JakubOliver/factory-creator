@@ -6,6 +6,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath('../../src'))
 sys.path.insert(1, os.path.abspath('../..'))
+sys.path.insert(2, os.path.abspath(os.path.join(os.path.dirname(__file__), '_ext')))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -24,7 +25,8 @@ extensions = [
     'sphinxcontrib.mermaid',
     'sphinx_needs',
     'sphinx_design',
-    'sphinx.ext.mathjax'
+    'sphinx.ext.mathjax',
+    'github_release_assets'
 ]
 
 myst_fence_as_directive = ['mermaid']
