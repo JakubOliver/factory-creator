@@ -21,6 +21,12 @@ def create_argument_parser() -> argparse.ArgumentParser:
         dest="list_scenarios",
         help="list the available scenarios and exit",
     )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        dest="run_all_scenarios",
+        help="run every registered scenario",
+    )
 
     return parser
 
@@ -34,7 +40,12 @@ def main():
 
         return 0
 
-    run_scenario(get_scenario(args.scenario))
+    selected_scenarios = (
+        SCENARIOS.values() if args.run_all_scenarios else [get_scenario(args.scenario)]
+    )
+    for scenario in selected_scenarios:
+        result = run_scenario(scenario)
+        print(f"Scenario {scenario.name!r} CSV: {result.csv_path.resolve()}")
 
     return 0
 

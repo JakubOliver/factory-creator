@@ -9,7 +9,7 @@ from prettytable import PrettyTable
 from ....export import URLCreator
 from ....graph_processing import GraphToMatrix
 from ....loading import FactoryLoader
-from ..scenario import Scenario
+from ..scenario import Scenario, ScenarioResult
 
 
 RECIPE_NAME = "electric-mining-drill"
@@ -201,6 +201,8 @@ def run():
         f"{len(results) - successful_results} failed."
     )
     print(f"CSV saved to {result_csv_path.resolve()}.")
+
+    return ScenarioResult(result_csv_path)
 
 
 def _format_ordering(graph, ordering):

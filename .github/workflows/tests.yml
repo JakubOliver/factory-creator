@@ -88,6 +88,16 @@ jobs:
       - name: Build documentation
         run: python -m sphinx -E -a -b html docs/source docs/build/html
 
+      - name: Add benchmark history to documentation
+        shell: bash
+        run: |
+          if git fetch origin benchmark-results \
+              && git cat-file -e FETCH_HEAD:benchmarks; then
+            git archive FETCH_HEAD benchmarks | tar -x -C docs/build/html
+          else
+            echo "No benchmark history has been published yet."
+          fi
+
       - name: Configure GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: actions/configure-pages@v5
