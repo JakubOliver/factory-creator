@@ -29,6 +29,7 @@ class RetryBenchmarkResult:
     duration_seconds: float
     factory_url: str
     evolution_url: str
+    error: str = ""
 
 
 def process_electric_mining_drill(
@@ -48,16 +49,31 @@ def process_electric_mining_drill(
     )
 
     started_at = perf_counter()
-    result = FactoryProcessor.process_factory(
-        str(RECIPE_PATH),
-        RECIPE_NAME,
-        mutations=mutations,
-        fitness_aspects=fitness_aspects,
-        evolution_iteration=EVOLUTION_ITERATIONS,
-        evolution_stagnation=EVOLUTION_STAGNATION,
-        output_level=OutputLevel.LOW,
-        report_method=lambda message: print(f"[{label}] {message}"),
-    )
+    try:
+        result = FactoryProcessor.process_factory(
+            str(RECIPE_PATH),
+            RECIPE_NAME,
+            mutations=mutations,
+            fitness_aspects=fitness_aspects,
+            evolution_iteration=EVOLUTION_ITERATIONS,
+            evolution_stagnation=EVOLUTION_STAGNATION,
+            output_level=OutputLevel.LOW,
+            report_method=lambda message: print(f"[{label}] {message}"),
+        )
+    except Exception as e:
+        duration_seconds = perf_counter() - started_at
+        print(f"[{label}] Failed after {duration_seconds:.6f} s: {e}")
+
+        return RetryBenchmarkResult(
+            repeat=repeat + 1,
+            seed=seed,
+            retry_resizes=retry_topological_ordering_resizes,
+            duration_seconds=duration_seconds,
+            factory_url="",
+            evolution_url="",
+            error=str(e),
+        )
+    
     duration_seconds = perf_counter() - started_at
 
     if result is None:
@@ -93,6 +109,7 @@ def write_results_csv(
                 "duration_seconds",
                 "factory_url",
                 "evolution_url",
+                "error"
             ],
         )
         writer.writeheader()
@@ -106,6 +123,7 @@ def write_results_csv(
                     "duration_seconds": f"{result.duration_seconds:.9f}",
                     "factory_url": result.factory_url,
                     "evolution_url": result.evolution_url,
+                    "error": result.error,
                 }
             )
 
