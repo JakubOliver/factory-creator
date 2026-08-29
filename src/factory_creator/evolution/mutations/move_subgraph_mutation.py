@@ -15,9 +15,11 @@ class MoveSubgraphMutation(Mutation):
         show_failure_reasons: bool = True,
         start_generation: int = 0,
         end_generation: int | float = float("inf"),
+        retry_resizes: bool = True,
     ) -> None:
         super().__init__(start_generation, end_generation)
         self.show_failure_reasons = show_failure_reasons
+        self.retry_resizes = retry_resizes
 
     def _generate(
         self,
@@ -36,6 +38,7 @@ class MoveSubgraphMutation(Mutation):
                     topological_ordering=ordering,
                     place_node_method=self._place_node,
                     stop_requested=self.stop_requested,
+                    retry_resizes=self.retry_resizes,
                 )
                 yield MutationCandidate(
                     new_grid,
