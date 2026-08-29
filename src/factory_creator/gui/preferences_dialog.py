@@ -25,7 +25,7 @@ class PreferencesDialog(QDialog):
         evolution_caching: bool = True,
         mutation_plugins_path: str = "",
         fitness_plugins_path: str = "",
-        retry_topological_ordering_resizes: bool = True,
+        retry_topological_ordering_resizes: bool = False,
     ):
         super().__init__(parent)
         self.setWindowTitle("Preferences")

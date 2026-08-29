@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         )
         self.retry_topological_ordering_resizes = self.settings.value(
             self.RETRY_TOPOLOGICAL_ORDERING_RESIZES_SETTING,
-            True,
+            False,
             type=bool,
         )
         self.mutation_plugins_path = self.settings.value(

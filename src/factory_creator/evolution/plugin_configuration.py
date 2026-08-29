@@ -53,7 +53,7 @@ class PluginConfiguration:
     def create_mutations(
         discovered: list[DiscoveredClass[Mutation]],
         configurations: dict[str, MutationConfiguration] | None = None,
-        retry_topological_ordering_resizes: bool = True,
+        retry_topological_ordering_resizes: bool = False,
     ) -> list[Mutation]:
         result = []
         configurations = configurations or {}

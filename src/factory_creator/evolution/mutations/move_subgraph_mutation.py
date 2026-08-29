@@ -20,7 +20,7 @@ class MoveSubgraphMutation(Mutation):
         show_failure_reasons: bool = True,
         start_generation: int = 0,
         end_generation: int | float = float("inf"),
-        retry_resizes: bool = True,
+        retry_resizes: bool = False,
     ) -> None:
         super().__init__(start_generation, end_generation)
         self.show_failure_reasons = show_failure_reasons
