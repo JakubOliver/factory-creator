@@ -156,7 +156,7 @@ class GraphToMatrix:
     DEFAULT_WIDTH_MULTIPLIER = 10
     DEFAULT_DEPTH_MULTIPLIER = 10
     DEFAULT_PADDING = 1
-    MAX_GRID_RESIZES = 5
+    MAX_GRID_RESIZES = 3
 
     @staticmethod
     def convert_via_heuristics(
