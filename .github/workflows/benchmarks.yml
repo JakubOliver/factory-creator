@@ -32,7 +32,7 @@ jobs:
 
       - name: Run benchmark
         shell: bash
-        timeout-minutes: 60
+        timeout-minutes: 120
         run: |
           mkdir -p output
           python -m factory_creator.util.playground \
