@@ -20,9 +20,10 @@ REPEATS = 5
 
 def process_electric_mining_drill(
     retry_topological_ordering_resizes: bool,
+    repeat
 ) -> FactoryProcessingResult:
     OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
-    #random.seed(RANDOM_SEED)
+    random.seed(RANDOM_SEED + repeat)
     label = "retry" if retry_topological_ordering_resizes else "no retry"
 
     mutations = PluginConfiguration.create_mutations(
@@ -59,14 +60,16 @@ def process_electric_mining_drill(
 
 
 def run():
-    for _ in range(REPEATS):
+    for i in range(REPEATS):
         process_electric_mining_drill(
             retry_topological_ordering_resizes=True,
+            repeat=i
         )
 
-    for _ in range(REPEATS):
+    for i in range(REPEATS):
         process_electric_mining_drill(
             retry_topological_ordering_resizes=False,
+            repeat=i
         )
 
 
