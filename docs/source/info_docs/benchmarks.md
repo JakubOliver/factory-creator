@@ -2,31 +2,31 @@
 
 ## Hill climbing optimalizace
 
-V této sekci se budu věnovat tomu jak optimalizace dvou mutací v hillclimbu
-zrychlila dobu vypočtu.
+V této sekci se budu věnovat tomu, jak optimalizace dvou mutací v hillclimbu
+zrychlila dobu výpočtu.
 
 ### Omezení počtu mutačních pohybů
 
 První a velkou změnou, kterou jsem provedl pro optimalizaci doby u hill
 climbingu je omezení počtu mutačních pohybů. V původní verzi algoritmus počítal
-jak se jedinec změný, když v jedné generaci pohneme s každou budovou do všech 4
-možných směrů. Navzdory tomu, že tento přístup vede k tomu, že v každé generici
+jak se jedinec změní, když v jedné generaci pohneme s každou budovou do všech 4
+možných směrů. Navzdory tomu, že tento přístup vede k tomu, že v každé generaci
 pro hill climb najdeme nejlepší potomka/souseda, tak je tento přístup velmi
 výpočetně/časově náročný. A v praxi nepoužitelný pro větší továrny. Zároveň
 možná změna, že bychom použili pouze procentuální podmnožinu (podmnožinu, která
 obsahuje pouze x procent budov) se ukázala, že má stejný problém. A to takový,
 že se počítá velké množství mutačních pohybů, které se nikdy nepoužijí, poněvadž
 kvůli tomu, že používáme pouze hill climbing, tak se využije pouze ten nejlepší,
-tak že ostatní výpočty, mohou tak maximálně updatovat cache, u které je hittrate
+takže ostatní výpočty mohou maximálně updatovat cache, u které je hittrate
 po změně budovy velmi nízký (viz text níže).
 
-A tak se se nejlepší řešení ukázalo, že nejlepší je si vybrat pevně danou veliko
-podmnožiny budov. V mém případě jsem skončit u velikosti 4 budov, tedy s 4 směry
+Jako nejlepší řešení se ukázalo vybrat pevně danou velikost podmnožiny budov. V
+mém případě jsem skončil u velikosti 4 budov, tedy se 4 směry
 máme v každé generaci 16 mutačních pohybů a tedy 16 sousedů/potomků.
 
-Tedy s zvětšujícím se počtem budov se nám lineráně zvyšoval počet mutačních
-pohybů, které se museli vypočítat. A zároveň se nám alespoň lineárně zvyšovala
-doba výpočtu jednoho daného mutačnícho pohybu, poněvadž grafy byly větší a
+Tedy se zvětšujícím se počtem budov se nám lineárně zvyšoval počet mutačních
+pohybů, které se musely vypočítat. A zároveň se nám alespoň lineárně zvyšovala
+doba výpočtu jednoho daného mutačního pohybu, poněvadž grafy byly větší a
 komplikovanější.
 
 Díky tomu, že jsme omezili počet mutačních pohybů, tak jsme se zbavili
@@ -36,7 +36,7 @@ zrychlení výpočtu a pořád přítomného zlepšení z generace na generaci, 
 ve výsledku drastické zrychlení za velmi malou cenu v kvalitě výsledku.
 
 - S touto optimalizací jsem začal a v dané době jsem ještě neměl tak rozsáhlý
-  způsbo benchmarkování, takže máme pouze jeden benchmark, který se snaží
+  způsob benchmarkování, takže máme pouze jeden benchmark, který se snaží
   napodobit původní nastavení a subjektivně/objektivní manuální pozorování, při
   kterém byla změna opravdu znatelná.
 
@@ -45,17 +45,17 @@ ve výsledku drastické zrychlení za velmi malou cenu v kvalitě výsledku.
 Druhá přítomná mutace, tedy přepočítávání grafu pro nějaké jiné topologické
 uspořádání, se ukázala být problematická i na poměrně malých továrnách. A to
 kvůli tomu, že nějaká topologická uspořádání jsou méně vhodná než jiná, a v dané
-době přítomný algoritmus se snažil i tyto nevhodnát uspořádání několikrát
+době přítomný algoritmus se snažil i tato nevhodná uspořádání několikrát
 přeškálovat a znovu dopočítat (přeškálování znamená, že se zvýší odstupy mezi
-budovami, tedy dostane pásy/napojení má více místa jak si najít cestu).
+budovami, tedy pásy a napojení dostanou více místa pro nalezení cesty).
 
 #### Nevhodná a neřešitelná napojení
 
-Otázkou je zda grafy, které nejde sestrojit vůbec existjí? A odpověď je ano,
+Otázkou je, zda grafy, které nejde sestrojit, vůbec existují. A odpověď je ano,
 existují. Ale jsou to spíše okrajové a ne tak zajímavé případy, jak např.
 výrobna o velikosti 3x3 má pouze 12 okolních políček, která se dají použít pro
 napojení (použití velkého překladače pouze pozmění napojovací políčko, ale žádné
-nám nepřidá), tedy pokud bychom se někde snaižli napojit 13 pásů, tak to není
+nám nepřidá), tedy pokud bychom se někde snažili napojit 13 pásů, tak to není
 možné.
 
 Toto, ale není hlavní problém, s kterým jsem se potýkal. Mnohem větší problém
@@ -64,7 +64,7 @@ algoritmus, používáme ho chytře tak, že se snažíme nejdříve najít cest
 budovy nejblíže zdroje, ale i tak se může stát, že předchozí cesty zablokují
 cestu pro další budovu.
 
-Tedy se vlastně dostáváme k tomu, co vlastně je nevhovné topologické uspořádání,
+Tedy se vlastně dostáváme k tomu, co vlastně je nevhodné topologické uspořádání,
 to je takové, které vytváří konflikty v cestách, vynucuje přeškálování a bez
 MAPF algoritmu není řešitelné. Naší výhodou je, ale že takováto nevhodná
 uspořádání nevedou k dobrému výsledku. Jak z hlediska naší fitness, tak z
@@ -74,16 +74,16 @@ komplikovaná a konfliktní.
 
 #### Co dál?
 
-Další otázkou je jak, se tedy s takovýmito uspořádáními vypořádat. Víme, že tyto
+Další otázkou je, jak se tedy s takovýmito uspořádáními vypořádat. Víme, že tato
 nevhodná uspořádání se vyskytují, může jich být potenciálně velmi mnoho, jsou
 výpočetně náročná a nevedou k dobrým výsledkům. To by naznačovalo, že dobrý
-nápad by bylo úplně vypnout možnost přeškálování a využívat pouze prvotní
+nápad by byl úplně vypnout možnost přeškálování a využívat pouze prvotní
 uspořádání, toto je dobrý nápad, ale ne úplně v globálu.
 
-Při svých benchmarkách jsem zkoumal hlavně 2 věci, jaká konfigurace dokáže
-vyřešit s jakou rychlostí a úspěšností. Podmnožinu všech topologických
-uspořádání, pro recept/graph `electric-mining-drill`, který je stedně
-komplikovaný. A pro stejný recept 5 seedovaných runnů.
+Při svých benchmarcích jsem zkoumal hlavně 2 věci: jakou rychlostí a s jakou
+úspěšností dokážou různé konfigurace vyřešit podmnožinu všech topologických
+uspořádání pro recept/graph `electric-mining-drill`, který je středně
+komplikovaný, a jak se chovají při 5 seedovaných runech stejného receptu.
 
 U prvního testu s nastavením 5 přepočítávání grafu, jsem pro 100 náhodných
 topologických uspořádání, dokázal vyřešit všech 100.
@@ -93,26 +93,27 @@ topologických uspořádání, dokázal vyřešit všech 100.
 | 100/100 | 6.46493961384 | 0.107040703 | 258.604340126 |
 
 Celý run tohoto testu běžel skoro 650 sekund, tedy můžeme vidět, že ano,
-dokázali jsme vyřešit všechny topologická uspořádání, ale pouze nejnáročnějších
+dokázali jsme vyřešit všechna topologická uspořádání, ale pouze nejnáročnějších
 z nich nám zabralo polovinu celého času.
 
-Při nastavení 3 přepočítávání grafu, jsme už dostali pouze uspěšnost 97 %, ale
-za to jsme se zbavili horních extrémů. A 3krát zrychlily průměrný čas výpočtu.
+Při nastavení 3 přepočítávání grafu jsme už dostali pouze úspěšnost 97 %, ale
+zato jsme se zbavili horních extrémů. Průměrný čas výpočtu se téměř 3krát
+zkrátil.
 
 | Success | Average time  | Min time    | Max time     |
 | ------- | ------------- | ----------- | ------------ |
 | 97/100  | 2.26809643938 | 0.076653482 | 44.431602511 |
 
-U žádného opakování jsme se dosali na úspěšnost 62 % a na celkový čas 44 sekund.
+U žádného opakování jsme se dostali na úspěšnost 62 % a na celkový čas 44 sekund.
 
-Tedy jako můžeme vidět myšlenka přešklálování grafu není špatná, a má svoje
+Tedy jak můžeme vidět, myšlenka přeškálování grafu není špatná a má svoje
 místo. Pouze je potřeba ji použít rozumně.
 
-To je inhed vydět na druhém testu. Kde jsem navíc testoval přístup, že se
+To je ihned vidět na druhém testu, kde jsem navíc testoval přístup, že se
 opakování použije pouze při sestrojování prvotního grafu, ale nebude součástí
 evoluce.
 
-- vysledky níže jsou pouse pro první seed pro tento test, ale trend byl všude
+- výsledky níže jsou pouze pro první seed pro tento test, ale trend byl všude
   stejný
 
 | Popisek                                                 | Duraton         | Final fitness      |
@@ -122,7 +123,7 @@ evoluce.
 | 3x přepočítávání i v evoluci                            | 2186.471100     | -4113.536121673005 |
 | 3x přepočítávání pouze při sestrojování prvotního grafu | obdobné jako 5x | obdobné jako 5x    |
 
-Tedy na tomto přípakladu můžeme vidět, že absence přepočítávání grafu v evoluci,
+Tedy na tomto příkladu můžeme vidět, že absence přepočítávání grafu v evoluci
 zrychlí výpočet a zároveň dosahuje obdobně stejných výsledků. (To že se nám na
 tomto benchmarku podařilo dosáhnout stejného výsledku je spíše díky tomu, že
 daný recept, není úplně super obrovský. Proto v aktuální implementaci je v GUI
@@ -130,37 +131,37 @@ flag pro nastavení zda, chceme přepočítávání grafu v evoluci, či ne. Pon
 nějakých případech to může dávat smysl. Defaultně je tento flag nastavený na
 False.)
 
-Jestě abych se vrátí k úplné absenci přepočátávání grafu, tak toto není velmi
+Ještě abych se vrátil k úplné absenci přepočítávání grafu, tak toto není velmi
 dobrý nápad, poněvadž jenom na tomto středně těžkém benchmarku, se nám
-nepodařilo vytvořit továrnu pro vstupní recept, navstdory tomu, že graf je
-vytváření s Dependency tree, který již rozumně shlukuje budovy. Tedy dobrý
+nepodařilo vytvořit továrnu pro vstupní recept, navzdory tomu, že graf je
+vytvářen pomocí Dependency tree, který již rozumně shlukuje budovy. Tedy dobrý
 defaultní kompromis je, ponechání přepočítávání grafu pouze při sestrojování
-prvotního grafu, ale ne v evoluci. Kde si cheme zachovat rychlost výpočtu a
+prvotního grafu, ale ne v evoluci. Zde si chceme zachovat rychlost výpočtu a
 zároveň využít pouze opravdu zlepšující topologická uspořádání (pořád je ale
 možné přepočítávání spustit).
 
-- dodatečně jsem se snažil jseště simulovat stav výpočtu, který byl v červenci
+- dodatečně jsem se snažil ještě simulovat stav výpočtu, který byl v červenci
   2026, bohužel celý benchmark se nedokázal dopočítat do 5 hodin, tedy nemáme v
-  tabulce celkové výsledky. Ale máme první test, stejný test, který se vyskytuje
-  v tabulkách výše, a při tomto testu jsme při počítání s bez přepočávání
-  evoluce, tedy aktuální přístup, ale s počítávní všech evolučních posunu,
-  dostali na čas okolo 300 sekund, tedy při středně velkém recepty, se nám
-  podařilo zrychlit výpočet 2x krát. Při větších receptů, by se toto zrychlení
-  mělo projevit ještě více (i když početně náročnější je druhá mutace pracují s
+  tabulce celkové výsledky. Máme ale první test, stejný test, který se vyskytuje
+  v tabulkách výše. Při tomto testu jsme bez přepočítávání v evoluci, tedy s
+  aktuálním přístupem, ale s počítáním všech evolučních posunů, dostali čas okolo
+  300 sekund. Při středně velkém receptu se nám tedy podařilo zrychlit výpočet
+  2krát. Při větších receptech by se toto zrychlení mělo projevit ještě více (i
+  když výpočetně náročnější je druhá mutace pracující s
   novými topologickými uspořádáními).
 
 ### Cachování
 
 Jednou z implementačních optimalizací, které jsem už částečně měl připravené
-předtím bylo cachování. Jak pro fitness, tak pro výpočet mutace. Pohužel se
-ukázala, že pomoc, kterou cachování poskytuje je velmi malá. Například pro
+předtím bylo cachování, jak pro fitness, tak pro výpočet mutace. Bohužel se
+ukázalo, že pomoc, kterou cachování poskytuje, je velmi malá. Například pro
 cachování mutace topologických uspořádání s receptem `electric-mining-drill` se
 ukázalo, že existuje pro daný graf téměř 15 milionů topologických uspořádání
 (hodnota vracená z networkx knihovní funkce, tak z jiného algoritmu), ale při
 výpočtu s 100 generacemi vytvoříme pouze 400 topologických uspořádání. Tedy
 hitrate cache je velmi nízký. A pro komplikovanější recepty může počet
 topologických uspořádání růst až faktoriálně, takže se dá očekávat, že hitrate
-cache bude ještě nižší (samožřejmě nemusí platit přímá úměra více vrcholy více
+cache bude ještě nižší (samozřejmě nemusí platit přímá úměra: více vrcholů, více
 topologických uspořádání, ale u receptů toto pravidlo tak nějak platí).
 
 ## Tabulka benchmarků
