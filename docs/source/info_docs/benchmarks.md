@@ -149,6 +149,20 @@ možné přepočítávání spustit).
   mělo projevit ještě více (i když početně náročnější je druhá mutace pracují s
   novými topologickými uspořádáními).
 
+### Cachování
+
+Jednou z implementačních optimalizací, které jsem už částečně měl připravené
+předtím bylo cachování. Jak pro fitness, tak pro výpočet mutace. Pohužel se
+ukázala, že pomoc, kterou cachování poskytuje je velmi malá. Například pro
+cachování mutace topologických uspořádání s receptem `electric-mining-drill` se
+ukázalo, že existuje pro daný graf téměř 15 milionů topologických uspořádání
+(hodnota vracená z networkx knihovní funkce, tak z jiného algoritmu), ale při
+výpočtu s 100 generacemi vytvoříme pouze 400 topologických uspořádání. Tedy
+hitrate cache je velmi nízký. A pro komplikovanější recepty může počet
+topologických uspořádání růst až faktoriálně, takže se dá očekávat, že hitrate
+cache bude ještě nižší (samožřejmě nemusí platit přímá úměra více vrcholy více
+topologických uspořádání, ale u receptů toto pravidlo tak nějak platí).
+
 ## Tabulka benchmarků
 
 Tabulka s vygenerovanými CSV tabulkami benchmarků s Github releasu pro
