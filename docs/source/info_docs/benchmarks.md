@@ -92,11 +92,9 @@ topologických uspořádání, dokázal vyřešit všech 100.
 | ------- | ------------- | ----------- | ------------- |
 | 100/100 | 6.46493961384 | 0.107040703 | 258.604340126 |
 
-Celý
-[run](https://github.com/JakubOliver/factory-creator/actions/runs/33269474794/job/99145244688)
-tohoto testu běžel skoro 650 sekund, tedy můžeme vidět, že ano, dokázali jsme
-vyřešit všechny topologická uspořádání, ale pouze nejnáročnějších z nich nám
-zabralo polovinu celého času.
+Celý run tohoto testu běžel skoro 650 sekund, tedy můžeme vidět, že ano,
+dokázali jsme vyřešit všechny topologická uspořádání, ale pouze nejnáročnějších
+z nich nám zabralo polovinu celého času.
 
 Při nastavení 3 přepočítávání grafu, jsme už dostali pouze uspěšnost 97 %, ale
 za to jsme se zbavili horních extrémů. A 3krát zrychlily průměrný čas výpočtu.
@@ -106,6 +104,23 @@ za to jsme se zbavili horních extrémů. A 3krát zrychlily průměrný čas v�
 | 97/100  | 2.26809643938 | 0.076653482 | 44.431602511 |
 
 U žádného opakování jsme se dosali na úspěšnost 62 % a na celkový čas 44 sekund.
+
+Tedy jako můžeme vidět myšlenka přešklálování grafu není špatná, a má svoje
+místo. Pouze je potřeba ji použít rozumně.
+
+To je inhed vydět na druhém testu. Kde jsem navíc testoval přístup, že se
+opakování použije pouze při sestrojování prvotního grafu, ale nebude součástí
+evoluce.
+
+- vysledky níže jsou pouse pro první seed pro tento test, ale trend byl všude
+  stejný
+
+| Popisek                                                 | Duraton         | Final fitness      |
+| ------------------------------------------------------- | --------------- | ------------------ |
+| 5x přepočítávání i v evoluci                            | 4654.566225     | -4113.536121673005 |
+| 5x přepočítávání pouze při sestrojování prvotního grafu | 166.516444      | -4113.536121673005 |
+| 3x přepočítávání i v evoluci                            | 2186.471100     | -4113.536121673005 |
+| 3x přepočítávání pouze při sestrojování prvotního grafu | obdobné jako 5x | obdobné jako 5x    |
 
 ## Tabulka benchmarků
 
