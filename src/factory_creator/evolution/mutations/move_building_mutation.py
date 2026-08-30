@@ -10,7 +10,7 @@ from ...grid.grid import Grid
 from ...grid.grid_entry import GridEntry, GridEntryTransportationId, GridEntryTypes
 from ...util.cancellation import ComputationCancelled, raise_if_cancelled
 
-BUILDINGS_PER_MUTATION = 4
+BUILDINGS_PER_MUTATION = float("inf")  # Set to a finite number to limit the number of buildings processed per mutation
 
 
 class MoveBuildingMutation(Mutation):
