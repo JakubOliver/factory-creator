@@ -17,12 +17,12 @@ možná změna, že bychom použili pouze procentuální podmnožinu (podmnožin
 obsahuje pouze x procent budov) se ukázala, že má stejný problém. A to takový,
 že se počítá velké množství mutačních pohybů, které se nikdy nepoužijí, poněvadž
 kvůli tomu, že používáme pouze hill climbing, tak se využije pouze ten nejlepší,
-takže ostatní výpočty mohou maximálně updatovat cache, u které je hittrate
-po změně budovy velmi nízký (viz text níže).
+takže ostatní výpočty mohou maximálně updatovat cache, u které je hittrate po
+změně budovy velmi nízký (viz text níže).
 
 Jako nejlepší řešení se ukázalo vybrat pevně danou velikost podmnožiny budov. V
-mém případě jsem skončil u velikosti 4 budov, tedy se 4 směry
-máme v každé generaci 16 mutačních pohybů a tedy 16 sousedů/potomků.
+mém případě jsem skončil u velikosti 4 budov, tedy se 4 směry máme v každé
+generaci 16 mutačních pohybů a tedy 16 sousedů/potomků.
 
 Tedy se zvětšujícím se počtem budov se nám lineárně zvyšoval počet mutačních
 pohybů, které se musely vypočítat. A zároveň se nám alespoň lineárně zvyšovala
@@ -104,10 +104,11 @@ zkrátil.
 | ------- | ------------- | ----------- | ------------ |
 | 97/100  | 2.26809643938 | 0.076653482 | 44.431602511 |
 
-U žádného opakování jsme se dostali na úspěšnost 62 % a na celkový čas 44 sekund.
+U žádného opakování jsme se dostali na úspěšnost 62 % a na celkový čas 44
+sekund.
 
-Tedy jak můžeme vidět, myšlenka přeškálování grafu není špatná a má svoje
-místo. Pouze je potřeba ji použít rozumně.
+Tedy jak můžeme vidět, myšlenka přeškálování grafu není špatná a má svoje místo.
+Pouze je potřeba ji použít rozumně.
 
 To je ihned vidět na druhém testu, kde jsem navíc testoval přístup, že se
 opakování použije pouze při sestrojování prvotního grafu, ale nebude součástí
@@ -144,11 +145,11 @@ možné přepočítávání spustit).
   2026, bohužel celý benchmark se nedokázal dopočítat do 5 hodin, tedy nemáme v
   tabulce celkové výsledky. Máme ale první test, stejný test, který se vyskytuje
   v tabulkách výše. Při tomto testu jsme bez přepočítávání v evoluci, tedy s
-  aktuálním přístupem, ale s počítáním všech evolučních posunů, dostali čas okolo
-  300 sekund. Při středně velkém receptu se nám tedy podařilo zrychlit výpočet
-  2krát. Při větších receptech by se toto zrychlení mělo projevit ještě více (i
-  když výpočetně náročnější je druhá mutace pracující s
-  novými topologickými uspořádáními).
+  aktuálním přístupem, ale s počítáním všech evolučních posunů, dostali čas
+  okolo 300 sekund. Při středně velkém receptu se nám tedy podařilo zrychlit
+  výpočet 2krát. Při větších receptech by se toto zrychlení mělo projevit ještě
+  více (i když výpočetně náročnější je druhá mutace pracující s novými
+  topologickými uspořádáními).
 
 ### Cachování
 
@@ -163,6 +164,20 @@ hitrate cache je velmi nízký. A pro komplikovanější recepty může počet
 topologických uspořádání růst až faktoriálně, takže se dá očekávat, že hitrate
 cache bude ještě nižší (samozřejmě nemusí platit přímá úměra: více vrcholů, více
 topologických uspořádání, ale u receptů toto pravidlo tak nějak platí).
+
+### Shrnutí výsledků
+
+- Omezení mutace posunu na čtyři vybrané budovy snížilo počet zkoušených
+  mutačních pohybů na maximálně 16 v jedné generaci. Počet kandidátů tak již
+  neroste přímo s celkovým počtem budov v továrně.
+- Snížení maximálního počtu přepočítávání grafu z 5 na 3 zkrátilo průměrnou dobu
+  zpracování jednoho topologického uspořádání z 6,46 sekundy na 2,27 sekundy,
+  tedy přibližně 2,85krát. Úspěšnost přitom klesla ze 100 % na 97 %.
+- Největší zrychlení přineslo vypnutí opakovaného přepočítávání grafu během
+  evoluce. V prvním seedovaném běhu se doba výpočtu zkrátila z 4654,57 sekundy
+  na 166,52 sekundy, tedy přibližně 28krát, zatímco výsledná fitness zůstala
+  stejná. Tento údaj popisuje konkrétní běh receptu `electric-mining-drill`, ne
+  garantované zrychlení pro libovolnou továrnu.
 
 ## Tabulka benchmarků
 
