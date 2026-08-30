@@ -33,6 +33,7 @@ class ComputeRecipeWorker(QObject):
         output_level: OutputLevel = OutputLevel.MEDIUM,
         evolution_caching: bool = True,
         output_efficiency: float = 1.0,
+        initial_grid_resize_retries: int = 3,
     ) -> None:
         """
         Store the recipe path, selected recipe, graph options, and evolution limits.
@@ -44,6 +45,8 @@ class ComputeRecipeWorker(QObject):
         :param evolution_iterations: Maximum number of evolution iterations.
         :param evolution_stagnation: Stagnation threshold for stopping evolution.
         :param output_efficiency: Requested utilization of the root factory.
+        :param initial_grid_resize_retries: Maximum number of larger-grid retries
+            while building the initial grid.
         """
         super().__init__()
         self.path = path
@@ -55,6 +58,7 @@ class ComputeRecipeWorker(QObject):
         self.evolution_stagnation = evolution_stagnation
         self.output_level = output_level
         self.evolution_caching = evolution_caching
+        self.initial_grid_resize_retries = initial_grid_resize_retries
         self.mutations = mutations
         self.fitness_aspects = fitness_aspects
         self._stop_event = Event()
@@ -84,6 +88,7 @@ class ComputeRecipeWorker(QObject):
                 evolution_caching = self.evolution_caching,
                 mutations = self.mutations,
                 fitness_aspects = self.fitness_aspects,
+                initial_grid_resize_retries=self.initial_grid_resize_retries,
                 stop_requested=self._stop_event.is_set,
             ))
             

@@ -34,6 +34,7 @@ class FactoryProcessor:
         evolution_caching = True,        
         stop_requested=never_cancelled,
         output_efficiency=1.0,
+        initial_grid_resize_retries=3,
     ) -> FactoryProcessingResult | None:
         reporter = OutputReporter(report_method, output_level)
         factories = FactoryLoader.load(path)
@@ -54,6 +55,7 @@ class FactoryProcessor:
                 report_method=reporter.high,
                 error_report_method=reporter.medium,
                 stop_requested=stop_requested,
+                max_grid_resizes=initial_grid_resize_retries,
             )
 
             raise_if_cancelled(stop_requested)

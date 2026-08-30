@@ -54,6 +54,7 @@ class PluginConfiguration:
         discovered: list[DiscoveredClass[Mutation]],
         configurations: dict[str, MutationConfiguration] | None = None,
         retry_topological_ordering_resizes: bool = False,
+        mutation_grid_resize_retries: int = 3,
     ) -> list[Mutation]:
         result = []
         configurations = configurations or {}
@@ -72,6 +73,7 @@ class PluginConfiguration:
             #TODO: Maybe find better solution for this, than checking for one specific mutation type. 
             if isinstance(mutation, MoveSubgraphMutation):
                 mutation.retry_resizes = retry_topological_ordering_resizes
+                mutation.max_grid_resizes = mutation_grid_resize_retries
 
             result.append(mutation)
 

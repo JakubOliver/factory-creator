@@ -51,6 +51,10 @@ class MainWindow(QMainWindow):
     RETRY_TOPOLOGICAL_ORDERING_RESIZES_SETTING = (
         "evolution/retry_topological_ordering_resizes"
     )
+    INITIAL_GRID_RESIZE_RETRIES_SETTING = "factory/initial_grid_resize_retries"
+    MUTATION_GRID_RESIZE_RETRIES_SETTING = (
+        "evolution/mutation_grid_resize_retries"
+    )
     MUTATION_PLUGINS_PATH_SETTING = "evolution/mutation_plugins_path"
     FITNESS_PLUGINS_PATH_SETTING = "evolution/fitness_plugins_path"
     MUTATION_CONFIG_SETTING = "evolution/mutations"
@@ -92,6 +96,16 @@ class MainWindow(QMainWindow):
             self.RETRY_TOPOLOGICAL_ORDERING_RESIZES_SETTING,
             False,
             type=bool,
+        )
+        self.initial_grid_resize_retries = self.settings.value(
+            self.INITIAL_GRID_RESIZE_RETRIES_SETTING,
+            3,
+            type=int,
+        )
+        self.mutation_grid_resize_retries = self.settings.value(
+            self.MUTATION_GRID_RESIZE_RETRIES_SETTING,
+            3,
+            type=int,
         )
         self.mutation_plugins_path = self.settings.value(
             self.MUTATION_PLUGINS_PATH_SETTING, "", type=str
@@ -160,6 +174,8 @@ class MainWindow(QMainWindow):
             parent=self,
             evolution_caching=self.evolution_caching,
             retry_topological_ordering_resizes=self.retry_topological_ordering_resizes,
+            initial_grid_resize_retries=self.initial_grid_resize_retries,
+            mutation_grid_resize_retries=self.mutation_grid_resize_retries,
             mutation_plugins_path=self.mutation_plugins_path,
             fitness_plugins_path=self.fitness_plugins_path,
         )
@@ -169,6 +185,8 @@ class MainWindow(QMainWindow):
             self.factory_url = dialog.factory_url()
             self.evolution_caching = dialog.evolution_caching()
             self.retry_topological_ordering_resizes = dialog.retry_topological_ordering_resizes()
+            self.initial_grid_resize_retries = dialog.initial_grid_resize_retries()
+            self.mutation_grid_resize_retries = dialog.mutation_grid_resize_retries()
             self.mutation_plugins_path = dialog.mutation_plugins_path()
             self.fitness_plugins_path = dialog.fitness_plugins_path()
 
@@ -189,6 +207,14 @@ class MainWindow(QMainWindow):
             self.settings.setValue(
                 self.RETRY_TOPOLOGICAL_ORDERING_RESIZES_SETTING,
                 self.retry_topological_ordering_resizes,
+            )
+            self.settings.setValue(
+                self.INITIAL_GRID_RESIZE_RETRIES_SETTING,
+                self.initial_grid_resize_retries,
+            )
+            self.settings.setValue(
+                self.MUTATION_GRID_RESIZE_RETRIES_SETTING,
+                self.mutation_grid_resize_retries,
             )
             self.settings.setValue(
                 self.MUTATION_PLUGINS_PATH_SETTING, self.mutation_plugins_path
@@ -425,6 +451,7 @@ class MainWindow(QMainWindow):
                 retry_topological_ordering_resizes=(
                     self.retry_topological_ordering_resizes
                 ),
+                mutation_grid_resize_retries=self.mutation_grid_resize_retries,
             )
             fitness_aspects = PluginConfiguration.create_fitness_aspects(
                 PluginConfiguration.discover_fitness_aspects(
@@ -452,8 +479,9 @@ class MainWindow(QMainWindow):
             mutations,
             fitness_aspects,
             self.output_level,
-            self.evolution_caching,
-            self.options_widget.output_efficiency(),
+            evolution_caching=self.evolution_caching,
+            output_efficiency=self.options_widget.output_efficiency(),
+            initial_grid_resize_retries=self.initial_grid_resize_retries,
         )
 
         self.compute_worker.moveToThread(self.compute_thread)

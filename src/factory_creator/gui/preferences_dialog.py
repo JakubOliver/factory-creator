@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QSlider,
+    QSpinBox,
     QPushButton,
     QFileDialog,
     QVBoxLayout,
@@ -26,10 +27,12 @@ class PreferencesDialog(QDialog):
         mutation_plugins_path: str = "",
         fitness_plugins_path: str = "",
         retry_topological_ordering_resizes: bool = False,
+        initial_grid_resize_retries: int = 3,
+        mutation_grid_resize_retries: int = 3,
     ):
         super().__init__(parent)
         self.setWindowTitle("Preferences")
-        self.setMinimumWidth(320)
+        self.setMinimumWidth(420)
 
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Report detail"))
@@ -68,8 +71,20 @@ class PreferencesDialog(QDialog):
         )
         layout.addWidget(self.evolution_caching_checkbox)
 
+        initial_resize_layout = QHBoxLayout()
+        initial_resize_layout.addWidget(QLabel("Initial grid resize retries"))
+        self.initial_grid_resize_retries_input = QSpinBox()
+        self.initial_grid_resize_retries_input.setRange(0, 100)
+        self.initial_grid_resize_retries_input.setValue(initial_grid_resize_retries)
+        self.initial_grid_resize_retries_input.setToolTip(
+            "Maximum number of larger-grid retries while building the initial grid."
+        )
+        initial_resize_layout.addWidget(self.initial_grid_resize_retries_input)
+        layout.addLayout(initial_resize_layout)
+
+        mutation_resize_layout = QHBoxLayout()
         self.retry_topological_ordering_resizes_checkbox = QCheckBox(
-            "Retry topological orderings with larger grids"
+            "Retry mutation topological orderings"
         )
         self.retry_topological_ordering_resizes_checkbox.setChecked(
             retry_topological_ordering_resizes
@@ -78,7 +93,26 @@ class PreferencesDialog(QDialog):
             "Retry failed topological orderings on progressively larger grids "
             "during evolution."
         )
-        layout.addWidget(self.retry_topological_ordering_resizes_checkbox)
+        mutation_resize_layout.addWidget(
+            self.retry_topological_ordering_resizes_checkbox
+        )
+        mutation_resize_layout.addWidget(QLabel("Resize retries"))
+        self.mutation_grid_resize_retries_input = QSpinBox()
+        self.mutation_grid_resize_retries_input.setRange(0, 100)
+        self.mutation_grid_resize_retries_input.setValue(
+            mutation_grid_resize_retries
+        )
+        self.mutation_grid_resize_retries_input.setToolTip(
+            "Maximum number of larger-grid retries for each topological mutation."
+        )
+        self.mutation_grid_resize_retries_input.setEnabled(
+            retry_topological_ordering_resizes
+        )
+        self.retry_topological_ordering_resizes_checkbox.toggled.connect(
+            self.mutation_grid_resize_retries_input.setEnabled
+        )
+        mutation_resize_layout.addWidget(self.mutation_grid_resize_retries_input)
+        layout.addLayout(mutation_resize_layout)
 
         self.mutation_plugins_input = self._add_directory_input(
             layout, "User mutations directory", mutation_plugins_path
@@ -111,6 +145,12 @@ class PreferencesDialog(QDialog):
 
     def retry_topological_ordering_resizes(self) -> bool:
         return self.retry_topological_ordering_resizes_checkbox.isChecked()
+
+    def initial_grid_resize_retries(self) -> int:
+        return self.initial_grid_resize_retries_input.value()
+
+    def mutation_grid_resize_retries(self) -> int:
+        return self.mutation_grid_resize_retries_input.value()
 
     def mutation_plugins_path(self) -> str:
         return self.mutation_plugins_input.text().strip()

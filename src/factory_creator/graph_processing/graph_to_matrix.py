@@ -167,6 +167,7 @@ class GraphToMatrix:
         error_report_method: callable | None = None,
         stop_requested: Callable[[], bool] = never_cancelled,
         retry_resizes: bool = True,
+        max_grid_resizes: int | None = None,
     ) -> Grid:
         """
         Converts factory from graph to grid representation with the use of heuristics
@@ -175,6 +176,7 @@ class GraphToMatrix:
         :param graph: Graph of the factory that will be transformed.
         :param retry_resizes: Whether failed conversions should be retried on
             progressively larger grids.
+        :param max_grid_resizes: Maximum number of retries on larger grids.
         :return: Grid representation of the factory.
         """
 
@@ -183,10 +185,16 @@ class GraphToMatrix:
 
         width_multiplier = GraphToMatrix.DEFAULT_WIDTH_MULTIPLIER
         depth_multiplier = GraphToMatrix.DEFAULT_DEPTH_MULTIPLIER
-        max_grid_resizes = (
+        configured_max_grid_resizes = (
             GraphToMatrix.MAX_GRID_RESIZES
-            if retry_resizes
-            else 0
+            if max_grid_resizes is None
+            else max_grid_resizes
+        )
+        if configured_max_grid_resizes < 0:
+            raise ValueError("Maximum grid resizes cannot be negative.")
+        
+        effective_max_grid_resizes = (
+            configured_max_grid_resizes if retry_resizes else 0
         )
 
         resize_count = 0
@@ -210,7 +218,7 @@ class GraphToMatrix:
             except ComputationCancelled:
                 raise
             except Exception as e:
-                if resize_count >= max_grid_resizes:
+                if resize_count >= effective_max_grid_resizes:
                     error_report_method(
                         f"Grid conversion failed after {resize_count} resizes: {e}"
                     )
@@ -223,7 +231,7 @@ class GraphToMatrix:
 
                 error_report_method(
                     f"Grid conversion failed; resize {resize_count}/"
-                    f"{max_grid_resizes}: padding: {padding}, "
+                    f"{effective_max_grid_resizes}: padding: {padding}, "
                     f"width_multiplier: {width_multiplier}, "
                     f"depth_multiplier: {depth_multiplier}"
                 )
