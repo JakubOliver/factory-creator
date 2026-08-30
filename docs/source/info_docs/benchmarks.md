@@ -72,6 +72,22 @@ hlediska vizuálního, kdy předpokládám že upřednostníme taková napojení
 jsou strukturovaná, přehledná a kompaktní, než taková, která jsou chaotická,
 komplikovaná a konfliktní.
 
+Příklad níže ukazuje, jak nás dokáže dostat A\* (single agent pathfinding) do
+slepé uličky, kdy se snažíme napojit budovu s železnými tyčemi (vyrobna v 3.
+vrstvě) na budovu s trubkami (vyrobna v 2. vrstvě). Bohužel předešlé cesty
+zablokovaly cestu pro toto napojení. Jak je vidět, tak daná situace je
+řešitelná. (Pro jiné topologické uspořádání, které by dalo jiné pořadí napojení
+v 3. vrstvě by tuto situaci vyřešlo.)
+
+![Situace, která není řešitelná při daném pořadí pomocí SAPF](../_static/images/unsolvable_via_SAPF.png)
+
+- tento obrázek pouze ilustruje problém, který se může vyskytnout, ale princip
+  je velmi podobný. Navíc problém blokování cesty není pouze u znovuvytvoření
+  při novém topologickém uspořádání, ale můžeme se s ním setkat i při mutaci
+  posunu, kdy při posunutí odebíráme všechny pásy budovy a následně hledáno pro
+  tuto budovu nové cesty. Ale může se stát (a stává se), že posunutí zablokuje
+  cestu.
+
 #### Co dál?
 
 Další otázkou je, jak se tedy s takovýmito uspořádáními vypořádat. Víme, že tato
@@ -117,7 +133,7 @@ evoluce.
 - výsledky níže jsou pouze pro první seed pro tento test, ale trend byl všude
   stejný
 
-| Popisek                                                 | Duraton         | Final fitness      |
+| Popisek                                                 | Duration        | Final fitness      |
 | ------------------------------------------------------- | --------------- | ------------------ |
 | 5x přepočítávání i v evoluci                            | 4654.566225     | -4113.536121673005 |
 | 5x přepočítávání pouze při sestrojování prvotního grafu | 166.516444      | -4113.536121673005 |
