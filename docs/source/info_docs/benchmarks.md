@@ -139,6 +139,16 @@ prvotního grafu, ale ne v evoluci. Kde si cheme zachovat rychlost výpočtu a
 zároveň využít pouze opravdu zlepšující topologická uspořádání (pořád je ale
 možné přepočítávání spustit).
 
+- dodatečně jsem se snažil jseště simulovat stav výpočtu, který byl v červenci
+  2026, bohužel celý benchmark se nedokázal dopočítat do 5 hodin, tedy nemáme v
+  tabulce celkové výsledky. Ale máme první test, stejný test, který se vyskytuje
+  v tabulkách výše, a při tomto testu jsme při počítání s bez přepočávání
+  evoluce, tedy aktuální přístup, ale s počítávní všech evolučních posunu,
+  dostali na čas okolo 300 sekund, tedy při středně velkém recepty, se nám
+  podařilo zrychlit výpočet 2x krát. Při větších receptů, by se toto zrychlení
+  mělo projevit ještě více (i když početně náročnější je druhá mutace pracují s
+  novými topologickými uspořádáními).
+
 ## Tabulka benchmarků
 
 Tabulka s vygenerovanými CSV tabulkami benchmarků s Github releasu pro
