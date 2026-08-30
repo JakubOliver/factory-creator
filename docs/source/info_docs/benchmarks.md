@@ -122,6 +122,23 @@ evoluce.
 | 3x přepočítávání i v evoluci                            | 2186.471100     | -4113.536121673005 |
 | 3x přepočítávání pouze při sestrojování prvotního grafu | obdobné jako 5x | obdobné jako 5x    |
 
+Tedy na tomto přípakladu můžeme vidět, že absence přepočítávání grafu v evoluci,
+zrychlí výpočet a zároveň dosahuje obdobně stejných výsledků. (To že se nám na
+tomto benchmarku podařilo dosáhnout stejného výsledku je spíše díky tomu, že
+daný recept, není úplně super obrovský. Proto v aktuální implementaci je v GUI
+flag pro nastavení zda, chceme přepočítávání grafu v evoluci, či ne. Poněvadž v
+nějakých případech to může dávat smysl. Defaultně je tento flag nastavený na
+False.)
+
+Jestě abych se vrátí k úplné absenci přepočátávání grafu, tak toto není velmi
+dobrý nápad, poněvadž jenom na tomto středně těžkém benchmarku, se nám
+nepodařilo vytvořit továrnu pro vstupní recept, navstdory tomu, že graf je
+vytváření s Dependency tree, který již rozumně shlukuje budovy. Tedy dobrý
+defaultní kompromis je, ponechání přepočítávání grafu pouze při sestrojování
+prvotního grafu, ale ne v evoluci. Kde si cheme zachovat rychlost výpočtu a
+zároveň využít pouze opravdu zlepšující topologická uspořádání (pořád je ale
+možné přepočítávání spustit).
+
 ## Tabulka benchmarků
 
 Tabulka s vygenerovanými CSV tabulkami benchmarků s Github releasu pro
