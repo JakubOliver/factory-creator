@@ -1,0 +1,922 @@
+[
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "steel-plate"
+      }
+    ],
+    "name": "barrel",
+    "enabled": false,
+    "subgroup": "intermediate-product",
+    "allow_productivity": true,
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "barrel"
+      }
+    ],
+    "category": "crafting",
+    "energy_required": 1
+  },
+  {
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "iron-stick"
+      }
+    ],
+    "name": "iron-stick",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      }
+    ],
+    "name": "iron-gear-wheel"
+  },
+  {
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      },
+      {
+        "amount": 3,
+        "type": "item",
+        "name": "copper-cable"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "electronic-circuit"
+      }
+    ],
+    "name": "electronic-circuit",
+    "enabled": false
+  },
+  {
+    "results": [
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "transport-belt"
+      }
+    ],
+    "type": "recipe",
+    "name": "transport-belt",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      }
+    ]
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 3,
+        "type": "item",
+        "name": "electronic-circuit"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 10,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "electric-mining-drill"
+      }
+    ],
+    "name": "electric-mining-drill",
+    "enabled": false,
+    "energy_required": 2
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 3,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "stone-furnace"
+      },
+      {
+        "amount": 3,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "burner-mining-drill"
+      }
+    ],
+    "name": "burner-mining-drill",
+    "energy_required": 2
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "electronic-circuit"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "inserter"
+      }
+    ],
+    "name": "inserter",
+    "enabled": false
+  },
+  {
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "burner-inserter"
+      }
+    ],
+    "type": "recipe",
+    "name": "burner-inserter",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      }
+    ]
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "pipe"
+      }
+    ],
+    "name": "pipe",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "copper-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "copper-cable"
+      }
+    ],
+    "name": "copper-cable",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "wood"
+      },
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "copper-cable"
+      }
+    ],
+    "results": [
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "small-electric-pole"
+      }
+    ],
+    "name": "small-electric-pole",
+    "enabled": false
+  },
+  {
+    "crafting_machine_tint": {
+      "secondary": {
+        "g": 0.0,
+        "r": 1.0,
+        "a": 1.0,
+        "b": 0.0
+      },
+      "primary": {
+        "g": 0.0,
+        "r": 1.0,
+        "a": 1.0,
+        "b": 0.0
+      }
+    },
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "copper-plate"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "automation-science-pack"
+      }
+    ],
+    "name": "automation-science-pack",
+    "enabled": false,
+    "energy_required": 5
+  },
+  {
+    "enabled": false,
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "steel-plate"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "pipe"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "engine-unit"
+      }
+    ],
+    "name": "engine-unit",
+    "category": "advanced-crafting",
+    "energy_required": 10
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 8,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-chest"
+      }
+    ],
+    "name": "iron-chest",
+    "enabled": true
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 4,
+        "type": "item",
+        "name": "iron-stick"
+      },
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "steel-plate"
+      },
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "copper-cable"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "medium-electric-pole"
+      }
+    ],
+    "name": "medium-electric-pole",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 8,
+        "type": "item",
+        "name": "steel-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "steel-chest"
+      }
+    ],
+    "name": "steel-chest",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "steel-plate"
+      },
+      {
+        "amount": 15,
+        "type": "item",
+        "name": "electronic-circuit"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "copper-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "solar-panel"
+      }
+    ],
+    "name": "solar-panel",
+    "enabled": false,
+    "energy_required": 10
+  },
+  {
+    "energy_required": 3.2,
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "copper-ore"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "copper-plate"
+      }
+    ],
+    "name": "copper-plate",
+    "category": "smelting",
+    "auto_recycle": false
+  },
+  {
+    "energy_required": 3.2,
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-ore"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "name": "iron-plate",
+    "category": "smelting",
+    "auto_recycle": false
+  },
+  {
+    "energy_required": 16,
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "steel-plate"
+      }
+    ],
+    "name": "steel-plate",
+    "category": "smelting",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 10,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 10,
+        "type": "item",
+        "name": "copper-plate"
+      },
+      {
+        "amount": 20,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "gun-turret"
+      }
+    ],
+    "name": "gun-turret",
+    "enabled": false,
+    "energy_required": 8
+  },
+  {
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "wooden-chest"
+      }
+    ],
+    "type": "recipe",
+    "name": "wooden-chest",
+    "ingredients": [
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "wood"
+      }
+    ]
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "electronic-circuit"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "display-panel"
+      }
+    ],
+    "name": "display-panel",
+    "enabled": false
+  },
+  {
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "stone-furnace"
+      }
+    ],
+    "type": "recipe",
+    "name": "stone-furnace",
+    "ingredients": [
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "stone"
+      }
+    ]
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "stone-furnace"
+      },
+      {
+        "amount": 4,
+        "type": "item",
+        "name": "pipe"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "boiler"
+      }
+    ],
+    "name": "boiler",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "inserter"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "long-handed-inserter"
+      }
+    ],
+    "name": "long-handed-inserter",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "electronic-circuit"
+      },
+      {
+        "amount": 3,
+        "type": "item",
+        "name": "copper-cable"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "small-lamp"
+      }
+    ],
+    "name": "small-lamp",
+    "enabled": false
+  },
+  {
+    "crafting_machine_tint": {
+      "secondary": {
+        "g": 1.0,
+        "r": 0.0,
+        "a": 1.0,
+        "b": 0.0
+      },
+      "primary": {
+        "g": 1.0,
+        "r": 0.0,
+        "a": 1.0,
+        "b": 0.0
+      }
+    },
+    "type": "recipe",
+    "allow_productivity": true,
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "inserter"
+      },
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "transport-belt"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "logistic-science-pack"
+      }
+    ],
+    "name": "logistic-science-pack",
+    "enabled": false,
+    "energy_required": 6
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "electronic-circuit"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "iron-plate"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "rail-signal"
+      }
+    ],
+    "name": "rail-signal",
+    "enabled": false
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "iron-plate"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "copper-cable"
+      },
+      {
+        "amount": 2,
+        "type": "item",
+        "name": "electronic-circuit"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "power-switch"
+      }
+    ],
+    "name": "power-switch",
+    "enabled": false,
+    "energy_required": 2
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 3,
+        "type": "item",
+        "name": "iron-plate"
+      },
+      {
+        "amount": 4,
+        "type": "item",
+        "name": "iron-stick"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "copper-cable"
+      },
+      {
+        "amount": 4,
+        "type": "item",
+        "name": "electronic-circuit"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "programmable-speaker"
+      }
+    ],
+    "name": "programmable-speaker",
+    "enabled": false,
+    "energy_required": 2
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "steel-plate"
+      },
+      {
+        "amount": 10,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "electronic-circuit"
+      },
+      {
+        "amount": 10,
+        "type": "item",
+        "name": "pipe"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "pumpjack"
+      }
+    ],
+    "name": "pumpjack",
+    "enabled": false,
+    "energy_required": 5
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "steel-plate"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "iron-gear-wheel"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "electronic-circuit"
+      },
+      {
+        "amount": 5,
+        "type": "item",
+        "name": "pipe"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "chemical-plant"
+      }
+    ],
+    "name": "chemical-plant",
+    "enabled": false,
+    "energy_required": 5
+  },
+  {
+    "type": "recipe",
+    "ingredients": [
+      {
+        "amount": 10,
+        "type": "item",
+        "name": "steel-plate"
+      },
+      {
+        "amount": 100,
+        "type": "item",
+        "name": "copper-plate"
+      },
+      {
+        "amount": 10,
+        "type": "item",
+        "name": "pipe"
+      }
+    ],
+    "results": [
+      {
+        "amount": 1,
+        "type": "item",
+        "name": "heat-exchanger"
+      }
+    ],
+    "name": "heat-exchanger",
+    "enabled": false,
+    "energy_required": 3
+  }
+]
