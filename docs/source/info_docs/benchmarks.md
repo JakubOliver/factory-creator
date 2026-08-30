@@ -72,6 +72,41 @@ hlediska vizuálního, kdy předpokládám že upřednostníme taková napojení
 jsou strukturovaná, přehledná a kompaktní, než taková, která jsou chaotická,
 komplikovaná a konfliktní.
 
+#### Co dál?
+
+Další otázkou je jak, se tedy s takovýmito uspořádáními vypořádat. Víme, že tyto
+nevhodná uspořádání se vyskytují, může jich být potenciálně velmi mnoho, jsou
+výpočetně náročná a nevedou k dobrým výsledkům. To by naznačovalo, že dobrý
+nápad by bylo úplně vypnout možnost přeškálování a využívat pouze prvotní
+uspořádání, toto je dobrý nápad, ale ne úplně v globálu.
+
+Při svých benchmarkách jsem zkoumal hlavně 2 věci, jaká konfigurace dokáže
+vyřešit s jakou rychlostí a úspěšností. Podmnožinu všech topologických
+uspořádání, pro recept/graph `electric-mining-drill`, který je stedně
+komplikovaný. A pro stejný recept 5 seedovaných runnů.
+
+U prvního testu s nastavením 5 přepočítávání grafu, jsem pro 100 náhodných
+topologických uspořádání, dokázal vyřešit všech 100.
+
+| Success | Average time  | Min time    | Max time      |
+| ------- | ------------- | ----------- | ------------- |
+| 100/100 | 6.46493961384 | 0.107040703 | 258.604340126 |
+
+Celý
+[run](https://github.com/JakubOliver/factory-creator/actions/runs/33269474794/job/99145244688)
+tohoto testu běžel skoro 650 sekund, tedy můžeme vidět, že ano, dokázali jsme
+vyřešit všechny topologická uspořádání, ale pouze nejnáročnějších z nich nám
+zabralo polovinu celého času.
+
+Při nastavení 3 přepočítávání grafu, jsme už dostali pouze uspěšnost 97 %, ale
+za to jsme se zbavili horních extrémů. A 3krát zrychlily průměrný čas výpočtu.
+
+| Success | Average time  | Min time    | Max time     |
+| ------- | ------------- | ----------- | ------------ |
+| 97/100  | 2.26809643938 | 0.076653482 | 44.431602511 |
+
+U žádného opakování jsme se dosali na úspěšnost 62 % a na celkový čas 44 sekund.
+
 ## Tabulka benchmarků
 
 Tabulka s vygenerovanými CSV tabulkami benchmarků s Github releasu pro
