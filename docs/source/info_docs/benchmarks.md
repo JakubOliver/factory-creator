@@ -24,6 +24,17 @@ A tak se se nejlepší řešení ukázalo, že nejlepší je si vybrat pevně da
 podmnožiny budov. V mém případě jsem skončit u velikosti 4 budov, tedy s 4 směry
 máme v každé generaci 16 mutačních pohybů a tedy 16 sousedů/potomků.
 
+Tedy s zvětšujícím se počtem budov se nám lineráně zvyšoval počet mutačních
+pohybů, které se museli vypočítat. A zároveň se nám alespoň lineárně zvyšovala
+doba výpočtu jednoho daného mutačnícho pohybu, poněvadž grafy byly větší a
+komplikovanější.
+
+Díky tomu, že jsme omezili počet mutačních pohybů, tak jsme se zbavili
+lineárního nárůstu počtu mutačních pohybů. A zároveň je hill climb stále plně
+funkční, již nenajde nejoptimálnější posun z daného stavu, ale díky tomu
+zrychlení výpočtu a pořád přítomného zlepšení z generace na generaci, dostáváme
+ve výsledku drastické zrychlení za velmi malou cenu v kvalitě výsledku.
+
 ## Tabulka benchmarků
 
 Tabulka s vygenerovanými CSV tabulkami benchmarků s Github releasu pro
