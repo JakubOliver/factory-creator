@@ -35,6 +35,43 @@ funkční, již nenajde nejoptimálnější posun z daného stavu, ale díky tom
 zrychlení výpočtu a pořád přítomného zlepšení z generace na generaci, dostáváme
 ve výsledku drastické zrychlení za velmi malou cenu v kvalitě výsledku.
 
+- S touto optimalizací jsem začal a v dané době jsem ještě neměl tak rozsáhlý
+  způsbo benchmarkování, takže máme pouze jeden benchmark, který se snaží
+  napodobit původní nastavení a subjektivně/objektivní manuální pozorování, při
+  kterém byla změna opravdu znatelná.
+
+### Optimalizace výpočtu dle topologického uspořádání
+
+Druhá přítomná mutace, tedy přepočítávání grafu pro nějaké jiné topologické
+uspořádání, se ukázala být problematická i na poměrně malých továrnách. A to
+kvůli tomu, že nějaká topologická uspořádání jsou méně vhodná než jiná, a v dané
+době přítomný algoritmus se snažil i tyto nevhodnát uspořádání několikrát
+přeškálovat a znovu dopočítat (přeškálování znamená, že se zvýší odstupy mezi
+budovami, tedy dostane pásy/napojení má více místa jak si najít cestu).
+
+#### Nevhodná a neřešitelná napojení
+
+Otázkou je zda grafy, které nejde sestrojit vůbec existjí? A odpověď je ano,
+existují. Ale jsou to spíše okrajové a ne tak zajímavé případy, jak např.
+výrobna o velikosti 3x3 má pouze 12 okolních políček, která se dají použít pro
+napojení (použití velkého překladače pouze pozmění napojovací políčko, ale žádné
+nám nepřidá), tedy pokud bychom se někde snaižli napojit 13 pásů, tak to není
+možné.
+
+Toto, ale není hlavní problém, s kterým jsem se potýkal. Mnohem větší problém
+je, že hledání napojení pro továrnu je MAPF problém, ale my používáme pouze A\*
+algoritmus, používáme ho chytře tak, že se snažíme nejdříve najít cestu pro
+budovy nejblíže zdroje, ale i tak se může stát, že předchozí cesty zablokují
+cestu pro další budovu.
+
+Tedy se vlastně dostáváme k tomu, co vlastně je nevhovné topologické uspořádání,
+to je takové, které vytváří konflikty v cestách, vynucuje přeškálování a bez
+MAPF algoritmu není řešitelné. Naší výhodou je, ale že takováto nevhodná
+uspořádání nevedou k dobrému výsledku. Jak z hlediska naší fitness, tak z
+hlediska vizuálního, kdy předpokládám že upřednostníme taková napojení, která
+jsou strukturovaná, přehledná a kompaktní, než taková, která jsou chaotická,
+komplikovaná a konfliktní.
+
 ## Tabulka benchmarků
 
 Tabulka s vygenerovanými CSV tabulkami benchmarků s Github releasu pro
