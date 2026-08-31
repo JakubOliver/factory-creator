@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QLineEdit,
     QSlider,
     QPushButton,
@@ -98,6 +99,7 @@ class PreferencesDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
+        layout.setVerticalSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
 
     def output_level(self):
         return OutputLevel(self.output_level_slider.value())
