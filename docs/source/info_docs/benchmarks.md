@@ -195,6 +195,14 @@ topologických uspořádání, ale u receptů toto pravidlo tak nějak platí).
   stejná. Tento údaj popisuje konkrétní běh receptu `electric-mining-drill`, ne
   garantované zrychlení pro libovolnou továrnu.
 
+## Nastavení mutací
+
+Nadále platí, že mutace topologického uspořádání je nejvýhodnější používat pouze
+na začátku, poněvadž v pozdějších generacích již zlepšený grid nedokáže porazit.
+Tedy buď začít prvních $\max(10, 0.1 \times \text{počet generací})$ generací
+pouze s mutací topologického uspořádání nebo společně a potom ji vypnout (dá se
+dynamicky nastavit v konfiguraci).
+
 ## Tabulka benchmarků
 
 Tabulka s vygenerovanými CSV tabulkami benchmarků s Github releasu pro
